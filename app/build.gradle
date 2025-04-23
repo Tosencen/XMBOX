@@ -13,7 +13,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 33
         versionCode 32
-        versionName '2.0.0'
+        versionName '2.0.1'
         multiDexEnabled true
         // 增加下面的配置以支持 Java 8 特性
         compileOptions {
