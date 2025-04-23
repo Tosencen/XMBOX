@@ -21,6 +21,7 @@ import com.github.tvbox.osc.util.EpgUtil;
 import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
+import com.github.tvbox.osc.util.DnsSafetyTest;
 import com.github.tvbox.osc.util.MaterialSymbolsLoader;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
@@ -185,6 +186,19 @@ public class App extends MultiDexApplication {
                 LOG.i("App", "Material Symbols字体初始化成功");
             } catch (Exception e) {
                 LOG.e("App", "Material Symbols字体初始化失败: " + e.getMessage());
+            }
+
+            // 测试DNS安全修复
+            try {
+                boolean testResult = DnsSafetyTest.testDnsSafety();
+                if (testResult) {
+                    LOG.i("App", "DNS安全测试通过，修复有效");
+                } else {
+                    LOG.e("App", "DNS安全测试失败，修复可能无效");
+                }
+            } catch (Exception e) {
+                LOG.e("App", "DNS安全测试异常: " + e.getMessage());
+                e.printStackTrace();
             }
 
             LOG.i("App", "应用初始化完成");

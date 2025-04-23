@@ -17,6 +17,7 @@ import com.github.tvbox.osc.constant.IntentKey
 import com.github.tvbox.osc.databinding.ActivitySettingBinding
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter.SelectDialogInterface
+import com.github.tvbox.osc.ui.activity.DnsTestActivity
 import com.github.tvbox.osc.ui.dialog.BackupDialog
 import com.hjq.bar.OnTitleBarListener
 import com.hjq.bar.TitleBar
@@ -80,6 +81,13 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
         // 应用Material Symbols字体到所有箭头图标
         applyMaterialSymbolsToArrows()
         mBinding.tvMediaCodec.text = Hawk.get(HawkConfig.IJK_CODEC, "")
+
+        // DNS安全测试入口
+        mBinding.llDnsTest.setOnClickListener { v: View? ->
+            FastClickCheckUtil.check(v)
+            val intent = android.content.Intent(this, DnsTestActivity::class.java)
+            startActivity(intent)
+        }
 
         // 确保使用有效的索引访问 dnsHttpsList
         val dnsIndex = Hawk.get(HawkConfig.DOH_URL, 0)

@@ -42,12 +42,18 @@ public class OkHttp {
     }
 
     public static Dns dns() {
+        // 始终返回Dns实例，避免Android 15上的空指针异常
         return get().dns != null ? get().dns : Dns.SYSTEM;
     }
 
     public void setDoh(Doh doh) {
         OkHttpClient dohClient = new OkHttpClient.Builder().cache(new Cache(Path.doh(), CACHE)).hostnameVerifier(SSLCompat.VERIFIER).sslSocketFactory(new SSLCompat(), SSLCompat.TM).build();
-        dns = doh.getUrl().isEmpty() ? null : new DnsOverHttps.Builder().client(dohClient).url(HttpUrl.get(doh.getUrl())).bootstrapDnsHosts(doh.getHosts()).build();
+        // 如果是空的URL，使用系统DNS而不是设置为null
+        if (doh.getUrl().isEmpty()) {
+            dns = null;
+        } else {
+            dns = new DnsOverHttps.Builder().client(dohClient).url(HttpUrl.get(doh.getUrl())).bootstrapDnsHosts(doh.getHosts()).build();
+        }
         client = null;
     }
 
@@ -130,7 +136,15 @@ public class OkHttp {
     }
 
     private static OkHttpClient.Builder getBuilder() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder().addInterceptor(new OkhttpInterceptor()).connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS).readTimeout(TIMEOUT, TimeUnit.MILLISECONDS).writeTimeout(TIMEOUT, TimeUnit.MILLISECONDS).dns(dns()).hostnameVerifier(SSLCompat.VERIFIER).sslSocketFactory(new SSLCompat(), SSLCompat.TM);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+            .addInterceptor(new OkhttpInterceptor())
+            .connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+            .readTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+            .writeTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+            // 始终使用有效的DNS实例，避免Android 15上的空指针异常
+            .dns(dns())
+            .hostnameVerifier(SSLCompat.VERIFIER)
+            .sslSocketFactory(new SSLCompat(), SSLCompat.TM);
         builder.proxySelector(selector());
         return builder;
     }

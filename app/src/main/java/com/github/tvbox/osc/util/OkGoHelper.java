@@ -27,12 +27,14 @@ import javax.net.ssl.SSLSocketFactory;
 
 import okhttp3.Cache;
 import okhttp3.ConnectionSpec;
+import okhttp3.Dns;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.dnsoverhttps.DnsOverHttps;
 import okhttp3.internal.Util;
 import okhttp3.internal.Version;
 import xyz.doikki.videoplayer.exo.ExoMediaSourceHelper;
+import com.github.tvbox.osc.util.OkHttpSafetyUtil;
 
 public class OkGoHelper {
     public static final long DEFAULT_MILLISECONDS = 10000;      //默认的超时时间
@@ -59,7 +61,9 @@ public class OkGoHelper {
         } catch (Throwable th) {
             th.printStackTrace();
         }
-        builder.dns(dnsOverHttps);
+        // 使用安全工具类设置DNS，确保不会传入null值
+        // 在Android 15及以上版本，OkHttp不再接受null作为DNS参数
+        OkHttpSafetyUtil.ensureSafeDns(builder, dnsOverHttps);
 
         ExoMediaSourceHelper.getInstance(App.getInstance()).setOkClient(builder.build());
     }
@@ -155,10 +159,9 @@ public class OkGoHelper {
                 .writeTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS)
                 .connectTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS);
 
-        // 只在dnsOverHttps非空时设置DNS
-        if (dnsOverHttps != null) {
-            builder.dns(dnsOverHttps);
-        }
+        // 使用安全工具类设置DNS，确保不会传入null值
+        // 在Android 15及以上版本，OkHttp不再接受null作为DNS参数
+        OkHttpSafetyUtil.ensureSafeDns(builder, dnsOverHttps);
 
         // 增加并发连接数
         Dispatcher dispatcher = new Dispatcher(ThreadPoolManager.getIOThreadPool());

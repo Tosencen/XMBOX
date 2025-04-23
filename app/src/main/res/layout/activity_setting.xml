@@ -197,6 +197,37 @@
                 android:paddingVertical="8dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/bg_settings_card_md3">
+
+                <LinearLayout
+                    android:id="@+id/llDnsTest"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_60"
+                    android:layout_weight="1"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:foreground="?android:selectableItemBackground">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DNS安全测试"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"/>
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:text="@string/ms_arrow_forward"
+                        style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
+                </LinearLayout>
                 <LinearLayout
                     android:id="@+id/llPlay"
                     android:layout_width="match_parent"

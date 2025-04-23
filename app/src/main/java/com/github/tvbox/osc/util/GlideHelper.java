@@ -27,6 +27,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.util.urlhttp.BrotliInterceptor;
+import com.github.tvbox.osc.util.OkHttpSafetyUtil;
 import com.orhanobut.hawk.Hawk;
 
 import java.io.InputStream;
@@ -82,11 +83,9 @@ public class GlideHelper extends AppGlideModule {
                 th.printStackTrace();
             }
 
-            // 使用与OkGoHelper相同的DNS设置
-            // 只在dnsOverHttps非空时设置DNS
-            if (OkGoHelper.dnsOverHttps != null) {
-                builder.dns(OkGoHelper.dnsOverHttps);
-            }
+            // 使用安全工具类设置DNS，确保不会传入null值
+            // 在Android 15及以上版本，OkHttp不再接受null作为DNS参数
+            OkHttpSafetyUtil.ensureSafeDns(builder, OkGoHelper.dnsOverHttps);
 
             // 配置自定义调度器以限制并发请求数
             okhttp3.Dispatcher dispatcher = new okhttp3.Dispatcher();

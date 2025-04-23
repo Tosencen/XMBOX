@@ -65,6 +65,7 @@ public abstract class Spider {
     public void destroy() {}
 
     public static Dns safeDns() {
-        return OkGoHelper.dnsOverHttps;
+        // 始终返回有效的DNS实例，避免Android 15上的空指针异常
+        return OkGoHelper.dnsOverHttps != null ? OkGoHelper.dnsOverHttps : Dns.SYSTEM;
     }
 }
