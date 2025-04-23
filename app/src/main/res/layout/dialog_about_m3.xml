@@ -57,7 +57,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="https://github.com/chen59x/TVBoxOS-Mobile"
+                android:text="https://github.com/Tosencen/XMBOX"
                 android:textIsSelectable="true"
                 android:textColor="?attr/colorPrimary"
                 android:layout_marginTop="8dp"
@@ -80,7 +80,7 @@
                 android:textIsSelectable="true"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="14sp"
-                android:text="https://github.com/q215613905/TVBoxOS"/>
+                android:text="https://github.com/XiaoRanLiu3119/TVBoxOS-Mobile"/>
 
             <TextView
                 android:layout_width="wrap_content"
