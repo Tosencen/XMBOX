@@ -28,8 +28,8 @@ android {
         }
 
         ndk {
-            //abiFilters "armeabi-v7a"//, ""
-            abiFilters "arm64-v8a", "x86_64"
+            abiFilters "armeabi-v7a", "arm64-v8a"
+            // 移除 x86_64 架构支持，因为jniLibs目录中没有对应的库文件
         }
 
     }
@@ -88,7 +88,7 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            excludes += ['**/libconceal.so', '**/libp2p.so']
+            excludes += ['**/libconceal.so']
         }
     }
 }
@@ -169,11 +169,15 @@ dependencies {
     implementation 'com.hyman:flowlayout-lib:1.1.2'
     //崩溃
     implementation project(":crash")
-    //dlna投屏 - 暂时移除以解决兼容性问题
-    // implementation 'com.github.devin1014.DLNA-Cast:dlna-dmc:V1.0.0'
-    // 使用更兼容的 DLNA 库
-    implementation 'org.fourthline.cling:cling-core:2.1.2'
-    implementation 'org.fourthline.cling:cling-support:2.1.2'
+    //改进版DLNA投屏 - 暂时禁用以解决构建问题
+    // implementation 'org.fourthline.cling:cling-core:2.1.2'
+    // implementation 'org.fourthline.cling:cling-support:2.1.2'
+    // implementation 'org.eclipse.jetty:jetty-server:8.1.22.v20160922'
+    // implementation 'org.eclipse.jetty:jetty-servlet:8.1.22.v20160922'
+    // implementation 'org.eclipse.jetty:jetty-client:8.1.22.v20160922'
+
+    //小米投屏SDK - 暂时移除依赖以解决构建问题
+    // implementation files('libs/xiaomi-cast-sdk.aar')
     // Lifecycles
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"

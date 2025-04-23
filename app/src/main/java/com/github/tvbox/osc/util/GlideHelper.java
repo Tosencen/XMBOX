@@ -83,7 +83,10 @@ public class GlideHelper extends AppGlideModule {
             }
 
             // 使用与OkGoHelper相同的DNS设置
-            builder.dns(OkGoHelper.dnsOverHttps);
+            // 只在dnsOverHttps非空时设置DNS
+            if (OkGoHelper.dnsOverHttps != null) {
+                builder.dns(OkGoHelper.dnsOverHttps);
+            }
 
             // 配置自定义调度器以限制并发请求数
             okhttp3.Dispatcher dispatcher = new okhttp3.Dispatcher();

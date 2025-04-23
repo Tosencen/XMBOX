@@ -47,31 +47,20 @@ public class PlayerHelper {
         IJKCode codec = ApiConfig.get().getIJKCodec(ijkCode);
         PlayerFactory playerFactory;
         if (playerType == 1) {
-            // 暂时禁用IJK播放器，使用系统播放器代替
-            LOG.e("IJK播放器已暂时禁用，使用系统播放器代替");
-            playerFactory = AndroidMediaPlayerFactory.create();
-            /* 原始代码
-            playerFactory = new PlayerFactory<IjkMediaPlayer>() {
-                @Override
-                public IjkMediaPlayer createPlayer(Context context) {
-                    return new IjkMediaPlayer(context, codec);
-                }
-            };
-            try {
-                tv.danmaku.ijk.media.player.IjkMediaPlayer.loadLibrariesOnce(new IjkLibLoader() {
+            // 检查IJK播放器库是否已加载
+            if (ijkLibraryLoaded) {
+                LOG.i("PlayerHelper", "使用IJK播放器");
+                playerFactory = new PlayerFactory<IjkMediaPlayer>() {
                     @Override
-                    public void loadLibrary(String s) throws UnsatisfiedLinkError, SecurityException {
-                        try {
-                            System.loadLibrary(s);
-                        } catch (Throwable th) {
-                            th.printStackTrace();
-                        }
+                    public IjkMediaPlayer createPlayer(Context context) {
+                        return new IjkMediaPlayer(context, codec);
                     }
-                });
-            } catch (Throwable th) {
-                th.printStackTrace();
+                };
+            } else {
+                // IJK播放器库未加载，使用系统播放器代替
+                LOG.e("PlayerHelper", "IJK播放器库未加载，使用系统播放器代替");
+                playerFactory = AndroidMediaPlayerFactory.create();
             }
-            */
         } else if (playerType == 2) {
             playerFactory = new PlayerFactory<EXOmPlayer>() {
                 @Override
@@ -101,31 +90,20 @@ public class PlayerHelper {
         int playType = Hawk.get(HawkConfig.PLAY_TYPE, 0);
         PlayerFactory playerFactory;
         if (playType == 1) {
-            // 暂时禁用IJK播放器，使用系统播放器代替
-            LOG.e("IJK播放器已暂时禁用，使用系统播放器代替");
-            playerFactory = AndroidMediaPlayerFactory.create();
-            /* 原始代码
-            playerFactory = new PlayerFactory<IjkMediaPlayer>() {
-                @Override
-                public IjkMediaPlayer createPlayer(Context context) {
-                    return new IjkMediaPlayer(context, null);
-                }
-            };
-            try {
-                tv.danmaku.ijk.media.player.IjkMediaPlayer.loadLibrariesOnce(new IjkLibLoader() {
+            // 检查IJK播放器库是否已加载
+            if (ijkLibraryLoaded) {
+                LOG.i("PlayerHelper", "使用IJK播放器");
+                playerFactory = new PlayerFactory<IjkMediaPlayer>() {
                     @Override
-                    public void loadLibrary(String s) throws UnsatisfiedLinkError, SecurityException {
-                        try {
-                            System.loadLibrary(s);
-                        } catch (Throwable th) {
-                            th.printStackTrace();
-                        }
+                    public IjkMediaPlayer createPlayer(Context context) {
+                        return new IjkMediaPlayer(context, null);
                     }
-                });
-            } catch (Throwable th) {
-                th.printStackTrace();
+                };
+            } else {
+                // IJK播放器库未加载，使用系统播放器代替
+                LOG.e("PlayerHelper", "IJK播放器库未加载，使用系统播放器代替");
+                playerFactory = AndroidMediaPlayerFactory.create();
             }
-            */
         } else if (playType == 2) {
             playerFactory = new PlayerFactory<EXOmPlayer>() {
                 @Override
@@ -152,25 +130,91 @@ public class PlayerHelper {
     }
 
 
+    private static boolean ijkLibraryLoaded = false;
+
+    /**
+     * 尝试加载IJK播放器库
+     * @return 是否成功加载
+     */
+    private static boolean loadIJKLibrary() {
+        if (!ijkLibraryLoaded) {
+            try {
+                LOG.i("PlayerHelper", "尝试加载 IJK 播放器库");
+                tv.danmaku.ijk.media.player.IjkMediaPlayer.loadLibrariesOnce(new IjkLibLoader() {
+                    @Override
+                    public void loadLibrary(String s) throws UnsatisfiedLinkError, SecurityException {
+                        try {
+                            LOG.i("PlayerHelper", "加载库: " + s);
+                            System.loadLibrary(s);
+                            LOG.i("PlayerHelper", "成功加载库: " + s);
+                        } catch (Throwable th) {
+                            LOG.e("PlayerHelper", "加载库失败: " + s + ", 错误: " + th.getMessage());
+                            throw new UnsatisfiedLinkError("Failed to load library: " + s);
+                        }
+                    }
+                });
+                ijkLibraryLoaded = true;
+                LOG.i("PlayerHelper", "IJK 播放器库加载成功");
+                return true;
+            } catch (Throwable th) {
+                LOG.e("PlayerHelper", "IJK 播放器库加载失败: " + th.getMessage());
+                return false;
+            }
+        }
+        return ijkLibraryLoaded;
+    }
+
+    /**
+     * 初始化播放器
+     */
     public static void init() {
-        // 暂时禁用IJK播放器的加载，以避免在模拟器上崩溃
-        LOG.e("IJK播放器已暂时禁用");
-        /* 原始代码
+        LOG.i("PlayerHelper", "播放器初始化开始");
+
         try {
-            tv.danmaku.ijk.media.player.IjkMediaPlayer.loadLibrariesOnce(new IjkLibLoader() {
-                @Override
-                public void loadLibrary(String s) throws UnsatisfiedLinkError, SecurityException {
-                    try {
-                        System.loadLibrary(s);
-                    } catch (Throwable th) {
-                        th.printStackTrace();
+            // 检查设备架构
+            String arch = System.getProperty("os.arch");
+            boolean isArmArchitecture = arch != null && (arch.contains("arm") || arch.contains("ARM"));
+            LOG.i("PlayerHelper", "设备架构: " + arch + ", 是否为ARM架构: " + isArmArchitecture);
+
+            if (isArmArchitecture) {
+                // 尝试加载IJK播放器库
+                boolean ijkLoaded = loadIJKLibrary();
+                if (ijkLoaded) {
+                    LOG.i("PlayerHelper", "IJK播放器库加载成功，可以使用IJK播放器");
+                    // 更新播放器存在信息
+                    if (mPlayersExistInfo != null) {
+                        mPlayersExistInfo.put(1, true);
+                    }
+                } else {
+                    LOG.e("PlayerHelper", "IJK播放器库加载失败，将使用备用播放器");
+                    // 更新播放器存在信息
+                    if (mPlayersExistInfo != null) {
+                        mPlayersExistInfo.put(1, false);
+                    }
+                    // 如果默认播放器是IJK，则切换到Exo播放器
+                    if (Hawk.get(HawkConfig.PLAY_TYPE, 0) == 1) {
+                        LOG.i("PlayerHelper", "默认播放器是IJK，但IJK库加载失败，切换到Exo播放器");
+                        Hawk.put(HawkConfig.PLAY_TYPE, 2);
                     }
                 }
-            });
-        } catch (Throwable th) {
-            th.printStackTrace();
+            } else {
+                LOG.e("PlayerHelper", "非ARM架构设备，不加载IJK播放器库");
+                // 更新播放器存在信息
+                if (mPlayersExistInfo != null) {
+                    mPlayersExistInfo.put(1, false);
+                }
+                // 如果默认播放器是IJK，则切换到Exo播放器
+                if (Hawk.get(HawkConfig.PLAY_TYPE, 0) == 1) {
+                    LOG.i("PlayerHelper", "默认播放器是IJK，但非ARM架构，切换到Exo播放器");
+                    Hawk.put(HawkConfig.PLAY_TYPE, 2);
+                }
+            }
+
+            LOG.i("PlayerHelper", "播放器初始化完成");
+        } catch (Throwable e) {
+            LOG.e("PlayerHelper", "播放器初始化过程中发生错误: " + e.getMessage());
+            e.printStackTrace();
         }
-        */
     }
 
     public static String getPlayerName(int playType) {

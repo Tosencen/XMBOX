@@ -120,6 +120,9 @@
     <!-- 波纹效果颜色 - 日间模式 -->
     <color name="ripple_color">#1A006A6A</color>
 
+    <!-- 对话框背景色 -->
+    <color name="dialog_bg">@color/md3_background</color>
+
     <!-- 底部导航栏活动指示器颜色 - 日间模式使用更淡的颜色 -->
     <color name="bottom_nav_indicator_light">#E5F8F8</color>
 
@@ -127,7 +130,7 @@
     <color name="item_series_bg_light">#E6E9E9</color>
 
     <!-- 倒序和全部按钮背景色 - 日间模式 -->
-    <color name="sort_all_button_bg_light">#4D5252</color>
+    <color name="sort_all_button_bg_light">#E6E9E9</color>
 
     <!-- 选中状态的文本颜色 - 日间模式 -->
     <color name="selected_text_color_light">#FFFFFF</color>

@@ -45,6 +45,7 @@ import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.base.BaseVbActivity;
 import com.github.tvbox.osc.bean.AbsXml;
 import com.github.tvbox.osc.bean.CastVideo;
+import com.github.tvbox.osc.cast.CastManager;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.ParseBean;
 import com.github.tvbox.osc.bean.SourceBean;
@@ -60,7 +61,7 @@ import com.github.tvbox.osc.ui.adapter.SeriesAdapter;
 import com.github.tvbox.osc.ui.adapter.SeriesFlagAdapter;
 import com.github.tvbox.osc.ui.dialog.AllVodSeriesBottomDialog;
 import com.github.tvbox.osc.ui.dialog.AllVodSeriesRightDialog;
-import com.github.tvbox.osc.ui.dialog.CastListDialog;
+import com.github.tvbox.osc.ui.dialog.CastDeviceDialog;
 import com.github.tvbox.osc.ui.dialog.QuickSearchDialog;
 import com.github.tvbox.osc.ui.dialog.VideoDetailDialog;
 import com.github.tvbox.osc.ui.fragment.PlayFragment;
@@ -247,16 +248,18 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             }
         });
 
-        // 设置投屏按钮的点击事件
+        // 设置投屏按钮的点击事件 - 已禁用
         mBinding.tvCast.setOnClickListener(v -> {
-            showCastDialog();
+            // showCastDialog();
+            MD3ToastUtils.showToast("投屏功能已禁用");
         });
 
         // 设置投屏按钮的父容器点击事件
         ViewParent castParent = findViewById(R.id.tvCast).getParent();
         if (castParent instanceof View) {
             ((View) castParent).setOnClickListener(v -> {
-                showCastDialog();
+                // showCastDialog();
+                MD3ToastUtils.showToast("投屏功能已禁用");
             });
         }
 
@@ -379,16 +382,25 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     public void showCastDialog() {
-        // 显示投屏功能即将上线的提示
-        MD3ToastUtils.showLongToast("投屏功能即将上线，敬请期待！");
-
-        // 原有投屏功能代码注释掉，保留以备后续开发
+        // 投屏功能已禁用
+        MD3ToastUtils.showToast("投屏功能已禁用");
         /*
+        if (vodInfo == null || playFragment == null) {
+            MD3ToastUtils.showLongToast("暂无可投屏内容");
+            return;
+        }
+
         VodInfo.VodSeries vodSeries = vodInfo.seriesMap.get(vodInfo.playFlag).get(vodInfo.playIndex);
+        String url = TextUtils.isEmpty(playFragment.getFinalUrl()) ? vodSeries.url : playFragment.getFinalUrl();
+        String title = mVideo.name + " " + vodSeries.name;
+
+        // 创建投屏视频信息
+        CastVideo castVideo = new CastVideo(title, url);
+
+        // 显示投屏设备选择对话框
         new XPopup.Builder(this)
                 .maxWidth(ConvertUtils.dp2px(360))
-                .asCustom(new CastListDialog(this, new CastVideo(vodSeries.name
-                        , TextUtils.isEmpty(playFragment.getFinalUrl()) ? vodSeries.url : playFragment.getFinalUrl())))
+                .asCustom(new CastDeviceDialog(this, castVideo))
                 .show();
         */
     }

@@ -57,10 +57,14 @@ public class PlayerMenuView extends FrameLayout implements IControlComponent {
     {
         setVisibility(GONE);
         LayoutInflater.from(getContext()).inflate(R.layout.dkplayer_layout_menu_view, this, true);
+        // 投屏功能已禁用
         findViewById(R.id.cast).setOnClickListener(view -> {
-            if (mOnPlayerMenuClickListener!=null){
-                mOnPlayerMenuClickListener.onCast();
-            }
+            // 显示投屏功能已禁用的提示
+            com.github.tvbox.osc.util.MD3ToastUtils.showToast("投屏功能已禁用");
+            // 如果需要调用原来的回调，可以取消注释下面的代码
+            // if (mOnPlayerMenuClickListener!=null){
+            //     mOnPlayerMenuClickListener.onCast();
+            // }
         });
         findViewById(R.id.setting).setOnClickListener(view -> {
             if (mOnPlayerMenuClickListener!=null){

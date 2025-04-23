@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ThreadPoolManager {
     // CPU核心数
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
-    // 核心线程数 = CPU核心数 + 1，但不少于2，不多于4
-    private static final int CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT + 1, 4));
-    // 最大线程数 = CPU核心数 * 2 + 1
-    private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
+    // 核心线程数 = CPU核心数 + 1，但不少于2，不多于6
+    private static final int CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT + 1, 6));
+    // 最大线程数 = CPU核心数 * 2 + 2
+    private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 2;
     // 非核心线程闲置超时时间
     private static final long KEEP_ALIVE_TIME = 30L;
     // 线程优先级
@@ -47,7 +47,7 @@ public class ThreadPoolManager {
                             MAXIMUM_POOL_SIZE * 2, // IO线程池允许更多线程
                             KEEP_ALIVE_TIME,
                             TimeUnit.SECONDS,
-                            new LinkedBlockingQueue<>(256),
+                            new LinkedBlockingQueue<>(512),
                             new IOThreadFactory(),
                             new RejectedHandler());
                     // 允许核心线程超时回收

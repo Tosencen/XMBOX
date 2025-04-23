@@ -62,4 +62,7 @@
 
     <!-- 选中状态的文本颜色 - 夜间模式 -->
     <color name="selected_text_color_light">#FFFFFF</color>
+
+    <!-- 倒序和全部按钮图标颜色 - 夜间模式 -->
+    <color name="sort_all_button_icon_light">#FFFFFF</color>
 </resources>

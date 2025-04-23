@@ -34,6 +34,7 @@ import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.base.BaseActivity;
 import com.github.tvbox.osc.bean.CastVideo;
+import com.github.tvbox.osc.cast.CastManager;
 import com.github.tvbox.osc.bean.LiveChannelGroup;
 import com.github.tvbox.osc.bean.LiveChannelItem;
 import com.github.tvbox.osc.bean.LivePlayerManager;
@@ -45,7 +46,7 @@ import com.github.tvbox.osc.ui.adapter.LiveChannelItemNewAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveSettingGroupAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveSettingItemAdapter;
 import com.github.tvbox.osc.ui.dialog.AllChannelsRightDialog;
-import com.github.tvbox.osc.ui.dialog.CastListDialog;
+import com.github.tvbox.osc.ui.dialog.CastDeviceDialog;
 import com.github.tvbox.osc.ui.dialog.LivePasswordDialog;
 import com.github.tvbox.osc.ui.dialog.LiveSettingDialog;
 import com.github.tvbox.osc.ui.dialog.LiveSettingRightDialog;
@@ -191,7 +192,10 @@ public class LiveActivity extends BaseActivity {
         tv_srcinfo.setOnClickListener(view -> playNextSource());
         //投屏/设置
         findViewById(R.id.ic_setting).setOnClickListener(view -> showSettingDialog(false));
-        findViewById(R.id.ic_cast).setOnClickListener(view -> showCastDialog());
+        findViewById(R.id.ic_cast).setOnClickListener(view -> {
+            // showCastDialog();
+            MD3ToastUtils.showToast("投屏功能已禁用");
+        });
 
         initVideoView();
         initChannelGroupView();
@@ -1128,12 +1132,23 @@ public class LiveActivity extends BaseActivity {
     }
 
     public void showCastDialog() {
-        if (currentLiveChannelItem!=null){
-            new XPopup.Builder(this)
-                    .maxWidth(ConvertUtils.dp2px(360))
-                    .asCustom(new CastListDialog(this,new CastVideo(currentLiveChannelItem.getChannelName(),currentLiveChannelItem.getUrl())))
-                    .show();
+        // 投屏功能已禁用
+        MD3ToastUtils.showToast("投屏功能已禁用");
+        /*
+        if (currentLiveChannelItem == null) {
+            MD3ToastUtils.showLongToast("暂无可投屏内容");
+            return;
         }
+
+        // 创建投屏视频信息
+        CastVideo castVideo = new CastVideo(currentLiveChannelItem.getChannelName(), currentLiveChannelItem.getUrl());
+
+        // 显示投屏设备选择对话框
+        new XPopup.Builder(this)
+                .maxWidth(ConvertUtils.dp2px(360))
+                .asCustom(new CastDeviceDialog(this, castVideo))
+                .show();
+        */
     }
 
     public LivePlayerManager getLivePlayerManager(){

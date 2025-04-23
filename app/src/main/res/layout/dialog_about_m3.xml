@@ -80,7 +80,7 @@
                 android:textIsSelectable="true"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="14sp"
-                android:text="https://github.com/XiaoRanLiu3119/TVBoxOS-Mobile"/>
+                android:text="https://github.com/q215613905/TVBoxOS"/>
 
             <TextView
                 android:layout_width="wrap_content"

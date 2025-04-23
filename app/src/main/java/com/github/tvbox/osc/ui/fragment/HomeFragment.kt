@@ -12,6 +12,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.ToastUtils
+import com.github.tvbox.osc.util.LOG
 import com.github.tvbox.osc.util.MD3ToastUtils
 import com.github.tvbox.osc.util.RecyclerViewOptimizer
 import com.github.tvbox.osc.util.ThreadPoolManager
@@ -154,13 +155,29 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
     }
 
     private fun loadConfig(){
+        // 添加超时处理
+        val timeoutRunnable = Runnable {
+            LOG.e("loadConfig", "加载配置超时")
+            ThreadPoolManager.executeMain {
+                dataInitOk = true
+                jarInitOk = true
+                initData()
+                MD3ToastUtils.showToast("加载超时，使用缓存数据")
+            }
+        }
+
+        // 设置15秒超时
+        ThreadPoolManager.executeMainDelayed(timeoutRunnable, 15000)
+
         ApiConfig.get().loadConfig(onlyConfigChanged, object : LoadConfigCallback {
 
             override fun retry() {
+                ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                 ThreadPoolManager.executeMain { initData() }
             }
 
             override fun success() {
+                ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                 dataInitOk = true
                 if (ApiConfig.get().spider.isEmpty()) {
                     jarInitOk = true
@@ -169,6 +186,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             }
 
             override fun error(msg: String) {
+                ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                 if (msg.equals("-1", ignoreCase = true)) {
                     ThreadPoolManager.executeMain {
                         dataInitOk = true
@@ -184,11 +202,25 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
     private fun loadJar(){
         if (!ApiConfig.get().spider.isNullOrEmpty()) {
+            // 添加超时处理
+            val timeoutRunnable = Runnable {
+                LOG.e("loadJar", "加载JAR超时")
+                ThreadPoolManager.executeMain {
+                    jarInitOk = true
+                    initData()
+                    MD3ToastUtils.showToast("JAR加载超时，使用缓存数据")
+                }
+            }
+
+            // 设置10秒超时
+            ThreadPoolManager.executeMainDelayed(timeoutRunnable, 10000)
+
             ApiConfig.get().loadJar(
                 onlyConfigChanged,
                 ApiConfig.get().spider,
                 object : LoadConfigCallback {
                     override fun success() {
+                        ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                         jarInitOk = true
                         ThreadPoolManager.executeMainDelayed({
                             if (!onlyConfigChanged) {
@@ -198,11 +230,15 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                         }, 50)
                     }
 
-                    override fun retry() {}
+                    override fun retry() {
+                        ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
+                    }
+
                     override fun error(msg: String) {
+                        ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                         jarInitOk = true
                         ThreadPoolManager.executeMain {
-                            ToastUtils.showShort("更新订阅失败")
+                            MD3ToastUtils.showToast("更新订阅失败")
                             initData()
                         }
                     }
@@ -287,8 +323,17 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                 }
             }
 
+            // 如果设置了关闭主页内容，移除主页Fragment和对应的SortData
             if (Hawk.get(HawkConfig.HOME_REC, 0) == 2 && preparedFragments.size > 0) { //关闭主页
                 preparedFragments.removeAt(0)
+                // 创建一个可变列表以便修改
+                val mutableSortDataList = mSortDataList.toMutableList()
+                // 移除第一个元素（主页标签）
+                if (mutableSortDataList.isNotEmpty()) {
+                    mutableSortDataList.removeAt(0)
+                }
+                // 更新mSortDataList
+                mSortDataList = mutableSortDataList
             }
 
             // 在主线程更新UI

@@ -30,18 +30,46 @@ public class P2PClass {
         }
     }
 
-    static {
-        System.loadLibrary("p2p");
+    private static boolean libraryLoaded = false;
+
+    /**
+     * 尝试加载p2p库
+     * @return 是否成功加载库
+     */
+    public static boolean loadLibrary() {
+        if (!libraryLoaded) {
+            try {
+                System.loadLibrary("p2p");
+                libraryLoaded = true;
+                android.util.Log.i("P2PClass", "Successfully loaded p2p library");
+                return true;
+            } catch (Throwable e) {
+                android.util.Log.e("P2PClass", "Failed to load p2p library: " + e.getMessage());
+                return false;
+            }
+        }
+        return libraryLoaded;
     }
 
     public P2PClass(String str) {
-        path = str + "/jpali";
-        File file = new File(path);
-        if (!file.exists()) {
-            file.mkdirs();
+        // 先检查库是否加载成功
+        if (!loadLibrary()) {
+            android.util.Log.e("P2PClass", "Cannot initialize P2PClass because library is not loaded");
+            return;
         }
-        port = doxstarthttpd("TEST3E63BAAECDAA79BEAA91853490A69F08".getBytes(), str.getBytes());
-        //Executors.newCachedThreadPool().execute(new init(str));
+
+        try {
+            path = str + "/jpali";
+            File file = new File(path);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            port = doxstarthttpd("TEST3E63BAAECDAA79BEAA91853490A69F08".getBytes(), str.getBytes());
+            android.util.Log.i("P2PClass", "P2PClass initialized successfully, port: " + port);
+            //Executors.newCachedThreadPool().execute(new init(str));
+        } catch (Throwable e) {
+            android.util.Log.e("P2PClass", "Failed to initialize P2PClass: " + e.getMessage());
+        }
     }
 
 

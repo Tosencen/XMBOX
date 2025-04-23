@@ -38,6 +38,7 @@
             android:drawableRight="@drawable/ic_compare_arrows_m3_24"
             style="@style/Widget.App.Button.SortAndAll"
             android:layout_marginRight="20dp"
+            android:textColor="#FFFFFF"
             />
     </LinearLayout>
 

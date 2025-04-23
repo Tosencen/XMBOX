@@ -5,6 +5,8 @@ import static okhttp3.ConnectionSpec.COMPATIBLE_TLS;
 import static okhttp3.ConnectionSpec.MODERN_TLS;
 import static okhttp3.ConnectionSpec.RESTRICTED_TLS;
 
+import okhttp3.Dispatcher;
+
 import com.github.catvod.net.SSLCompat;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.util.urlhttp.BrotliInterceptor;
@@ -109,8 +111,16 @@ public class OkGoHelper {
             dohIndex = 0;
             Hawk.put(HawkConfig.DOH_URL, 0);
         }
-        String dohUrl = getDohUrl(dohIndex);
-        dnsOverHttps = new DnsOverHttps.Builder().client(dohClient).url(dohUrl.isEmpty() ? null : HttpUrl.get(dohUrl)).build();
+
+        // 默认关闭DoH，使用系统DNS以提高速度
+        if (dohIndex == 0) {
+            dnsOverHttps = null;
+            LOG.i("DNS", "使用系统DNS");
+        } else {
+            String dohUrl = getDohUrl(dohIndex);
+            dnsOverHttps = new DnsOverHttps.Builder().client(dohClient).url(dohUrl.isEmpty() ? null : HttpUrl.get(dohUrl)).build();
+            LOG.i("DNS", "使用DoH: " + dohUrl);
+        }
     }
     static OkHttpClient defaultClient = null;
     static OkHttpClient noRedirectClient = null;
@@ -140,10 +150,20 @@ public class OkGoHelper {
         //builder.retryOnConnectionFailure(false);
         builder.connectionSpecs(getConnectionSpec());
         builder.addInterceptor(new BrotliInterceptor());
-        builder.readTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS)
-                .writeTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS)
-                .connectTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS)
-                .dns(dnsOverHttps);
+        // 优化超时设置，减少等待时间
+        builder.readTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS)
+                .writeTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS)
+                .connectTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS);
+
+        // 只在dnsOverHttps非空时设置DNS
+        if (dnsOverHttps != null) {
+            builder.dns(dnsOverHttps);
+        }
+
+        // 增加并发连接数
+        Dispatcher dispatcher = new Dispatcher(ThreadPoolManager.getIOThreadPool());
+        dispatcher.setMaxRequestsPerHost(10);
+        builder.dispatcher(dispatcher);
         try {
             setOkHttpSsl(builder);
         } catch (Throwable th) {

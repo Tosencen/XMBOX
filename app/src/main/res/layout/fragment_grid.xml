@@ -23,7 +23,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="20dp"
-        android:backgroundTint="@color/colorPrimary"
+        android:backgroundTint="#006A6A"
         app:borderWidth="0dp"
         android:src="@drawable/ic_filter_list"
         app:tint="@color/fab_icon_color"

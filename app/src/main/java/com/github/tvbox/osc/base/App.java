@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.base;
 
+import android.content.Intent;
 import android.text.TextUtils;
 
 import androidx.multidex.MultiDexApplication;
@@ -49,41 +50,148 @@ public class App extends MultiDexApplication {
 
     public boolean isNormalStart;
 
+    /**
+     * 检查设备架构是否支持
+     * @return 是否支持当前架构
+     */
+    private boolean isArchitectureSupported() {
+        String arch = System.getProperty("os.arch");
+        LOG.i("App", "设备架构: " + arch);
+        // 只支持ARM架构
+        return arch != null && (arch.contains("arm") || arch.contains("ARM"));
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
-        initParams();
-        // OKGo
-        OkGoHelper.init(); //台标获取
-        EpgUtil.init();
-        // 初始化Web服务器
-        ControlManager.init(this);
-        //初始化数据库
-        AppDataManager.init();
-        LoadSir.beginBuilder()
-                .addCallback(new EmptyCallback())
-                .addCallback(new EmptyCollectCallback())
-                .addCallback(new EmptyHistoryCallback())
-                .addCallback(new EmptySubscriptionCallback())
-                .addCallback(new LoadingCallback())
-                .commit();
-        AutoSizeConfig.getInstance()
-                .setExcludeFontScale(true)
-                .setCustomFragment(true)
-                .getUnitsManager()
-                .setSupportDP(false)
-                .setSupportSP(false)
-                .setSupportSubunits(Subunits.MM);
-        PlayerHelper.init();
-        // 暂时禁用QuickJS的加载，以避免在模拟器上崩溃
-        LOG.e("QuickJS已暂时禁用");
-        // QuickJSLoader.init();
-        FileUtils.cleanPlayerCache();
-        initCrashConfig();
-        Utils.initTheme();
-        // 初始Material Symbols字体
-        MaterialSymbolsLoader.init(this);
+        try {
+            LOG.i("App", "应用初始化开始");
+            instance = this;
+
+            // 检查设备架构
+            boolean archSupported = isArchitectureSupported();
+            LOG.i("App", "设备架构支持状态: " + (archSupported ? "支持" : "不支持"));
+            if (!archSupported) {
+                LOG.w("App", "当前设备架构可能不受支持，某些功能可能无法正常使用");
+            }
+
+            try {
+                initParams();
+                LOG.i("App", "参数初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "参数初始化失败: " + e.getMessage());
+            }
+
+            try {
+                // OKGo
+                OkGoHelper.init(); //台标获取
+                LOG.i("App", "OkGo初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "OkGo初始化失败: " + e.getMessage());
+            }
+
+            try {
+                EpgUtil.init();
+                LOG.i("App", "EPG工具初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "EPG工具初始化失败: " + e.getMessage());
+            }
+
+            try {
+                // 初始化Web服务器
+                ControlManager.init(this);
+                LOG.i("App", "Web服务器初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "Web服务器初始化失败: " + e.getMessage());
+            }
+
+            try {
+                //初始化数据库
+                AppDataManager.init();
+                LOG.i("App", "数据库初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "数据库初始化失败: " + e.getMessage());
+            }
+
+            try {
+                LoadSir.beginBuilder()
+                        .addCallback(new EmptyCallback())
+                        .addCallback(new EmptyCollectCallback())
+                        .addCallback(new EmptyHistoryCallback())
+                        .addCallback(new EmptySubscriptionCallback())
+                        .addCallback(new LoadingCallback())
+                        .commit();
+                LOG.i("App", "LoadSir初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "LoadSir初始化失败: " + e.getMessage());
+            }
+
+            try {
+                AutoSizeConfig.getInstance()
+                        .setExcludeFontScale(true)
+                        .setCustomFragment(true)
+                        .getUnitsManager()
+                        .setSupportDP(false)
+                        .setSupportSP(false)
+                        .setSupportSubunits(Subunits.MM);
+                LOG.i("App", "AutoSize初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "AutoSize初始化失败: " + e.getMessage());
+            }
+
+            try {
+                PlayerHelper.init();
+                LOG.i("App", "播放器初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "播放器初始化失败: " + e.getMessage());
+            }
+
+            // 尝试加载QuickJS库
+            if (isArchitectureSupported()) {
+                boolean quickJSLoaded = com.whl.quickjs.android.QuickJSLoader.init();
+                if (quickJSLoaded) {
+                    LOG.i("App", "QuickJS库加载成功");
+                } else {
+                    LOG.e("App", "QuickJS库加载失败，相关功能将被禁用");
+                }
+            } else {
+                LOG.e("App", "QuickJS已禁用，因为当前设备架构不受支持");
+            }
+
+            try {
+                FileUtils.cleanPlayerCache();
+                LOG.i("App", "清理播放器缓存成功");
+            } catch (Exception e) {
+                LOG.e("App", "清理播放器缓存失败: " + e.getMessage());
+            }
+
+            try {
+                initCrashConfig();
+                LOG.i("App", "崩溃配置初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "崩溃配置初始化失败: " + e.getMessage());
+            }
+
+            try {
+                Utils.initTheme();
+                LOG.i("App", "主题初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "主题初始化失败: " + e.getMessage());
+            }
+
+            try {
+                // 初始Material Symbols字体
+                MaterialSymbolsLoader.init(this);
+                LOG.i("App", "Material Symbols字体初始化成功");
+            } catch (Exception e) {
+                LOG.e("App", "Material Symbols字体初始化失败: " + e.getMessage());
+            }
+
+            LOG.i("App", "应用初始化完成");
+        } catch (Throwable e) {
+            LOG.e("App", "应用初始化过程中发生严重错误: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void initParams() {
@@ -133,6 +241,7 @@ public class App extends MultiDexApplication {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // 投屏功能已完全移除
         // 关闭线程池
         com.github.tvbox.osc.util.ThreadPoolManager.shutdown();
     }
@@ -161,20 +270,35 @@ public class App extends MultiDexApplication {
     }
 
     public static P2PClass getp2p() {
-        // 暂时禁用P2P功能以避免原生库崩溃
-        LOG.e("P2P功能已暂时禁用");
-        return null;
-        /* 原始代码
         try {
+            // 检查设备架构是否支持
+            if (!instance.isArchitectureSupported()) {
+                LOG.e("App", "P2P功能已禁用，因为当前设备架构不受支持");
+                return null;
+            }
+
+            // 尝试加载p2p库
+            boolean p2pLibLoaded = com.p2p.P2PClass.loadLibrary();
+            if (!p2pLibLoaded) {
+                LOG.e("App", "P2P库加载失败，相关功能将被禁用");
+                return null;
+            }
+
+            // 初始化P2P实例
             if (p == null) {
-                p = new P2PClass(instance.getExternalCacheDir().getAbsolutePath());
+                try {
+                    p = new P2PClass(instance.getExternalCacheDir().getAbsolutePath());
+                    LOG.i("App", "P2P功能初始化成功");
+                } catch (Exception e) {
+                    LOG.e("App", "P2P功能初始化失败: " + e.getMessage());
+                    p = null;
+                }
             }
             return p;
-        } catch (Exception e) {
-            LOG.e(e.toString());
+        } catch (Throwable e) {
+            LOG.e("App", "P2P功能发生错误: " + e.getMessage());
             return null;
         }
-        */
     }
 
     private void initCrashConfig(){

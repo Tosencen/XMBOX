@@ -426,7 +426,7 @@
                         style="@style/Widget.App.Button.SortAndAll"
                         android:gravity="center"
                         android:textSize="24sp"
-                        android:textColor="#D2D4D4"
+                        android:textColor="@color/sort_all_button_icon_light"
                         android:fontFamily="@font/material_symbols_rounded"
                         android:text="@string/ms_compare_arrows"/>
 
@@ -442,7 +442,7 @@
                         style="@style/Widget.App.Button.SortAndAll"
                         android:gravity="center"
                         android:textSize="24sp"
-                        android:textColor="#D2D4D4"
+                        android:textColor="@color/sort_all_button_icon_light"
                         android:fontFamily="@font/material_symbols_rounded"
                         android:text="@string/ms_grid_view"/>
 

@@ -57,5 +57,5 @@
         android:contentDescription="添加订阅"
         app:srcCompat="@drawable/ic_add_m3"
         app:tint="@color/fab_icon_color"
-        app:backgroundTint="?attr/colorPrimary"/>
+        app:backgroundTint="#006A6A"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

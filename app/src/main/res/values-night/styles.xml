@@ -27,13 +27,14 @@
     <!-- 倒序和全部按钮样式 - 夜间模式 -->
     <style name="Widget.App.Button.SortAndAll" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:background">@drawable/bg_button_sort_all_m3</item>
-        <item name="android:textColor">#D2D4D4</item>
+        <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">24sp</item>
         <item name="android:singleLine">true</item>
         <item name="android:gravity">center</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:minWidth">48dp</item>
         <item name="android:padding">12dp</item>
+        <item name="android:fontFamily">@font/material_symbols_rounded</item>
     </style>
     <!-- 详细错误信息弹窗按钮样式 - 夜间模式保持白色文本 -->
     <style name="Widget.App.Button.Dialog.ErrorDetail" parent="Widget.MaterialComponents.Button.TextButton.Dialog">

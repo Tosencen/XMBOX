@@ -92,8 +92,9 @@
             android:name=".ui.activity.CollectActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"/>
 
-        <service android:name="com.github.tvbox.osc.service.DLNACastService"
-            android:exported="false"/>
+        <!-- 改进版DLNA投屏服务 - 暂时禁用以解决构建问题 -->
+        <!-- <service android:name="com.github.tvbox.osc.cast.dlna.DLNAService"
+            android:exported="false"/> -->
 
         <receiver android:name=".receiver.SearchReceiver" android:exported="true">
             <intent-filter>
