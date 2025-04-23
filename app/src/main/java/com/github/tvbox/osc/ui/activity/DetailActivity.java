@@ -72,6 +72,7 @@ import com.github.tvbox.osc.util.SearchHelper;
 import com.github.tvbox.osc.util.SubtitleHelper;
 import com.github.tvbox.osc.util.Utils;
 import com.github.tvbox.osc.util.MD3DialogUtils;
+import com.github.tvbox.osc.util.MD3ToastUtils;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -176,7 +177,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         mBinding.ivBack.setOnClickListener(v -> finish());
 
         mBinding.ivPrivateBrowsing.setVisibility(Hawk.get(HawkConfig.PRIVATE_BROWSING, false) ? View.VISIBLE : View.GONE);
-        mBinding.ivPrivateBrowsing.setOnClickListener(view -> ToastUtils.showShort("当前为无痕浏览"));
+        mBinding.ivPrivateBrowsing.setOnClickListener(view -> MD3ToastUtils.showToast("当前为无痕浏览"));
         // 预览播放器控制
         if (showPreview) {
             mBinding.previewPlayer.setVisibility(View.VISIBLE);
@@ -378,13 +379,18 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     public void showCastDialog() {
+        // 显示投屏功能即将上线的提示
+        MD3ToastUtils.showLongToast("投屏功能即将上线，敬请期待！");
 
+        // 原有投屏功能代码注释掉，保留以备后续开发
+        /*
         VodInfo.VodSeries vodSeries = vodInfo.seriesMap.get(vodInfo.playFlag).get(vodInfo.playIndex);
         new XPopup.Builder(this)
                 .maxWidth(ConvertUtils.dp2px(360))
                 .asCustom(new CastListDialog(this, new CastVideo(vodSeries.name
                         , TextUtils.isEmpty(playFragment.getFinalUrl()) ? vodSeries.url : playFragment.getFinalUrl())))
                 .show();
+        */
     }
 
     public void showAllSeriesDialog() {
@@ -1019,7 +1025,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                 );
             }
         } else {
-            ToastUtils.showShort("资源异常,请稍后重试");
+            MD3ToastUtils.showToast("资源异常,请稍后重试");
         }
     }
 
@@ -1218,13 +1224,13 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                 mBinding.tvCollect.setText("加入收藏");
                 // 设置为线框图标
                 favoriteIcon.setTextColor(getResources().getColor(R.color.text_foreground));
-                ToastUtils.showShort("已取消收藏");
+                MD3ToastUtils.showToast("已取消收藏");
             } else {
                 RoomDataManger.insertVodCollect(sourceKey, vodInfo);
                 mBinding.tvCollect.setText("取消收藏");
                 // 设置为填充图标
                 favoriteIcon.setTextColor(getResources().getColor(R.color.md3_primary));
-                ToastUtils.showShort("已加入收藏");
+                MD3ToastUtils.showToast("已加入收藏");
             }
         }
     }
@@ -1264,7 +1270,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                             try {
                                 startActivity(new Intent().setComponent(new ComponentName(pkg, cls)));
                             } catch (Exception e) {
-                                ToastUtils.showShort("未找到应用");
+                                MD3ToastUtils.showToast("未找到应用");
                             }
                         })
                         .show();

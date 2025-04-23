@@ -16,9 +16,12 @@ import android.os.Message;
 import java.lang.ref.WeakReference;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.FrameLayout;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.JsPromptResult;
@@ -46,6 +49,9 @@ import com.blankj.utilcode.util.RegexUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.SpanUtils;
 import com.blankj.utilcode.util.ToastUtils;
+import com.github.tvbox.osc.util.MD3ToastUtils;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.github.catvod.crawler.Spider;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
@@ -344,7 +350,7 @@ public class PlayFragment extends BaseLazyFragment {
 
                 @Override
                 public void showDetail() {
-                    Toast.makeText(activity, "显示详情", Toast.LENGTH_SHORT).show();
+                    MD3ToastUtils.showToast("显示详情");
                 }
             });
         mVideoView.setVideoController(mController);
@@ -511,7 +517,7 @@ public class PlayFragment extends BaseLazyFragment {
         }
 
         if (trackInfo == null) {
-            Toast.makeText(mContext, "没有音轨", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("没有音轨");
             return;
         }
         List<TrackInfoBean> bean = trackInfo.getAudio();
@@ -577,7 +583,7 @@ public class PlayFragment extends BaseLazyFragment {
         }
 
         if (trackInfo == null) {
-            Toast.makeText(mContext, "没有内置字幕", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("没有内置字幕");
             return;
         }
         List<TrackInfoBean> bean = trackInfo.getSubtitle();
@@ -641,36 +647,77 @@ public class PlayFragment extends BaseLazyFragment {
         dialog.show();
     }
 
+    private View playerErrorView;
+    private MaterialCardView playerErrorContainer;
+    private MaterialButton btnSwitchPlayer;
+
     void setTip(String msg, boolean loading, boolean err) {
         if (!isAdded()) return;
-        //影魔
         requireActivity().runOnUiThread(() -> {
+            // 处理视频播放出错的情况
+            if ("视频播放出错".equals(msg)) {
+                if (!retriedSwitchPlayer) {
+                    MD3ToastUtils.showToast("播放出错,正在尝试切换播放器");
+                    retriedSwitchPlayer = true;
+                    mController.mPlayerBtn.performClick();
+                } else {
+                    // 显示M3风格的错误提示
+                    showM3ErrorDialog();
+                    return;
+                }
+            }
+
+            // 其他类型的提示仍使用原来的方式
             mPlayLoadTip.setText(msg);
             mPlayLoadTip.setVisibility(View.VISIBLE);
             mPlayLoading.setVisibility(loading ? View.VISIBLE : View.GONE);
             mPlayLoadErr.setVisibility(err ? View.VISIBLE : View.GONE);
-
-            if ("视频播放出错".equals(msg)){
-                if (!retriedSwitchPlayer){
-                    ToastUtils.showShort("播放出错,正在尝试切换播放器");
-                    retriedSwitchPlayer = true;
-                    mController.mPlayerBtn.performClick();
-                }else {
-                    SpanUtils.with(mPlayLoadTip)
-                            .append("视频播放出错，")
-                            .append("切换播放器")
-                            .setClickSpan(ColorUtils.getColor(R.color.orange), false, view -> {
-                                mController.mPlayerBtn.performClick();
-                            }).create();
-                }
-            }
         });
+    }
+
+    private void showM3ErrorDialog() {
+        // 如果错误视图未初始化，则初始化
+        if (playerErrorView == null) {
+            playerErrorView = LayoutInflater.from(requireContext()).inflate(R.layout.view_player_error_m3, null);
+            playerErrorContainer = playerErrorView.findViewById(R.id.player_error_container);
+            btnSwitchPlayer = playerErrorView.findViewById(R.id.btn_switch_player);
+
+            // 设置切换播放器按钮点击事件
+            btnSwitchPlayer.setOnClickListener(v -> {
+                mController.mPlayerBtn.performClick();
+                hideM3ErrorDialog();
+            });
+
+            // 添加到布局中
+            FrameLayout rootView = (FrameLayout) requireView();
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.CENTER;
+            rootView.addView(playerErrorView, params);
+
+            // 初始时隐藏
+            playerErrorView.setVisibility(View.GONE);
+        }
+
+        // 显示错误视图
+        playerErrorView.setVisibility(View.VISIBLE);
+        mPlayLoadTip.setVisibility(View.GONE);
+        mPlayLoading.setVisibility(View.GONE);
+        mPlayLoadErr.setVisibility(View.GONE);
+    }
+
+    private void hideM3ErrorDialog() {
+        if (playerErrorView != null) {
+            playerErrorView.setVisibility(View.GONE);
+        }
     }
 
     void hideTip() {
         mPlayLoadTip.setVisibility(View.GONE);
         mPlayLoading.setVisibility(View.GONE);
         mPlayLoadErr.setVisibility(View.GONE);
+        hideM3ErrorDialog();
     }
 
     void errorWithRetry(String err, boolean finish) {
@@ -679,7 +726,7 @@ public class PlayFragment extends BaseLazyFragment {
                 @Override
                 public void run() {
                     if (finish) {
-                        Toast.makeText(mContext, err, Toast.LENGTH_SHORT).show();
+                        MD3ToastUtils.showToast(err);
                     } else {
                         setTip(err, false, true);
                     }
@@ -1068,7 +1115,7 @@ public class PlayFragment extends BaseLazyFragment {
         sourceKey = bundle.getString("sourceKey");
         sourceBean = ApiConfig.get().getSource(sourceKey);
         if (sourceBean == null) {
-            ToastUtils.showShort("数据源不存在");
+            MD3ToastUtils.showToast("数据源不存在");
             return;
         }
         initPlayerCfg();
@@ -1207,6 +1254,17 @@ public class PlayFragment extends BaseLazyFragment {
         stopParse();
         Thunder.stop(true);//停止磁力下载
         Jianpian.finish();//停止p2p下载
+
+        // 清理M3错误提示相关资源
+        if (playerErrorView != null) {
+            ViewParent parent = playerErrorView.getParent();
+            if (parent instanceof ViewGroup) {
+                ((ViewGroup) parent).removeView(playerErrorView);
+            }
+            playerErrorView = null;
+            playerErrorContainer = null;
+            btnSwitchPlayer = null;
+        }
     }
 
     private VodInfo mVodInfo;
@@ -1222,7 +1280,7 @@ public class PlayFragment extends BaseLazyFragment {
             hasNext = mVodInfo.playIndex + 1 < mVodInfo.seriesMap.get(mVodInfo.playFlag).size();
         }
         if (!hasNext) {
-            Toast.makeText(requireContext(), "已经是最后一集了!", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("已经是最后一集了!");
             return;
         } else {
             mVodInfo.playIndex++;
@@ -1238,7 +1296,7 @@ public class PlayFragment extends BaseLazyFragment {
             hasPre = mVodInfo.playIndex - 1 >= 0;
         }
         if (!hasPre) {
-            Toast.makeText(requireContext(), "已经是第一集了!", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("已经是第一集了!");
             return;
         }
         mVodInfo.playIndex--;
@@ -1548,7 +1606,7 @@ public class PlayFragment extends BaseLazyFragment {
                             }
                         }
                         if (rs.has("jxFrom")) {
-                            ToastUtils.showShort("解析来自:" + rs.optString("jxFrom"));
+                            MD3ToastUtils.showToast("解析来自:" + rs.optString("jxFrom"));
                         }
                         boolean parseWV = rs.optInt("parse", 0) == 1;
                         if (parseWV) {
@@ -1620,7 +1678,7 @@ public class PlayFragment extends BaseLazyFragment {
                                 }
                             }
                             if (rs.has("jxFrom")) {
-                                ToastUtils.showShort("解析来自:" + rs.optString("jxFrom"));
+                                MD3ToastUtils.showToast("解析来自:" + rs.optString("jxFrom"));
                             }
                             playUrl(rs.optString("url", ""), headers);
                         }

@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ToastUtils;
+import com.github.tvbox.osc.util.MD3ToastUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
@@ -785,7 +786,7 @@ public class LiveActivity extends BaseActivity {
     private void initLiveChannelList() {
         List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
         if (list.isEmpty()) {
-            Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("频道列表为空");
             finish();
             return;
         }
@@ -806,7 +807,7 @@ public class LiveActivity extends BaseActivity {
             Uri parsedUrl = Uri.parse(url);
             url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
         } catch (Throwable th) {
-            Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("频道列表为空");
             finish();
             return;
         }
@@ -828,7 +829,7 @@ public class LiveActivity extends BaseActivity {
                 ApiConfig.get().loadLives(livesArray);
                 List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
                 if (list.isEmpty()) {
-                    Toast.makeText(App.getInstance(), "频道列表为空", Toast.LENGTH_SHORT).show();
+                    MD3ToastUtils.showToast("频道列表为空");
                     finish();
                     return;
                 }
@@ -1177,7 +1178,7 @@ public class LiveActivity extends BaseActivity {
      */
     private void showSettingDialog(boolean fullScreenStyle) {
         if (!isCurrentLiveChannelValid()){
-            ToastUtils.showShort("当前频道未加载");
+            MD3ToastUtils.showToast("当前频道未加载");
             return;
         }
         if (fullScreenStyle){

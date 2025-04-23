@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
 import com.blankj.utilcode.util.ToastUtils;
+import com.github.tvbox.osc.util.MD3ToastUtils;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.bean.IJKCode;
@@ -694,7 +695,7 @@ public class VodController extends BaseController {
             speed_old = speed;
             mControlWrapper.setSpeed(speed);
         } catch (Exception e) {
-            ToastUtils.showShort("倍速参数异常");
+            MD3ToastUtils.showToast("倍速参数异常");
             e.printStackTrace();
         }
     }
@@ -1173,10 +1174,10 @@ public class VodController extends BaseController {
     public void openSubtitle(boolean open) {
         if (open) {
             mSubtitleView.setVisibility(VISIBLE);
-            Toast.makeText(getContext(), "字幕已开启", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("字幕已开启");
         } else {
             mSubtitleView.setVisibility(View.GONE);
-            Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();
+            MD3ToastUtils.showToast("字幕已关闭");
         }
         hideBottom();
     }
