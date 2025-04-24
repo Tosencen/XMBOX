@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_item_select_md3_no_ripple"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="12dp">
+
+    <com.google.android.material.radiobutton.MaterialRadioButton
+        android:id="@+id/tvName"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:checked="false"
+        android:focusable="false"
+        android:minHeight="48dp"
+        android:button="@drawable/button_radio_m3"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"/>
+
+    <TextView
+        android:id="@+id/tvText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_toRightOf="@+id/tvName"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="4dp"
+        android:singleLine="true"
+        android:textSize="16sp"
+        android:ellipsize="end"
+        android:textColor="?attr/colorOnSurface"
+        tools:text="Text" />
+</RelativeLayout>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.activity.SubscriptionActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+    <com.hjq.bar.TitleBar
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="订阅管理"
+        android:background="?attr/colorSurface"
+        app:leftIcon="@null"
+        app:titleColor="?attr/colorOnSurface"
+        app:leftTitleColor="?attr/colorOnSurface"
+        app:lineVisible="false"
+        >
+
+        <ImageView
+            android:id="@+id/iv_use_tip"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_info_m3"
+            android:layout_gravity="end|center_vertical"
+            android:paddingLeft="20dp"
+            android:layout_marginRight="16dp"
+            app:tint="?attr/colorOnSurface"/>
+    </com.hjq.bar.TitleBar>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:background="@drawable/bg_large_round_transparent"
+        android:layout_margin="10dp"
+        android:id="@+id/rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:listitem="@layout/item_subscription"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="116dp"
+        android:contentDescription="添加订阅"
+        app:srcCompat="@drawable/ic_add_m3"
+        app:tint="@color/fab_icon_color"
+        app:backgroundTint="#006A6A"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

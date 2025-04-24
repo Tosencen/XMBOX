@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 夜间模式下悬浮按钮图标颜色 - 使用深色 -->
+    <color name="fab_icon_color">#191C1C</color>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3 Surface Container 颜色 - 夜间模式 -->
+    <color name="md3_surface_container_lowest">#0F1212</color>
+    <color name="md3_surface_container_low">#191C1C</color>
+    <color name="md3_surface_container">#1D2020</color>
+    <color name="md3_surface_container_high">#232626</color>
+    <color name="md3_surface_container_highest">#292C2C</color>
+</resources>

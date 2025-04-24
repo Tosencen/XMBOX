@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <com.google.android.material.radiobutton.MaterialRadioButton
+        android:id="@+id/cb"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:checked="false"
+        android:focusable="false"
+        android:minHeight="48dp"
+        android:layout_centerVertical="true"
+        android:button="@drawable/button_radio_m3"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/cb"
+        android:layout_toLeftOf="@+id/iv_pushpin"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textSize="16sp"
+            android:ellipsize="end"
+            android:marqueeRepeatLimit="marquee_forever"
+            tools:text="小账订阅小账订阅小账订阅"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/tv_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:layout_marginTop="4dp"
+            tools:text="https://"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_del"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="@dimen/dp_5"
+        android:paddingHorizontal="6dp"
+        android:src="@drawable/ic_delete_m3"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        app:tint="?attr/colorError"/>
+
+    <ImageView
+        android:id="@+id/iv_pushpin"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="@dimen/dp_5"
+        android:paddingHorizontal="6dp"
+        android:src="@drawable/ic_star_m3"
+        android:layout_toLeftOf="@+id/iv_del"
+        android:layout_centerVertical="true"
+        app:tint="?attr/colorPrimary"
+        android:visibility="gone"
+        tools:visibility="visible"/>
+
+</RelativeLayout>

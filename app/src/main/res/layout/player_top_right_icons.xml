@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="end">
+
+    <TextView
+        android:id="@+id/pip"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:text="\uE8AA"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:fontFamily="@font/material_symbols_rounded" />
+
+    <TextView
+        android:id="@+id/cast"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:text="\uE307"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:fontFamily="@font/material_symbols_rounded" />
+
+    <TextView
+        android:id="@+id/setting"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:gravity="center"
+        android:text="\uE8B8"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:fontFamily="@font/material_symbols_rounded" />
+
+</LinearLayout>

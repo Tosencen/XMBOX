@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 导航图标 -->
+    <string name="ms_home">\ue88a</string>
+    <string name="ms_search">\ue8b6</string>
+    <string name="ms_settings">\ue8b8</string>
+    <string name="ms_person">\ue7fd</string>
+    <string name="ms_favorite">\ue87d</string>
+    <string name="ms_history">\ue889</string>
+
+    <!-- 媒体控制图标 -->
+    <string name="ms_play_arrow">\ue037</string>
+    <string name="ms_pause">\ue034</string>
+    <string name="ms_stop">\ue047</string>
+    <string name="ms_skip_next">\ue044</string>
+    <string name="ms_skip_previous">\ue045</string>
+    <string name="ms_fast_forward">\ue01f</string>
+    <string name="ms_fast_rewind">\ue020</string>
+    <string name="ms_volume_up">\ue050</string>
+    <string name="ms_volume_down">\ue04d</string>
+    <string name="ms_volume_off">\ue04f</string>
+    <string name="ms_closed_caption">\ue01c</string>
+
+    <!-- 操作图标 -->
+    <string name="ms_add">\ue145</string>
+    <string name="ms_remove">\ue15b</string>
+    <string name="ms_delete">\ue872</string>
+    <string name="ms_edit">\ue3c9</string>
+    <string name="ms_share">\ue80d</string>
+    <string name="ms_download">\ue2c0</string>
+    <string name="ms_upload">\ue2c6</string>
+    <string name="ms_refresh">\ue5d5</string>
+    <string name="ms_sync">\ue627</string>
+    <string name="ms_close">\ue5cd</string>
+    <string name="ms_check">\ue876</string>
+    <string name="ms_info">\ue88e</string>
+    <string name="ms_warning">\ue002</string>
+    <string name="ms_error">\ue000</string>
+
+    <!-- 界面元素图标 -->
+    <string name="ms_menu">\ue5d2</string>
+    <string name="ms_more_vert">\ue5d4</string>
+    <string name="ms_more_horiz">\ue5d3</string>
+    <string name="ms_arrow_back">\ue5c4</string>
+    <string name="ms_arrow_forward">\ue5c8</string>
+    <string name="ms_arrow_up">\ue5c7</string>
+    <string name="ms_arrow_down">\ue5c5</string>
+    <string name="ms_expand_less">\ue5ce</string>
+    <string name="ms_expand_more">\ue5cf</string>
+    <string name="ms_filter_list">\ue152</string>
+    <string name="ms_sort">\ue164</string>
+    <string name="ms_swap_vert">\ue8d8</string>
+    <string name="ms_swap_horiz">\ue8d9</string>
+    <string name="ms_compare_arrows">\ue915</string>
+    <string name="ms_grid_view">\ue9b0</string>
+    <string name="ms_list">\ue896</string>
+
+    <!-- 特殊功能图标 -->
+    <string name="ms_picture_in_picture">\ue8aa</string>
+    <string name="ms_cast">\ue307</string>
+    <string name="ms_fullscreen">\ue5d0</string>
+    <string name="ms_fullscreen_exit">\ue5d1</string>
+    <string name="ms_subtitles">\ue048</string>
+    <string name="ms_playlist_play">\ue05f</string>
+    <string name="ms_playlist_add">\ue03b</string>
+    <string name="ms_folder">\ue2c7</string>
+    <string name="ms_file">\ue24d</string>
+    <string name="ms_cloud">\ue2bd</string>
+    <string name="ms_cloud_download">\ue2c0</string>
+    <string name="ms_lock">\ue897</string>
+    <string name="ms_lock_open">\ue898</string>
+</resources>

@@ -1,0 +1,19 @@
+    public void showCastDialog() {
+        if (vodInfo == null || playFragment == null) {
+            MD3ToastUtils.showLongToast("暂无可投屏内容");
+            return;
+        }
+
+        VodInfo.VodSeries vodSeries = vodInfo.seriesMap.get(vodInfo.playFlag).get(vodInfo.playIndex);
+        String url = TextUtils.isEmpty(playFragment.getFinalUrl()) ? vodSeries.url : playFragment.getFinalUrl();
+        String title = mVideo.name + " " + vodSeries.name;
+
+        // 创建投屏视频信息
+        CastVideo castVideo = new CastVideo(title, url);
+
+        // 显示投屏设备选择对话框
+        new XPopup.Builder(this)
+                .maxWidth(ConvertUtils.dp2px(360))
+                .asCustom(new CastDeviceDialog(this, castVideo))
+                .show();
+    }
