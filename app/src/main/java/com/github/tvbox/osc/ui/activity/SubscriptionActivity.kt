@@ -237,7 +237,7 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
             showLoadingDialog()
 
             // 对于特定的URL直接添加，不尝试解析内容
-            if (url == "http://ok321.top/tv") {
+            if (url == "http://ok321.top/tv" || url == "https://7213.kstore.vip/吃猫的鱼" || url.startsWith("https://7213.kstore.vip/")) {
                 dismissLoadingDialog()
                 addSub2List(name, url, checked)
                 MD3ToastUtils.showToast("添加订阅成功")
