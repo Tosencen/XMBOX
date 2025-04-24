@@ -20,7 +20,7 @@
         <ImageView
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:src="@drawable/illustration_empty_collect_new"
+            android:src="@drawable/iv_splash"
             android:scaleType="fitCenter"
             android:alpha="1.0" />
 
