@@ -17,7 +17,7 @@ import com.github.tvbox.osc.constant.IntentKey
 import com.github.tvbox.osc.databinding.ActivitySettingBinding
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter.SelectDialogInterface
-import com.github.tvbox.osc.ui.activity.DnsTestActivity
+
 import com.github.tvbox.osc.ui.dialog.BackupDialog
 import com.hjq.bar.OnTitleBarListener
 import com.hjq.bar.TitleBar
@@ -80,14 +80,13 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
 
         // 应用Material Symbols字体到所有箭头图标
         applyMaterialSymbolsToArrows()
+
+        // 应用Material Symbols字体到所有图标
+        applyMaterialSymbolsToIcons()
+
         mBinding.tvMediaCodec.text = Hawk.get(HawkConfig.IJK_CODEC, "")
 
-        // DNS安全测试入口
-        mBinding.llDnsTest.setOnClickListener { v: View? ->
-            FastClickCheckUtil.check(v)
-            val intent = android.content.Intent(this, DnsTestActivity::class.java)
-            startActivity(intent)
-        }
+
 
         // 确保使用有效的索引访问 dnsHttpsList
         val dnsIndex = Hawk.get(HawkConfig.DOH_URL, 0)
@@ -107,12 +106,23 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
         mBinding.tvRenderType.text =
             PlayerHelper.getRenderName(Hawk.get(HawkConfig.PLAY_RENDER, 0))
 
-        // 无痕浏览开关文字形式
-        updatePrivateBrowsingText(Hawk.get(HawkConfig.PRIVATE_BROWSING, false))
-        mBinding.llPrivateBrowsing.setOnClickListener { view: View? ->
-            val newConfig = !Hawk.get(HawkConfig.PRIVATE_BROWSING, false)
-            updatePrivateBrowsingText(newConfig)
-            Hawk.put(HawkConfig.PRIVATE_BROWSING, newConfig)
+        // 无痕浏览开关按钮形式
+        val privateBrowsingSwitch = mBinding.switchPrivateBrowsing
+        privateBrowsingSwitch.isChecked = Hawk.get(HawkConfig.PRIVATE_BROWSING, false)
+
+        // 设置开关按钮的点击事件
+        privateBrowsingSwitch.setOnCheckedChangeListener { _, isChecked ->
+            Hawk.put(HawkConfig.PRIVATE_BROWSING, isChecked)
+            if (isChecked) {
+                MD3ToastUtils.showToast("已开启无痕浏览")
+            } else {
+                MD3ToastUtils.showToast("已关闭无痕浏览")
+            }
+        }
+
+        // 设置整个行的点击事件，点击时切换开关状态
+        mBinding.llPrivateBrowsing.setOnClickListener {
+            privateBrowsingSwitch.isChecked = !privateBrowsingSwitch.isChecked
         }
 
 
@@ -472,21 +482,42 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
         })
 
         // 广告过滤开关
-        updateVideoPurifyText(Hawk.get(HawkConfig.VIDEO_PURIFY, true))
-        // toggle purify video -------------------------------------
+        val videoPurifySwitch = mBinding.switchVideoPurify
+        videoPurifySwitch.isChecked = Hawk.get(HawkConfig.VIDEO_PURIFY, true)
+
+        // 设置开关按钮的点击事件
+        videoPurifySwitch.setOnCheckedChangeListener { _, isChecked ->
+            Hawk.put(HawkConfig.VIDEO_PURIFY, isChecked)
+            if (isChecked) {
+                MD3ToastUtils.showToast("已开启广告过滤")
+            } else {
+                MD3ToastUtils.showToast("已关闭广告过滤")
+            }
+        }
+
+        // 设置整个行的点击事件，点击时切换开关状态
         mBinding.llVideoPurify.setOnClickListener { v: View? ->
             FastClickCheckUtil.check(v)
-            val newConfig = !Hawk.get(HawkConfig.VIDEO_PURIFY, true)
-            updateVideoPurifyText(newConfig)
-            Hawk.put(HawkConfig.VIDEO_PURIFY, newConfig)
+            videoPurifySwitch.isChecked = !videoPurifySwitch.isChecked
         }
         // IJK缓存开关
-        updateIjkCachePlayText(Hawk.get(HawkConfig.IJK_CACHE_PLAY, false))
+        val ijkCacheSwitch = mBinding.switchIjkCachePlay
+        ijkCacheSwitch.isChecked = Hawk.get(HawkConfig.IJK_CACHE_PLAY, false)
+
+        // 设置开关按钮的点击事件
+        ijkCacheSwitch.setOnCheckedChangeListener { _, isChecked ->
+            Hawk.put(HawkConfig.IJK_CACHE_PLAY, isChecked)
+            if (isChecked) {
+                MD3ToastUtils.showToast("已开启IJK缓存")
+            } else {
+                MD3ToastUtils.showToast("已关闭IJK缓存")
+            }
+        }
+
+        // 设置整个行的点击事件，点击时切换开关状态
         mBinding.llIjkCachePlay.setOnClickListener { v: View? ->
             FastClickCheckUtil.check(v)
-            val newConfig = !Hawk.get(HawkConfig.IJK_CACHE_PLAY, false)
-            updateIjkCachePlayText(newConfig)
-            Hawk.put(HawkConfig.IJK_CACHE_PLAY, newConfig)
+            ijkCacheSwitch.isChecked = !ijkCacheSwitch.isChecked
         }
     }
 
@@ -600,6 +631,124 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
     }
 
     /**
+     * 应用Material Symbols字体到所有图标
+     */
+    private fun applyMaterialSymbolsToIcons() {
+        try {
+            // 应用字体到主页内容图标
+            val homeIcon = findViewById<TextView>(R.id.icon_home)
+            if (homeIcon != null) {
+                MaterialSymbolsLoader.apply(homeIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to home icon")
+            }
+
+            // 应用字体到主题颜色图标
+            val paletteIcon = findViewById<TextView>(R.id.icon_palette)
+            if (paletteIcon != null) {
+                MaterialSymbolsLoader.apply(paletteIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to palette icon")
+            }
+
+            // 应用字体到无痕浏览图标
+            val visibilityIcon = findViewById<TextView>(R.id.icon_visibility)
+            if (visibilityIcon != null) {
+                MaterialSymbolsLoader.apply(visibilityIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to visibility icon")
+            }
+
+
+
+            // 应用字体到播放器图标
+            val playIcon = findViewById<TextView>(R.id.icon_play)
+            if (playIcon != null) {
+                MaterialSymbolsLoader.apply(playIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to play icon")
+            }
+
+            // 应用字体到广告过滤图标
+            val blockIcon = findViewById<TextView>(R.id.icon_block)
+            if (blockIcon != null) {
+                MaterialSymbolsLoader.apply(blockIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to block icon")
+            }
+
+            // 应用字体到长按倍速图标
+            val speedIcon = findViewById<TextView>(R.id.icon_speed)
+            if (speedIcon != null) {
+                MaterialSymbolsLoader.apply(speedIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to speed icon")
+            }
+
+            // 应用字体到后台播放图标
+            val pipIcon = findViewById<TextView>(R.id.icon_pip)
+            if (pipIcon != null) {
+                MaterialSymbolsLoader.apply(pipIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to pip icon")
+            }
+
+            // 应用字体到IJK解码方式图标
+            val codecIcon = findViewById<TextView>(R.id.icon_codec)
+            if (codecIcon != null) {
+                MaterialSymbolsLoader.apply(codecIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to codec icon")
+            }
+
+            // 应用字体到渲染方式图标
+            val renderIcon = findViewById<TextView>(R.id.icon_render)
+            if (renderIcon != null) {
+                MaterialSymbolsLoader.apply(renderIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to render icon")
+            }
+
+            // 应用字体到画面缩放图标
+            val scaleIcon = findViewById<TextView>(R.id.icon_scale)
+            if (scaleIcon != null) {
+                MaterialSymbolsLoader.apply(scaleIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to scale icon")
+            }
+
+            // 应用字体到IJK缓存图标
+            val cacheIcon = findViewById<TextView>(R.id.icon_cache)
+            if (cacheIcon != null) {
+                MaterialSymbolsLoader.apply(cacheIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to cache icon")
+            }
+
+            // 应用字体到数据备份还原图标
+            val backupIcon = findViewById<TextView>(R.id.icon_backup)
+            if (backupIcon != null) {
+                MaterialSymbolsLoader.apply(backupIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to backup icon")
+            }
+
+            // 应用字体到安全DNS图标
+            val dnsIcon = findViewById<TextView>(R.id.icon_dns)
+            if (dnsIcon != null) {
+                MaterialSymbolsLoader.apply(dnsIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to dns icon")
+            }
+
+            // 应用字体到历史记录图标
+            val historyIcon = findViewById<TextView>(R.id.icon_history)
+            if (historyIcon != null) {
+                MaterialSymbolsLoader.apply(historyIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to history icon")
+            }
+
+            // 应用字体到缓存大小图标
+            val cacheSizeIcon = findViewById<TextView>(R.id.icon_cache_size)
+            if (cacheSizeIcon != null) {
+                MaterialSymbolsLoader.apply(cacheSizeIcon)
+                android.util.Log.d("SettingActivity", "Applied Material Symbols to cache size icon")
+            }
+
+            android.util.Log.d("SettingActivity", "Applied Material Symbols to all icons")
+        } catch (e: Exception) {
+            android.util.Log.e("SettingActivity", "Error applying Material Symbols to icons", e)
+        }
+    }
+
+    /**
      * 递归查找所有带有箭头图标的TextView
      */
     private fun findArrowTextViews(view: View, arrowViews: ArrayList<TextView>) {
@@ -612,51 +761,9 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
         }
     }
 
-    /**
-     * 更新无痕浏览文字开关状态
-     */
-    private fun updatePrivateBrowsingText(isEnabled: Boolean) {
-        val textView = mBinding.switchPrivateBrowsing
-        if (isEnabled) {
-            textView.text = "开"
-            // 使用主题色
-            textView.setTextColor(getColor(R.color.md3_primary))
-        } else {
-            textView.text = "关"
-            // 使用普通文本颜色
-            textView.setTextColor(getColor(R.color.md3_on_surface_variant))
-        }
-    }
 
-    /**
-     * 更新广告过滤文字开关状态
-     */
-    private fun updateVideoPurifyText(isEnabled: Boolean) {
-        val textView = mBinding.switchVideoPurify
-        if (isEnabled) {
-            textView.text = "开"
-            // 使用主题色
-            textView.setTextColor(getColor(R.color.md3_primary))
-        } else {
-            textView.text = "关"
-            // 使用普通文本颜色
-            textView.setTextColor(getColor(R.color.md3_on_surface_variant))
-        }
-    }
 
-    /**
-     * 更新IJK缓存文字开关状态
-     */
-    private fun updateIjkCachePlayText(isEnabled: Boolean) {
-        val textView = mBinding.switchIjkCachePlay
-        if (isEnabled) {
-            textView.text = "开"
-            // 使用主题色
-            textView.setTextColor(getColor(R.color.md3_primary))
-        } else {
-            textView.text = "关"
-            // 使用普通文本颜色
-            textView.setTextColor(getColor(R.color.md3_on_surface_variant))
-        }
-    }
+
+
+
 }
