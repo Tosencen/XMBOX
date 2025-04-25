@@ -782,9 +782,11 @@ public class VodController extends BaseController {
     }
 
     public void setTitle(String playTitleInfo) {
-        // 隐藏标题文本
-        if (mPlayTitle1 != null) {
-            mPlayTitle1.setVisibility(GONE);
+        // 显示标题文本
+        if (mPlayTitle1 != null && !TextUtils.isEmpty(playTitleInfo)) {
+            mPlayTitle1.setText(playTitleInfo);
+            mPlayTitle1.setVisibility(VISIBLE);
+            mPlayTitle1.setSelected(true); // 启用跑马灯效果
         }
         // 确保左上角区域可见，作为返回按钮
         mTopRoot1.setVisibility(VISIBLE);
@@ -966,6 +968,10 @@ public class VodController extends BaseController {
                 startProgress();
                 mIvPlayStatus.setText(MaterialSymbols.PAUSE);
                 mPlayTitle1.setSelected(true); // 启用跑马灯效果
+
+                // 视频开始播放后，延迟3秒自动隐藏控制栏
+                myHandle.removeCallbacks(myRunnable);
+                myHandle.postDelayed(myRunnable, 3000);
                 break;
             case VideoView.STATE_PAUSED:
                 mIvPlayStatus.setText(MaterialSymbols.PLAY_ARROW);
@@ -978,6 +984,11 @@ public class VodController extends BaseController {
                 hideLiveAboutBtn();
                 listener.prepared();
                 mPlayTitle1.setSelected(true); // 启用跑马灯效果
+
+                // 视频准备好后，显示控制栏，并设置延迟3秒后自动隐藏
+                showBottom();
+                myHandle.removeCallbacks(myRunnable);
+                myHandle.postDelayed(myRunnable, 3000);
                 break;
             case VideoView.STATE_BUFFERED:
                 mPlayLoadNetSpeed.setVisibility(GONE);

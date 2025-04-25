@@ -3,6 +3,8 @@ package com.github.tvbox.osc.util;
 import android.util.Log;
 
 import com.github.tvbox.osc.event.LogEvent;
+import com.orhanobut.hawk.Hawk;
+import com.github.tvbox.osc.util.HawkConfig;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -13,6 +15,14 @@ import org.greenrobot.eventbus.EventBus;
  */
 public class LOG {
     private static String TAG = "TVBox";
+
+    /**
+     * 检查是否处于调试模式
+     * @return 是否处于调试模式
+     */
+    public static boolean isDebug() {
+        return Hawk.get(HawkConfig.DEBUG_OPEN, false);
+    }
 
     public static void e(Throwable t) {
         Log.e(TAG, t.getMessage(), t);
@@ -52,5 +62,28 @@ public class LOG {
     public static void w(String tag, String msg) {
         Log.w(tag, msg);
         EventBus.getDefault().post(new LogEvent(String.format("W/%s ==> ", tag) + msg));
+    }
+
+    /**
+     * 调试日志，仅在调试模式下输出
+     * @param msg 日志信息
+     */
+    public static void d(String msg) {
+        if (isDebug()) {
+            Log.d(TAG, msg);
+            EventBus.getDefault().post(new LogEvent(String.format("D/%s ==> ", TAG) + msg));
+        }
+    }
+
+    /**
+     * 调试日志，仅在调试模式下输出
+     * @param tag 标签
+     * @param msg 日志信息
+     */
+    public static void d(String tag, String msg) {
+        if (isDebug()) {
+            Log.d(tag, msg);
+            EventBus.getDefault().post(new LogEvent(String.format("D/%s ==> ", tag) + msg));
+        }
     }
 }

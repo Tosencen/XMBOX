@@ -55,7 +55,7 @@
 
         <!-- Material Design 3 Switch 样式 -->
         <item name="switchStyle">@style/Widget.App.Switch.M3</item>
-        <item name="materialSwitchStyle">@style/Widget.App.SwitchMaterial.M3</item>
+        <item name="materialSwitchStyle">@style/Widget.App.SwitchMaterial.M3.Fixed</item>
     </style>
 
     <style name="SplashTheme" parent="AppTheme">
@@ -388,4 +388,6 @@
         <item name="android:textSize">24sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
+
+
 </resources>

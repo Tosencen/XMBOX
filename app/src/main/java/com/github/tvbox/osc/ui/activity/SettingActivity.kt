@@ -89,13 +89,13 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
 
 
         // 确保使用有效的索引访问 dnsHttpsList
-        val dnsIndex = Hawk.get(HawkConfig.DOH_URL, 0)
+        val dnsIndex = Hawk.get(HawkConfig.DOH_URL, 1) // 默认值改为1（开启阿里DNS）
         val safeDnsIndex = if (dnsIndex >= 0 && dnsIndex < OkGoHelper.dnsHttpsList.size) {
             dnsIndex
         } else {
-            // 如果索引无效，重置为0（关闭）
-            Hawk.put(HawkConfig.DOH_URL, 0)
-            0
+            // 如果索引无效，重置为1（阿里DNS）
+            Hawk.put(HawkConfig.DOH_URL, 1)
+            1
         }
         mBinding.tvDns.text = OkGoHelper.dnsHttpsList[safeDnsIndex]
         mBinding.tvHomeRec.text = getHomeRecName(Hawk.get(HawkConfig.HOME_REC, 0))

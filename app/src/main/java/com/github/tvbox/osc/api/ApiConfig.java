@@ -2,6 +2,7 @@ package com.github.tvbox.osc.api;
 
 import android.app.Activity;
 import android.net.Uri;
+import com.github.tvbox.osc.util.LOG;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -20,6 +21,7 @@ import com.github.tvbox.osc.util.AdBlocker;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.MD5;
+import com.github.tvbox.osc.util.UrlUtil;
 import com.github.tvbox.osc.util.VideoParseRuler;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -134,12 +136,16 @@ public class ApiConfig {
             return;
         }
         File cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/" + MD5.encode(apiUrl));
-        if (useCache && cache.exists()) {
+
+        // 使用CacheManager检查缓存是否有效
+        if (useCache && (cache.exists() && com.github.tvbox.osc.util.CacheManager.isConfigCacheValid(apiUrl, cache))) {
             try {
+                LOG.i("ApiConfig", "使用有效的配置缓存: " + apiUrl);
                 parseJson(apiUrl, cache);
                 callback.success();
                 return;
             } catch (Throwable th) {
+                LOG.e("ApiConfig", "解析缓存配置失败: " + th.getMessage());
                 th.printStackTrace();
             }
         }
@@ -164,7 +170,7 @@ public class ApiConfig {
         String configKey = TempKey;
 
         // 为特定URL添加特殊处理
-        if (apiUrl.equals("http://ok321.top/tv") || apiUrl.equals("https://7213.kstore.vip/吃猫的鱼") || apiUrl.startsWith("https://7213.kstore.vip/")) {
+        if (apiUrl.equals("http://ok321.top/tv") || apiUrl.equals("https://7213.kstore.vip/吃猫的鱼") || apiUrl.startsWith("https://7213.kstore.vip/") || apiUrl.equals("http://www.饭太硬.com/tv")) {
             // 使用预定义的JSON数据
             String json = "{\"sites\":[{\"key\":\"csp_Kunyu77\",\"name\":\"酷云七七\",\"type\":3,\"api\":\"csp_Kunyu77\",\"searchable\":1,\"quickSearch\":1,\"filterable\":1},{\"key\":\"csp_Lib\",\"name\":\"LIBVIO\",\"type\":3,\"api\":\"csp_Libvio\",\"searchable\":1,\"quickSearch\":1,\"filterable\":1,\"ext\":\"https://tv.libvio.cc/\"}],\"lives\":[{\"group\":\"redirect\",\"channels\":[{\"name\":\"live\",\"urls\":[\"proxy://do=live&type=txt&ext=aHR0cDovL29rMzIxLnRvcC90dg==\"]}]}],\"parses\":[{\"name\":\"解析聚合\",\"type\":3,\"url\":\"Demo\"},{\"name\":\"Json并发\",\"type\":2,\"url\":\"Parallel\"},{\"name\":\"Json轮询\",\"type\":2,\"url\":\"Sequence\"}],\"flags\":[\"youku\",\"qq\",\"iqiyi\",\"qiyi\",\"letv\",\"sohu\",\"tudou\",\"pptv\",\"mgtv\",\"wasu\",\"bilibili\",\"renrenmi\"],\"ijk\":[{\"group\":\"软解码\",\"options\":[{\"category\":4,\"name\":\"opensles\",\"value\":\"0\"},{\"category\":4,\"name\":\"overlay-format\",\"value\":\"842225234\"},{\"category\":4,\"name\":\"framedrop\",\"value\":\"1\"},{\"category\":4,\"name\":\"soundtouch\",\"value\":\"1\"},{\"category\":4,\"name\":\"start-on-prepared\",\"value\":\"1\"},{\"category\":1,\"name\":\"http-detect-range-support\",\"value\":\"0\"},{\"category\":1,\"name\":\"fflags\",\"value\":\"fastseek\"},{\"category\":2,\"name\":\"skip_loop_filter\",\"value\":\"48\"},{\"category\":4,\"name\":\"reconnect\",\"value\":\"1\"},{\"category\":4,\"name\":\"enable-accurate-seek\",\"value\":\"0\"},{\"category\":4,\"name\":\"mediacodec\",\"value\":\"0\"},{\"category\":4,\"name\":\"mediacodec-auto-rotate\",\"value\":\"0\"},{\"category\":4,\"name\":\"mediacodec-handle-resolution-change\",\"value\":\"0\"},{\"category\":4,\"name\":\"mediacodec-hevc\",\"value\":\"0\"},{\"category\":1,\"name\":\"dns_cache_timeout\",\"value\":\"600000000\"}]},{\"group\":\"硬解码\",\"options\":[{\"category\":4,\"name\":\"opensles\",\"value\":\"0\"},{\"category\":4,\"name\":\"overlay-format\",\"value\":\"842225234\"},{\"category\":4,\"name\":\"framedrop\",\"value\":\"1\"},{\"category\":4,\"name\":\"soundtouch\",\"value\":\"1\"},{\"category\":4,\"name\":\"start-on-prepared\",\"value\":\"1\"},{\"category\":1,\"name\":\"http-detect-range-support\",\"value\":\"0\"},{\"category\":1,\"name\":\"fflags\",\"value\":\"fastseek\"},{\"category\":2,\"name\":\"skip_loop_filter\",\"value\":\"48\"},{\"category\":4,\"name\":\"reconnect\",\"value\":\"1\"},{\"category\":4,\"name\":\"enable-accurate-seek\",\"value\":\"0\"},{\"category\":4,\"name\":\"mediacodec\",\"value\":\"1\"},{\"category\":4,\"name\":\"mediacodec-auto-rotate\",\"value\":\"1\"},{\"category\":4,\"name\":\"mediacodec-handle-resolution-change\",\"value\":\"1\"},{\"category\":4,\"name\":\"mediacodec-hevc\",\"value\":\"1\"},{\"category\":1,\"name\":\"dns_cache_timeout\",\"value\":\"600000000\"}]}],\"ads\":[\"mimg.0c1q0l.cn\",\"www.googletagmanager.com\",\"www.google-analytics.com\",\"mc.usihnbcq.cn\",\"mg.g1mm3d.cn\",\"mscs.svaeuzh.cn\",\"cnzz.hhttm.top\",\"tp.vinuxhome.com\",\"cnzz.mmstat.com\",\"www.baihuillq.com\",\"s23.cnzz.com\",\"z3.cnzz.com\",\"c.cnzz.com\",\"stj.v1vo.top\",\"z12.cnzz.com\",\"img.mosflower.cn\",\"tips.gamevvip.com\",\"ehwe.yhdtns.com\",\"xdn.cqqc3.com\",\"www.jixunkyy.cn\",\"sp.chemacid.cn\",\"hm.baidu.com\",\"s9.cnzz.com\",\"z6.cnzz.com\",\"um.cavuc.com\",\"mav.mavuz.com\",\"wofwk.aoidf3.com\",\"z5.cnzz.com\",\"xc.hubeijieshikj.cn\",\"tj.tianwenhu.com\",\"xg.gars57.cn\",\"k.jinxiuzhilv.com\",\"cdn.bootcss.com\",\"ppl.xunzhuo123.com\",\"xomk.jiangjunmh.top\",\"img.xunzhuo123.com\",\"z1.cnzz.com\",\"s13.cnzz.com\",\"xg.huataisangao.cn\",\"z7.cnzz.com\",\"xg.huataisangao.cn\",\"z2.cnzz.com\",\"s96.cnzz.com\",\"q11.cnzz.com\",\"thy.dacedsfa.cn\",\"xg.whsbpw.cn\",\"s19.cnzz.com\",\"z8.cnzz.com\",\"s4.cnzz.com\",\"f5w.as12df.top\",\"ae01.alicdn.com\",\"www.92424.cn\",\"k.wudejia.com\",\"vivovip.mmszxc.top\",\"qiu.xixiqiu.com\",\"cdnjs.hnfenxun.com\",\"cms.qdwght.com\"]}";
             try {
@@ -191,7 +197,9 @@ public class ApiConfig {
         }
 
         // 默认处理方式
-        OkGo.<String>get(configUrl)
+        // 处理URL，包括特殊URL映射和Punycode转换
+        String encodedConfigUrl = UrlUtil.processUrl(configUrl);
+        OkGo.<String>get(encodedConfigUrl)
             .headers("User-Agent", userAgent)
             .headers("Accept", requestAccept)
             .execute(new AbsCallback<String>() {
@@ -210,7 +218,12 @@ public class ApiConfig {
                                 fos.write(json.getBytes("UTF-8"));
                                 fos.flush();
                                 fos.close();
+
+                                // 更新缓存有效期
+                                com.github.tvbox.osc.util.CacheManager.updateConfigCacheValidity(apiUrl);
+                                LOG.i("ApiConfig", "更新配置缓存有效期: " + apiUrl);
                             } catch (Throwable th) {
+                                LOG.e("ApiConfig", "保存配置缓存失败: " + th.getMessage());
                                 th.printStackTrace();
                             }
                             callback.success();
@@ -260,11 +273,14 @@ public class ApiConfig {
         String md5 = urls.length > 1 ? urls[1].trim() : "";
         File cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/csp.jar");
 
-        if (!md5.isEmpty() || useCache) {
-            if (cache.exists() && (useCache || MD5.getFileMd5(cache).equalsIgnoreCase(md5))) {
+        // 使用CacheManager检查JAR缓存是否有效
+        if (useCache || !md5.isEmpty()) {
+            if (cache.exists() && (com.github.tvbox.osc.util.CacheManager.isJarCacheValid(jarUrl, md5, cache))) {
+                LOG.i("ApiConfig", "使用有效的JAR缓存: " + jarUrl);
                 if (jarLoader.load(cache.getAbsolutePath())) {
                     callback.success();
                 } else {
+                    LOG.e("ApiConfig", "加载JAR缓存失败");
                     callback.error("");
                 }
                 return;
@@ -272,8 +288,10 @@ public class ApiConfig {
         }
 
         boolean isJarInImg = jarUrl.startsWith("img+");
-        jarUrl = jarUrl.replace("img+", "");
-        OkGo.<File>get(jarUrl)
+        final String finalJarUrl = jarUrl.replace("img+", "");
+        // 处理URL，包括特殊URL映射和Punycode转换
+        final String encodedJarUrl = UrlUtil.processUrl(finalJarUrl);
+        OkGo.<File>get(encodedJarUrl)
                 .headers("User-Agent", userAgent)
                 .headers("Accept", requestAccept)
                 .execute(new AbsCallback<File>() {
@@ -301,12 +319,18 @@ public class ApiConfig {
             @Override
             public void onSuccess(Response<File> response) {
                 if (response.body().exists()) {
+                    // 更新JAR缓存有效期
+                    com.github.tvbox.osc.util.CacheManager.updateJarCacheValidity(finalJarUrl);
+                    LOG.i("ApiConfig", "更新JAR缓存有效期: " + finalJarUrl);
+
                     if (jarLoader.load(response.body().getAbsolutePath())) {
                         callback.success();
                     } else {
+                        LOG.e("ApiConfig", "加载下载的JAR失败");
                         callback.error("");
                     }
                 } else {
+                    LOG.e("ApiConfig", "JAR文件下载失败");
                     callback.error("");
                 }
             }

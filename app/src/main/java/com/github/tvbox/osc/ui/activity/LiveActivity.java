@@ -10,6 +10,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,6 +21,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.github.tvbox.osc.util.UrlUtil;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -808,45 +811,76 @@ public class LiveActivity extends BaseActivity {
 
     public void loadProxyLives(String url) {
         try {
-            Uri parsedUrl = Uri.parse(url);
-            url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
+            // 处理特殊URL格式
+            if (url.startsWith("http://127.0.0.1")) {
+                Uri parsedUrl = Uri.parse(url);
+                url = new String(Base64.decode(parsedUrl.getQueryParameter("ext"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
+            }
+
+            // 处理中文域名等特殊URL
+            url = UrlUtil.processUrl(url);
+
+            Log.d("LiveActivity", "加载直播源URL: " + url);
         } catch (Throwable th) {
+            Log.e("LiveActivity", "解析直播源URL出错", th);
             MD3ToastUtils.showToast("频道列表为空");
             finish();
             return;
         }
         showLoading();
-        OkGo.<String>get(url).execute(new AbsCallback<String>() {
+        OkGo.<String>get(url)
+            .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+            .headers("Accept", "*/*")
+            .headers("Accept-Language", "zh-CN,zh;q=0.9")
+            .execute(new AbsCallback<String>() {
 
             @Override
             public String convertResponse(okhttp3.Response response) throws Throwable {
-                return response.body().string();
+                String body = response.body().string();
+                Log.d("LiveActivity", "直播源响应长度: " + body.length());
+                return body;
             }
 
             @Override
             public void onSuccess(Response<String> response) {
-                JsonArray livesArray;
-                LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> linkedHashMap = new LinkedHashMap<>();
-                TxtSubscribe.parse(linkedHashMap, response.body());
-                livesArray = TxtSubscribe.live2JsonArray(linkedHashMap);
+                try {
+                    JsonArray livesArray;
+                    LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> linkedHashMap = new LinkedHashMap<>();
+                    TxtSubscribe.parse(linkedHashMap, response.body());
+                    livesArray = TxtSubscribe.live2JsonArray(linkedHashMap);
 
-                ApiConfig.get().loadLives(livesArray);
-                List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
-                if (list.isEmpty()) {
-                    MD3ToastUtils.showToast("频道列表为空");
-                    finish();
-                    return;
-                }
-                liveChannelGroupList.clear();
-                liveChannelGroupList.addAll(list);
+                    Log.d("LiveActivity", "解析直播源成功，分组数: " + livesArray.size());
 
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        LiveActivity.this.showSuccess();
-                        initLiveState();
+                    ApiConfig.get().loadLives(livesArray);
+                    List<LiveChannelGroup> list = ApiConfig.get().getChannelGroupList();
+                    if (list.isEmpty()) {
+                        MD3ToastUtils.showToast("频道列表为空");
+                        finish();
+                        return;
                     }
-                });
+                    liveChannelGroupList.clear();
+                    liveChannelGroupList.addAll(list);
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LiveActivity.this.showSuccess();
+                            initLiveState();
+                        }
+                    });
+                } catch (Throwable e) {
+                    Log.e("LiveActivity", "处理直播源响应出错", e);
+                    MD3ToastUtils.showToast("处理直播源数据出错");
+                    finish();
+                }
+            }
+
+            @Override
+            public void onError(Response<String> response) {
+                super.onError(response);
+                Log.e("LiveActivity", "加载直播源出错: " + response.getException().getMessage());
+                MD3ToastUtils.showToast("加载直播源出错: " + response.getException().getMessage());
+                finish();
             }
         });
     }

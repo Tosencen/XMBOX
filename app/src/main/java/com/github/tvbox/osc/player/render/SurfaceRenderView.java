@@ -75,7 +75,15 @@ public class SurfaceRenderView extends SurfaceView implements IRenderView, Surfa
 
     @Override
     public void release() {
-
+        // 安全释放资源
+        try {
+            if (mMediaPlayer != null) {
+                mMediaPlayer.setDisplay(null);
+                mMediaPlayer = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

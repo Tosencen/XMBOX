@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 禁用状态 -->
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorSurfaceVariant" />
+            <corners android:radius="16dp" />
+            <size android:height="24dp" android:width="48dp" />
+            <stroke android:width="1dp" android:color="?attr/colorOutlineVariant" />
+        </shape>
+    </item>
+    <!-- 选中状态 -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/md3_primary" />
+            <corners android:radius="16dp" />
+            <size android:height="24dp" android:width="48dp" />
+        </shape>
+    </item>
+    <!-- 未选中状态 - 使用纯灰色，不带紫色 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#E6E6E6" />
+            <corners android:radius="16dp" />
+            <size android:height="24dp" android:width="48dp" />
+            <stroke android:width="1dp" android:color="?attr/colorOutlineVariant" />
+        </shape>
+    </item>
+</selector>

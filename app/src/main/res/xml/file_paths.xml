@@ -18,4 +18,9 @@
     <external-path
         name="beta_external_files_path"
         path="Android/data/" />
+
+    <!-- 应用更新下载目录 -->
+    <external-files-path
+        name="downloads"
+        path="Download" />
 </paths>

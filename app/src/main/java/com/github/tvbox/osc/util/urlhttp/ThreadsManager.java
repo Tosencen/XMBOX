@@ -1,55 +1,42 @@
 package com.github.tvbox.osc.util.urlhttp;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import com.github.tvbox.osc.util.ThreadPoolManager;
 
+/**
+ * 线程管理类
+ * 使用ThreadPoolManager统一管理线程池
+ */
 public class ThreadsManager {
-    private static ExecutorService mExecutorService;
-    private static Map<Integer, Future> mTaskMap = new HashMap();
 
-    public ThreadsManager() {
-    }
-
-    static {
-    }
-
+    /**
+     * 初始化
+     * 此方法保留以兼容现有代码，但实际上不需要调用
+     */
     public static void init() {
-        if (mExecutorService == null) {
-            mExecutorService = Executors.newCachedThreadPool();
-            clear();
-        }
+        // 不需要初始化，使用ThreadPoolManager
     }
 
+    /**
+     * 清除所有任务
+     */
     public static void clear() {
-        Collection<Future> values = mTaskMap.values();
-        if (values.size() > 0) {
-            for (Future hashCode : values) {
-                stop(Integer.valueOf(hashCode.hashCode()));
-            }
-        }
+        // 不需要实现，由ThreadPoolManager统一管理
     }
 
+    /**
+     * 提交任务
+     * @param runnable 要执行的任务
+     * @return 任务ID
+     */
     public static Integer post(Runnable runnable) {
-        if (mExecutorService == null) {
-            init();
-        }
-        Future<?> submit = mExecutorService.submit(runnable);
-        Integer valueOf = Integer.valueOf(submit.hashCode());
-        mTaskMap.put(Integer.valueOf(submit.hashCode()), submit);
-        return valueOf;
+        return ThreadPoolManager.executeIO(runnable);
     }
 
-    public static void stop(Integer num) {
-        Future future = mTaskMap.get(num);
-        if (future != null) {
-            mTaskMap.remove(num);
-            if (!future.isDone() && !future.isCancelled() && mExecutorService != null) {
-                future.cancel(true);
-            }
-        }
+    /**
+     * 停止任务
+     * @param taskId 任务ID
+     */
+    public static void stop(Integer taskId) {
+        ThreadPoolManager.cancelTask(taskId);
     }
 }

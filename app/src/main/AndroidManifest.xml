@@ -91,10 +91,12 @@
         <activity
             android:name=".ui.activity.CollectActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"/>
+
+
         <activity
-            android:name=".ui.activity.DnsTestActivity"
+            android:name=".ui.activity.DevToolsActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="DNS安全测试"/>
+            android:label="工具"/>
 
         <!-- 改进版DLNA投屏服务 - 暂时禁用以解决构建问题 -->
         <!-- <service android:name="com.github.tvbox.osc.cast.dlna.DLNAService"

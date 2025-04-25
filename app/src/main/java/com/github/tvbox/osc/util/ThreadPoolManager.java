@@ -2,15 +2,24 @@ package com.github.tvbox.osc.util;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 线程池管理类
@@ -28,10 +37,29 @@ public class ThreadPoolManager {
     // 线程优先级
     private static final int THREAD_PRIORITY = Thread.NORM_PRIORITY - 1;
 
+    // 任务优先级定义
+    public static final int PRIORITY_HIGHEST = 0;
+    public static final int PRIORITY_HIGH = 1;
+    public static final int PRIORITY_NORMAL = 2;
+    public static final int PRIORITY_LOW = 3;
+    public static final int PRIORITY_LOWEST = 4;
+
+    @IntDef({PRIORITY_HIGHEST, PRIORITY_HIGH, PRIORITY_NORMAL, PRIORITY_LOW, PRIORITY_LOWEST})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TaskPriority {}
+
+    // 任务序列号生成器
+    private static final AtomicLong SEQUENCE_GENERATOR = new AtomicLong(0);
+
+    // 任务映射表，用于取消任务
+    private static final Map<Integer, Future<?>> TASK_MAP = new ConcurrentHashMap<>();
+
     // IO密集型线程池
     private static ThreadPoolExecutor sIOThreadPool;
     // 计算密集型线程池
     private static ThreadPoolExecutor sComputeThreadPool;
+    // 优先级线程池
+    private static ThreadPoolExecutor sPriorityThreadPool;
     // 主线程Handler
     private static Handler sMainHandler;
 
@@ -82,52 +110,121 @@ public class ThreadPoolManager {
     }
 
     /**
-     * 在IO线程池执行任务
+     * 获取优先级线程池（用于需要按优先级执行的任务）
      */
-    public static void executeIO(Runnable runnable) {
-        if (runnable != null) {
-            getIOThreadPool().execute(runnable);
+    public static ThreadPoolExecutor getPriorityThreadPool() {
+        if (sPriorityThreadPool == null || sPriorityThreadPool.isShutdown()) {
+            synchronized (ThreadPoolManager.class) {
+                if (sPriorityThreadPool == null || sPriorityThreadPool.isShutdown()) {
+                    sPriorityThreadPool = new ThreadPoolExecutor(
+                            CORE_POOL_SIZE,
+                            MAXIMUM_POOL_SIZE,
+                            KEEP_ALIVE_TIME,
+                            TimeUnit.SECONDS,
+                            new PriorityBlockingQueue<Runnable>(),
+                            new PriorityThreadFactory(),
+                            new RejectedHandler());
+                    // 允许核心线程超时回收
+                    sPriorityThreadPool.allowCoreThreadTimeOut(true);
+                }
+            }
         }
+        return sPriorityThreadPool;
+    }
+
+    /**
+     * 在IO线程池执行任务
+     * @return 任务ID，可用于取消任务
+     */
+    public static int executeIO(Runnable runnable) {
+        if (runnable != null) {
+            Future<?> future = getIOThreadPool().submit(runnable);
+            int taskId = future.hashCode();
+            TASK_MAP.put(taskId, future);
+            return taskId;
+        }
+        return -1;
     }
 
     /**
      * 在IO线程池执行任务，并指定优先级
      * @param runnable 要执行的任务
-     * @param priority 线程优先级，如Thread.MIN_PRIORITY
+     * @param threadPriority 线程优先级，如Thread.MIN_PRIORITY
+     * @return 任务ID，可用于取消任务
      */
-    public static void executeIOWithPriority(Runnable runnable, int priority) {
+    public static int executeIOWithPriority(Runnable runnable, int threadPriority) {
         if (runnable != null) {
             final Runnable priorityRunnable = new Runnable() {
                 @Override
                 public void run() {
                     try {
                         // 设置线程优先级
-                        Thread.currentThread().setPriority(priority);
+                        Thread.currentThread().setPriority(threadPriority);
                         runnable.run();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             };
-            getIOThreadPool().execute(priorityRunnable);
+            Future<?> future = getIOThreadPool().submit(priorityRunnable);
+            int taskId = future.hashCode();
+            TASK_MAP.put(taskId, future);
+            return taskId;
         }
+        return -1;
     }
 
     /**
      * 使用低优先级执行图片加载任务
      * @param runnable 要执行的任务
+     * @return 任务ID，可用于取消任务
      */
-    public static void executeImageLoading(Runnable runnable) {
-        executeIOWithPriority(runnable, Thread.MIN_PRIORITY);
+    public static int executeImageLoading(Runnable runnable) {
+        return executeIOWithPriority(runnable, Thread.MIN_PRIORITY);
     }
 
     /**
      * 在计算线程池执行任务
+     * @return 任务ID，可用于取消任务
      */
-    public static void executeCompute(Runnable runnable) {
+    public static int executeCompute(Runnable runnable) {
         if (runnable != null) {
-            getComputeThreadPool().execute(runnable);
+            Future<?> future = getComputeThreadPool().submit(runnable);
+            int taskId = future.hashCode();
+            TASK_MAP.put(taskId, future);
+            return taskId;
         }
+        return -1;
+    }
+
+    /**
+     * 按优先级执行任务
+     * @param runnable 要执行的任务
+     * @param taskPriority 任务优先级，使用PRIORITY_*常量
+     * @return 任务ID，可用于取消任务
+     */
+    public static int executePriority(Runnable runnable, @TaskPriority int taskPriority) {
+        if (runnable != null) {
+            PriorityRunnable priorityRunnable = new PriorityRunnable(runnable, taskPriority);
+            Future<?> future = getPriorityThreadPool().submit(priorityRunnable);
+            int taskId = future.hashCode();
+            TASK_MAP.put(taskId, future);
+            return taskId;
+        }
+        return -1;
+    }
+
+    /**
+     * 取消任务
+     * @param taskId 任务ID
+     * @return 是否成功取消
+     */
+    public static boolean cancelTask(int taskId) {
+        Future<?> future = TASK_MAP.remove(taskId);
+        if (future != null && !future.isDone() && !future.isCancelled()) {
+            return future.cancel(true);
+        }
+        return false;
     }
 
     /**
@@ -170,6 +267,14 @@ public class ThreadPoolManager {
      * 关闭线程池
      */
     public static void shutdown() {
+        // 取消所有任务
+        for (Future<?> future : TASK_MAP.values()) {
+            if (future != null && !future.isDone() && !future.isCancelled()) {
+                future.cancel(true);
+            }
+        }
+        TASK_MAP.clear();
+
         if (sIOThreadPool != null && !sIOThreadPool.isShutdown()) {
             sIOThreadPool.shutdown();
             sIOThreadPool = null;
@@ -177,6 +282,70 @@ public class ThreadPoolManager {
         if (sComputeThreadPool != null && !sComputeThreadPool.isShutdown()) {
             sComputeThreadPool.shutdown();
             sComputeThreadPool = null;
+        }
+        if (sPriorityThreadPool != null && !sPriorityThreadPool.isShutdown()) {
+            sPriorityThreadPool.shutdown();
+            sPriorityThreadPool = null;
+        }
+    }
+
+    /**
+     * 优先级任务包装类
+     */
+    private static class PriorityRunnable implements Runnable, Comparable<PriorityRunnable> {
+        private final Runnable runnable;
+        private final int priority;
+        private final long sequence;
+
+        public PriorityRunnable(Runnable runnable, @TaskPriority int priority) {
+            this.runnable = runnable;
+            this.priority = priority;
+            this.sequence = SEQUENCE_GENERATOR.getAndIncrement();
+        }
+
+        @Override
+        public void run() {
+            try {
+                // 设置线程优先级
+                int threadPriority;
+                switch (priority) {
+                    case PRIORITY_HIGHEST:
+                        threadPriority = Process.THREAD_PRIORITY_URGENT_DISPLAY;
+                        break;
+                    case PRIORITY_HIGH:
+                        threadPriority = Process.THREAD_PRIORITY_DISPLAY;
+                        break;
+                    case PRIORITY_LOW:
+                        threadPriority = Process.THREAD_PRIORITY_BACKGROUND;
+                        break;
+                    case PRIORITY_LOWEST:
+                        threadPriority = Process.THREAD_PRIORITY_LOWEST;
+                        break;
+                    case PRIORITY_NORMAL:
+                    default:
+                        threadPriority = Process.THREAD_PRIORITY_DEFAULT;
+                        break;
+                }
+                Process.setThreadPriority(threadPriority);
+
+                // 执行任务
+                runnable.run();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public int compareTo(PriorityRunnable other) {
+            // 优先级越小，优先级越高
+            if (this.priority < other.priority) {
+                return -1;
+            } else if (this.priority > other.priority) {
+                return 1;
+            } else {
+                // 优先级相同时，按提交顺序执行
+                return Long.compare(this.sequence, other.sequence);
+            }
         }
     }
 
@@ -203,6 +372,20 @@ public class ThreadPoolManager {
         @Override
         public Thread newThread(@NonNull Runnable r) {
             Thread thread = new Thread(r, "TVBox-Compute-" + mCount.getAndIncrement());
+            thread.setPriority(THREAD_PRIORITY);
+            return thread;
+        }
+    }
+
+    /**
+     * 优先级线程工厂
+     */
+    private static class PriorityThreadFactory implements ThreadFactory {
+        private final AtomicInteger mCount = new AtomicInteger(1);
+
+        @Override
+        public Thread newThread(@NonNull Runnable r) {
+            Thread thread = new Thread(r, "TVBox-Priority-" + mCount.getAndIncrement());
             thread.setPriority(THREAD_PRIORITY);
             return thread;
         }

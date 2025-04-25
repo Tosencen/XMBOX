@@ -18,6 +18,7 @@ import com.lzy.okgo.model.HttpHeaders;
 import com.orhanobut.hawk.Hawk;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -50,21 +51,53 @@ public class OkGoHelper {
             loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.NONE);
             loggingInterceptor.setColorLevel(Level.OFF);
         }
+
+        // 设置连接规范
         builder.connectionSpecs(getConnectionSpec());
+
+        // 添加Brotli压缩支持
         builder.addInterceptor(new BrotliInterceptor());
+
+        // 启用连接失败重试
         builder.retryOnConnectionFailure(true);
+
+        // 允许重定向
         builder.followRedirects(true);
         builder.followSslRedirects(true);
 
+        // 优化超时设置，视频播放需要更长的超时时间
+        builder.readTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS)
+               .writeTimeout(DEFAULT_MILLISECONDS, TimeUnit.MILLISECONDS)
+               .connectTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS);
+
+        // 设置SSL
         try {
             setOkHttpSsl(builder);
         } catch (Throwable th) {
             th.printStackTrace();
         }
+
         // 使用安全工具类设置DNS，确保不会传入null值
         // 在Android 15及以上版本，OkHttp不再接受null作为DNS参数
         OkHttpSafetyUtil.ensureSafeDns(builder, dnsOverHttps);
 
+        // 增加并发连接数
+        Dispatcher dispatcher = new Dispatcher(ThreadPoolManager.getIOThreadPool());
+        dispatcher.setMaxRequestsPerHost(8);
+        dispatcher.setMaxRequests(32);
+        builder.dispatcher(dispatcher);
+
+        // 启用连接池
+        builder.connectionPool(new okhttp3.ConnectionPool(16, 5, TimeUnit.MINUTES));
+
+        // 设置缓存
+        File cacheDir = new File(App.getInstance().getCacheDir(), "exoplayer-http-cache");
+        if (!cacheDir.exists()) {
+            cacheDir.mkdirs();
+        }
+        builder.cache(new Cache(cacheDir, 50 * 1024 * 1024)); // 50MB缓存
+
+        // 设置客户端
         ExoMediaSourceHelper.getInstance(App.getInstance()).setOkClient(builder.build());
     }
 
@@ -78,21 +111,34 @@ public class OkGoHelper {
 
     public static String getDohUrl(int type) {
         // 确保type在有效范围内
-        int safeType = Math.min(Math.max(type, 0), 1);
+        int safeType = Math.min(Math.max(type, 0), 3);
         switch (safeType) {
             case 1: {
                 return "https://dns.alidns.com/dns-query";
+            }
+            case 2: {
+                return "https://doh.pub/dns-query";
+            }
+            case 3: {
+                return "https://dns.google/dns-query";
             }
         }
         return "";
     }
 
     static void initDnsOverHttps() {
+        // 初始化DNS列表
         dnsHttpsList.clear();
         dnsHttpsList.add("关闭");
         dnsHttpsList.add("阿里DNS");
+        dnsHttpsList.add("腾讯DNS");
+        dnsHttpsList.add("谷歌DNS");
+
+        // 创建DoH客户端
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor("OkExoPlayer");
+
+        // 配置日志
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor("DNS-Client");
         if (Hawk.get(HawkConfig.DEBUG_OPEN, false)) {
             loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.BODY);
             loggingInterceptor.setColorLevel(Level.INFO);
@@ -100,31 +146,86 @@ public class OkGoHelper {
             loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.NONE);
             loggingInterceptor.setColorLevel(Level.OFF);
         }
+
+        // 添加拦截器
+        builder.addInterceptor(loggingInterceptor);
         builder.addInterceptor(new BrotliInterceptor());
+
+        // 设置SSL
         try {
             setOkHttpSsl(builder);
         } catch (Throwable th) {
             th.printStackTrace();
         }
+
+        // 设置连接规范
         builder.connectionSpecs(getConnectionSpec());
-        builder.cache(new Cache(new File(App.getInstance().getCacheDir().getAbsolutePath(), "dohcache"), 10 * 1024 * 1024));
+
+        // 设置超时
+        builder.connectTimeout(3, TimeUnit.SECONDS)
+               .readTimeout(3, TimeUnit.SECONDS)
+               .writeTimeout(3, TimeUnit.SECONDS);
+
+        // 设置缓存
+        File cacheDir = new File(App.getInstance().getCacheDir(), "dohcache");
+        if (!cacheDir.exists()) {
+            cacheDir.mkdirs();
+        }
+        builder.cache(new Cache(cacheDir, 10 * 1024 * 1024));
+
+        // 构建DoH客户端
         OkHttpClient dohClient = builder.build();
-        // 确保使用有效的DOH索引
-        int dohIndex = Hawk.get(HawkConfig.DOH_URL, 0);
+
+        // 确保使用有效的DOH索引，默认使用阿里DNS
+        int dohIndex = Hawk.get(HawkConfig.DOH_URL, 1);
         if (dohIndex < 0 || dohIndex >= dnsHttpsList.size()) {
-            dohIndex = 0;
-            Hawk.put(HawkConfig.DOH_URL, 0);
+            dohIndex = 1; // 默认使用阿里DNS
+            Hawk.put(HawkConfig.DOH_URL, 1);
         }
 
-        // 默认关闭DoH，使用系统DNS以提高速度
+        // 配置DNS
         if (dohIndex == 0) {
+            // 默认关闭DoH，使用系统DNS以提高速度
             dnsOverHttps = null;
             LOG.i("DNS", "使用系统DNS");
         } else {
+            // 使用DoH
             String dohUrl = getDohUrl(dohIndex);
-            dnsOverHttps = new DnsOverHttps.Builder().client(dohClient).url(dohUrl.isEmpty() ? null : HttpUrl.get(dohUrl)).build();
-            LOG.i("DNS", "使用DoH: " + dohUrl);
+            if (!dohUrl.isEmpty()) {
+                try {
+                    dnsOverHttps = new DnsOverHttps.Builder()
+                            .client(dohClient)
+                            .url(HttpUrl.get(dohUrl))
+                            .bootstrapDnsHosts(getBootstrapDnsHosts()) // 添加引导DNS服务器
+                            .includeIPv6(false) // 禁用IPv6以提高速度
+                            .build();
+                    LOG.i("DNS", "使用DoH: " + dohUrl);
+                } catch (Exception e) {
+                    LOG.e("DNS", "DoH初始化失败: " + e.getMessage());
+                    dnsOverHttps = null;
+                }
+            } else {
+                dnsOverHttps = null;
+                LOG.e("DNS", "无效的DoH URL");
+            }
         }
+    }
+
+    /**
+     * 获取引导DNS服务器IP地址
+     * 用于在DoH初始化时解析DoH服务器域名
+     */
+    private static List<InetAddress> getBootstrapDnsHosts() {
+        List<InetAddress> hosts = new ArrayList<>();
+        try {
+            // 添加一些公共DNS服务器IP
+            hosts.add(InetAddress.getByName("223.5.5.5")); // 阿里DNS
+            hosts.add(InetAddress.getByName("119.29.29.29")); // 腾讯DNS
+            hosts.add(InetAddress.getByName("8.8.8.8")); // 谷歌DNS
+        } catch (Exception e) {
+            LOG.e("DNS", "获取引导DNS失败: " + e.getMessage());
+        }
+        return hosts;
     }
     static OkHttpClient defaultClient = null;
     static OkHttpClient noRedirectClient = null;
@@ -151,9 +252,15 @@ public class OkGoHelper {
             loggingInterceptor.setColorLevel(Level.OFF);
         }
 
-        //builder.retryOnConnectionFailure(false);
+        // 启用连接失败重试
+        builder.retryOnConnectionFailure(true);
+
+        // 设置连接规范
         builder.connectionSpecs(getConnectionSpec());
+
+        // 添加Brotli压缩支持
         builder.addInterceptor(new BrotliInterceptor());
+
         // 优化超时设置，减少等待时间
         builder.readTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS)
                 .writeTimeout(DEFAULT_MILLISECONDS / 2, TimeUnit.MILLISECONDS)
@@ -166,26 +273,41 @@ public class OkGoHelper {
         // 增加并发连接数
         Dispatcher dispatcher = new Dispatcher(ThreadPoolManager.getIOThreadPool());
         dispatcher.setMaxRequestsPerHost(10);
+        dispatcher.setMaxRequests(64); // 增加最大并发请求数
         builder.dispatcher(dispatcher);
+
+        // 启用连接池
+        builder.connectionPool(new okhttp3.ConnectionPool(32, 5, TimeUnit.MINUTES));
+
+        // 设置SSL
         try {
             setOkHttpSsl(builder);
         } catch (Throwable th) {
             th.printStackTrace();
         }
 
+        // 设置User-Agent
         HttpHeaders.setUserAgent(Version.userAgent());
 
+        // 构建客户端
         OkHttpClient okHttpClient = builder.build();
         OkGo.getInstance().setOkHttpClient(okHttpClient);
 
+        // 配置OkGo
+        OkGo.getInstance()
+            .setRetryCount(3) // 请求失败重试次数
+            .setCacheMode(com.lzy.okgo.cache.CacheMode.NO_CACHE); // 默认不使用缓存
+
+        // 保存默认客户端
         defaultClient = okHttpClient;
 
+        // 创建不跟随重定向的客户端
         builder.followRedirects(false);
         builder.followSslRedirects(false);
         noRedirectClient = builder.build();
 
+        // 初始化ExoPlayer的OkHttp客户端
         initExoOkHttpClient();
-        // 初始化Glide在GlideHelper中完成，不需要在这里调用
     }
 
     // Picasso初始化已移除，改为使用GlideHelper

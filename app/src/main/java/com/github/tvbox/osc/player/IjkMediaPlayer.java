@@ -11,6 +11,7 @@ import com.github.tvbox.osc.util.MD5;
 import com.orhanobut.hawk.Hawk;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -66,14 +67,39 @@ public class IjkMediaPlayer extends IjkPlayer {
     @Override
     public void setDataSource(String path, Map<String, String> headers) {
         try {
-            if (path.contains("rtsp") || path.contains("udp") || path.contains("rtp")) {
+            // 设置通用选项，提高直播流的兼容性
+            mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "reconnect", 1);
+            mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "timeout", 10000000);
+            mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "buffer_size", 1316);
+            mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_timeout", 600000);
+
+            // 对于直播流，设置特殊选项
+            if (path.contains("rtsp") || path.contains("rtmp") || path.contains("udp") || path.contains("rtp")) {
                 mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "infbuf", 1);
                 mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_transport", "tcp");
                 mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtsp_flags", "prefer_tcp");
                 mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 512 * 1000);
                 mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzeduration", 2 * 1000 * 1000);
-            } else if (!TextUtils.isEmpty(path)
-                    && !path.contains(".m3u8")
+
+                // 对于RTMP流，增加额外选项
+                if (path.contains("rtmp")) {
+                    mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtmp_buffer", 60000);
+                    mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtmp_live", "live");
+                    mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "rtmp_connect_timeout", 10000);
+                }
+            }
+            // 对于HLS流，设置特殊选项
+            else if (path.contains(".m3u8")) {
+                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 1024 * 1024);
+                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzeduration", 5 * 1000 * 1000);
+                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_PLAYER, "enable-accurate-seek", 0);
+                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
+                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max_cached_duration", 3000);
+                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max-buffer-size", 1024 * 1024);
+                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_PLAYER, "min-frames", 100);
+            }
+            // 对于常规视频文件，设置缓存
+            else if (!TextUtils.isEmpty(path)
                     && (path.contains(".mp4") || path.contains(".mkv") || path.contains(".avi"))) {
                 if (Hawk.get(HawkConfig.IJK_CACHE_PLAY, false)) {
                     String cachePath = FileUtils.getCachePath() + "/ijkcaches/";
@@ -91,6 +117,9 @@ public class IjkMediaPlayer extends IjkPlayer {
                     path = "ijkio:cache:ffio:" + path;
                 }
             }
+
+            // 对于所有类型的流，增加日志输出
+            android.util.Log.d("IjkMediaPlayer", "播放URL: " + path);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -100,27 +129,41 @@ public class IjkMediaPlayer extends IjkPlayer {
     }
 
     private void setDataSourceHeader(Map<String, String> headers) {
-        if (headers != null && !headers.isEmpty()) {
-            String userAgent = headers.get("User-Agent");
-            if (!TextUtils.isEmpty(userAgent)) {
-                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "user_agent", userAgent);
-                // 移除header中的User-Agent，防止重复
-                headers.remove("User-Agent");
-            }
-            if (headers.size() > 0) {
-                StringBuilder sb = new StringBuilder();
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    String value = entry.getValue();
-                    if (!TextUtils.isEmpty(value)) {
-                        sb.append(entry.getKey());
-                        sb.append(": ");
-                        sb.append(value);
-                        sb.append("\r\n");
-                    }
-                }
-                mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "headers", sb.toString());
-            }
+        // 如果没有提供headers，添加默认的User-Agent
+        if (headers == null || headers.isEmpty()) {
+            headers = new HashMap<>();
+            headers.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
         }
+
+        // 处理User-Agent
+        String userAgent = headers.get("User-Agent");
+        if (!TextUtils.isEmpty(userAgent)) {
+            mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "user_agent", userAgent);
+            // 移除header中的User-Agent，防止重复
+            headers.remove("User-Agent");
+        }
+
+        // 处理其他headers
+        if (headers.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                String value = entry.getValue();
+                if (!TextUtils.isEmpty(value)) {
+                    sb.append(entry.getKey());
+                    sb.append(": ");
+                    sb.append(value);
+                    sb.append("\r\n");
+                }
+            }
+            mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "headers", sb.toString());
+        }
+
+        // 添加Referer，有些直播源需要Referer
+        mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "referer", "https://www.baidu.com");
+
+        // 添加额外的HTTP选项
+        mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
+        mMediaPlayer.setOption(tv.danmaku.ijk.media.player.IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-seekable", 0);
     }
 
     public TrackInfo getTrackInfo() {

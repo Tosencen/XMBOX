@@ -1280,7 +1280,7 @@ public class PlayFragment extends BaseLazyFragment {
             hasNext = mVodInfo.playIndex + 1 < mVodInfo.seriesMap.get(mVodInfo.playFlag).size();
         }
         if (!hasNext) {
-            MD3ToastUtils.showToast("已经是最后一集了!");
+            MD3ToastUtils.showToast(getString(R.string.detail_last_episode));
             return;
         } else {
             mVodInfo.playIndex++;
@@ -1338,12 +1338,21 @@ public class PlayFragment extends BaseLazyFragment {
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodInfo.playIndex));
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH_NOTIFY, mVodInfo.name + "&&" + vs.name));
         String playTitleInfo = mVodInfo.name + " " + vs.name;
-        setTip("正在获取播放信息", true, false);
+        setTip(getString(R.string.detail_getting_play_info), true, false);
         mController.setTitle(playTitleInfo);
 
         stopParse();
         initParseLoadFound();
-        if (mVideoView != null) mVideoView.release();
+
+        // 安全释放VideoView
+        try {
+            if (mVideoView != null) {
+                mVideoView.release();
+            }
+        } catch (Exception e) {
+            LOG.e("VideoView释放出错", e);
+        }
+
         String subtitleCacheKey = mVodInfo.sourceKey + "-" + mVodInfo.id + "-" + mVodInfo.playFlag + "-" + mVodInfo.playIndex + "-" + vs.name + "-subt";
         String progressKey = mVodInfo.sourceKey + mVodInfo.id + mVodInfo.playFlag + mVodInfo.playIndex + vs.name;
         //重新播放清除现有进度
@@ -1477,7 +1486,7 @@ public class PlayFragment extends BaseLazyFragment {
         stopParse();
         initParseLoadFound();
         if (pb.getType() == 0) {
-            setTip("正在嗅探播放地址", true, false);
+            setTip(getString(R.string.play_sniffing_address), true, false);
             if (mHandler != null) {
                 mHandler.removeMessages(100);
                 mHandler.sendEmptyMessageDelayed(100, 20 * 1000);
@@ -1560,7 +1569,7 @@ public class PlayFragment extends BaseLazyFragment {
                                 playUrl(rs.getString("url"), headers);
                             } catch (Throwable e) {
                                 e.printStackTrace();
-                                errorWithRetry("解析错误", false);
+                                errorWithRetry(getString(R.string.play_parse_error), false);
 //                                setTip("解析错误", false, true);
                             }
                         }
@@ -1568,7 +1577,7 @@ public class PlayFragment extends BaseLazyFragment {
                         @Override
                         public void onError(Response<String> response) {
                             super.onError(response);
-                            errorWithRetry("解析错误", false);
+                            errorWithRetry(getString(R.string.play_parse_error), false);
 //                            setTip("解析错误", false, true);
                         }
                     });
@@ -1606,7 +1615,7 @@ public class PlayFragment extends BaseLazyFragment {
                             }
                         }
                         if (rs.has("jxFrom")) {
-                            MD3ToastUtils.showToast("解析来自:" + rs.optString("jxFrom"));
+                            MD3ToastUtils.showToast(String.format(getString(R.string.play_parse_from), rs.optString("jxFrom")));
                         }
                         boolean parseWV = rs.optInt("parse", 0) == 1;
                         if (parseWV) {
@@ -1652,7 +1661,7 @@ public class PlayFragment extends BaseLazyFragment {
                                 public void run() {
                                     String mixParseUrl = DefaultConfig.checkReplaceProxy(rs.optString("url", ""));
                                     stopParse();
-                                    setTip("正在嗅探播放地址", true, false);
+                                    setTip(getString(R.string.play_sniffing_address), true, false);
                                     if (mHandler != null) {
                                         mHandler.removeMessages(100);
                                         mHandler.sendEmptyMessageDelayed(100, 20 * 1000);
@@ -1678,7 +1687,7 @@ public class PlayFragment extends BaseLazyFragment {
                                 }
                             }
                             if (rs.has("jxFrom")) {
-                                MD3ToastUtils.showToast("解析来自:" + rs.optString("jxFrom"));
+                                MD3ToastUtils.showToast(String.format(getString(R.string.play_parse_from), rs.optString("jxFrom")));
                             }
                             playUrl(rs.optString("url", ""), headers);
                         }

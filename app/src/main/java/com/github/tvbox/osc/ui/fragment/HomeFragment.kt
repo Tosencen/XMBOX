@@ -72,8 +72,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
      * 顶部tabs分类集合,用于渲染tab页,每个tab对应fragment内的数据
      */
     private var mSortDataList: List<SortData> = ArrayList()
-    private var dataInitOk = false
-    private var jarInitOk = false
+    var dataInitOk = false
+    var jarInitOk = false
 
     var errorTipDialog: TipDialog? = null
 
@@ -128,7 +128,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
         }
     }
 
-    private fun initData() {
+    fun initData() {
         val mainActivity = mActivity as MainActivity
         onlyConfigChanged = mainActivity.useCacheConfig
 
@@ -194,7 +194,17 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                         initData()
                     }
                 } else {
-                    showTipDialog(msg)
+                    // 确保在主线程中安全地调用showTipDialog
+                    ThreadPoolManager.executeMain {
+                        if (isAdded && activity != null) {
+                            showTipDialog(msg)
+                        } else {
+                            // Fragment未附加到Activity，直接设置标志位
+                            LOG.e("HomeFragment", "加载配置错误，但Fragment未附加到Activity")
+                            dataInitOk = true
+                            jarInitOk = true
+                        }
+                    }
                 }
             }
         }, activity)
@@ -238,7 +248,10 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                         ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                         jarInitOk = true
                         ThreadPoolManager.executeMain {
-                            MD3ToastUtils.showToast("更新订阅失败")
+                            // 确保Fragment仍然附加到Activity
+                            if (isAdded && activity != null) {
+                                MD3ToastUtils.showToast("更新订阅失败")
+                            }
                             initData()
                         }
                     }
@@ -247,41 +260,63 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
     }
 
     private fun showTipDialog(msg: String) {
-        if (errorTipDialog == null) {
-            errorTipDialog =
-                TipDialog(requireActivity(), msg, "重试", "取消", object : TipDialog.OnListener {
-                    override fun left() {
-                        ThreadPoolManager.executeMain {
-                            initData()
-                            errorTipDialog?.hide()
-                        }
-                    }
-
-                    override fun right() {
-                        dataInitOk = true
-                        jarInitOk = true
-                        ThreadPoolManager.executeMain {
-                            initData()
-                            errorTipDialog?.hide()
-                        }
-                    }
-
-                    override fun cancel() {
-                        dataInitOk = true
-                        jarInitOk = true
-                        ThreadPoolManager.executeMain {
-                            initData()
-                            errorTipDialog?.hide()
-                        }
-                    }
-
-                    override fun onTitleClick() {
-                        errorTipDialog?.hide()
-                        jumpActivity(SubscriptionActivity::class.java)
-                    }
-                })
+        // 安全检查：确保Fragment已附加到Activity
+        if (!isAdded || activity == null) {
+            // Fragment未附加到Activity，记录错误并返回
+            LOG.e("HomeFragment", "Fragment未附加到Activity，无法显示对话框")
+            // 设置标志位，避免进一步的错误
+            dataInitOk = true
+            jarInitOk = true
+            return
         }
-        if (!errorTipDialog!!.isShowing) errorTipDialog!!.show()
+
+        try {
+            if (errorTipDialog == null) {
+                errorTipDialog =
+                    TipDialog(requireActivity(), msg, "重试", "取消", object : TipDialog.OnListener {
+                        override fun left() {
+                            ThreadPoolManager.executeMain {
+                                initData()
+                                errorTipDialog?.hide()
+                            }
+                        }
+
+                        override fun right() {
+                            dataInitOk = true
+                            jarInitOk = true
+                            ThreadPoolManager.executeMain {
+                                initData()
+                                errorTipDialog?.hide()
+                            }
+                        }
+
+                        override fun cancel() {
+                            dataInitOk = true
+                            jarInitOk = true
+                            ThreadPoolManager.executeMain {
+                                initData()
+                                errorTipDialog?.hide()
+                            }
+                        }
+
+                        override fun onTitleClick() {
+                            errorTipDialog?.hide()
+                            if (isAdded && activity != null) {
+                                jumpActivity(SubscriptionActivity::class.java)
+                            }
+                        }
+                    })
+            }
+            if (errorTipDialog != null && !errorTipDialog!!.isShowing && isAdded && activity != null) {
+                errorTipDialog!!.show()
+            }
+        } catch (e: Exception) {
+            // 捕获任何可能的异常
+            LOG.e("HomeFragment", "显示对话框时出错: ${e.message}")
+            // 设置标志位，避免进一步的错误
+            dataInitOk = true
+            jarInitOk = true
+        }
     }
 
     private fun getTabTextView(text: String): TextView {
@@ -415,12 +450,12 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
     }
 
     private fun refreshHomeSources() {
-        val intent = Intent(App.getInstance(), MainActivity::class.java)
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        val bundle = Bundle()
-        bundle.putBoolean(IntentKey.CACHE_CONFIG_CHANGED, true)
-        intent.putExtras(bundle)
-        startActivity(intent)
+        // 使用EventBus发送源变更事件，而不是重启整个应用
+        onlyConfigChanged = true
+        dataInitOk = false
+        jarInitOk = false
+        MD3ToastUtils.showToast("正在切换数据源...")
+        initData()
     }
 
     override fun onDestroy() {

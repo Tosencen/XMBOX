@@ -21,10 +21,11 @@ import com.github.tvbox.osc.util.EpgUtil;
 import com.github.tvbox.osc.util.FileUtils;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
-import com.github.tvbox.osc.util.DnsSafetyTest;
+
 import com.github.tvbox.osc.util.MaterialSymbolsLoader;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
+import com.github.tvbox.osc.util.ThreadPoolManager;
 import com.github.tvbox.osc.util.Utils;
 import com.kingja.loadsir.core.LoadSir;
 import com.orhanobut.hawk.Hawk;
@@ -76,136 +77,165 @@ public class App extends MultiDexApplication {
                 LOG.w("App", "当前设备架构可能不受支持，某些功能可能无法正常使用");
             }
 
-            try {
-                initParams();
-                LOG.i("App", "参数初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "参数初始化失败: " + e.getMessage());
-            }
+            // 初始化关键组件（主线程）
+            initCriticalComponents();
 
-            try {
-                // OKGo
-                OkGoHelper.init(); //台标获取
-                LOG.i("App", "OkGo初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "OkGo初始化失败: " + e.getMessage());
-            }
-
-            try {
-                EpgUtil.init();
-                LOG.i("App", "EPG工具初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "EPG工具初始化失败: " + e.getMessage());
-            }
-
-            try {
-                // 初始化Web服务器
-                ControlManager.init(this);
-                LOG.i("App", "Web服务器初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "Web服务器初始化失败: " + e.getMessage());
-            }
-
-            try {
-                //初始化数据库
-                AppDataManager.init();
-                LOG.i("App", "数据库初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "数据库初始化失败: " + e.getMessage());
-            }
-
-            try {
-                LoadSir.beginBuilder()
-                        .addCallback(new EmptyCallback())
-                        .addCallback(new EmptyCollectCallback())
-                        .addCallback(new EmptyHistoryCallback())
-                        .addCallback(new EmptySubscriptionCallback())
-                        .addCallback(new LoadingCallback())
-                        .commit();
-                LOG.i("App", "LoadSir初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "LoadSir初始化失败: " + e.getMessage());
-            }
-
-            try {
-                AutoSizeConfig.getInstance()
-                        .setExcludeFontScale(true)
-                        .setCustomFragment(true)
-                        .getUnitsManager()
-                        .setSupportDP(false)
-                        .setSupportSP(false)
-                        .setSupportSubunits(Subunits.MM);
-                LOG.i("App", "AutoSize初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "AutoSize初始化失败: " + e.getMessage());
-            }
-
-            try {
-                PlayerHelper.init();
-                LOG.i("App", "播放器初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "播放器初始化失败: " + e.getMessage());
-            }
-
-            // 尝试加载QuickJS库
-            if (isArchitectureSupported()) {
-                boolean quickJSLoaded = com.whl.quickjs.android.QuickJSLoader.init();
-                if (quickJSLoaded) {
-                    LOG.i("App", "QuickJS库加载成功");
-                } else {
-                    LOG.e("App", "QuickJS库加载失败，相关功能将被禁用");
+            // 异步初始化非关键组件
+            ThreadPoolManager.executeIO(new Runnable() {
+                @Override
+                public void run() {
+                    initNonCriticalComponents();
                 }
-            } else {
-                LOG.e("App", "QuickJS已禁用，因为当前设备架构不受支持");
-            }
+            });
 
-            try {
-                FileUtils.cleanPlayerCache();
-                LOG.i("App", "清理播放器缓存成功");
-            } catch (Exception e) {
-                LOG.e("App", "清理播放器缓存失败: " + e.getMessage());
-            }
-
-            try {
-                initCrashConfig();
-                LOG.i("App", "崩溃配置初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "崩溃配置初始化失败: " + e.getMessage());
-            }
-
-            try {
-                Utils.initTheme();
-                LOG.i("App", "主题初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "主题初始化失败: " + e.getMessage());
-            }
-
-            try {
-                // 初始Material Symbols字体
-                MaterialSymbolsLoader.init(this);
-                LOG.i("App", "Material Symbols字体初始化成功");
-            } catch (Exception e) {
-                LOG.e("App", "Material Symbols字体初始化失败: " + e.getMessage());
-            }
-
-            // 测试DNS安全修复
-            try {
-                boolean testResult = DnsSafetyTest.testDnsSafety();
-                if (testResult) {
-                    LOG.i("App", "DNS安全测试通过，修复有效");
-                } else {
-                    LOG.e("App", "DNS安全测试失败，修复可能无效");
-                }
-            } catch (Exception e) {
-                LOG.e("App", "DNS安全测试异常: " + e.getMessage());
-                e.printStackTrace();
-            }
-
-            LOG.i("App", "应用初始化完成");
+            LOG.i("App", "应用关键组件初始化完成");
         } catch (Throwable e) {
             LOG.e("App", "应用初始化过程中发生严重错误: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 初始化关键组件（在主线程执行）
+     * 这些组件必须在应用启动时立即初始化
+     */
+    private void initCriticalComponents() {
+        try {
+            // 初始化参数（必须最先初始化）
+            initParams();
+            LOG.i("App", "参数初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "参数初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化崩溃处理（必须尽早初始化）
+            initCrashConfig();
+            LOG.i("App", "崩溃配置初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "崩溃配置初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化UI相关配置
+            AutoSizeConfig.getInstance()
+                    .setExcludeFontScale(true)
+                    .setCustomFragment(true)
+                    .getUnitsManager()
+                    .setSupportDP(false)
+                    .setSupportSP(false)
+                    .setSupportSubunits(Subunits.MM);
+            LOG.i("App", "AutoSize初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "AutoSize初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化LoadSir（UI相关，需要在主线程初始化）
+            LoadSir.beginBuilder()
+                    .addCallback(new EmptyCallback())
+                    .addCallback(new EmptyCollectCallback())
+                    .addCallback(new EmptyHistoryCallback())
+                    .addCallback(new EmptySubscriptionCallback())
+                    .addCallback(new LoadingCallback())
+                    .commit();
+            LOG.i("App", "LoadSir初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "LoadSir初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化主题（UI相关）
+            Utils.initTheme();
+            LOG.i("App", "主题初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "主题初始化失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 初始化非关键组件（在后台线程执行）
+     * 这些组件可以在应用启动后异步初始化
+     */
+    private void initNonCriticalComponents() {
+        try {
+            // 初始化网络相关
+            OkGoHelper.init();
+            LOG.i("App", "OkGo初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "OkGo初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化EPG
+            EpgUtil.init();
+            LOG.i("App", "EPG工具初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "EPG工具初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化Web服务器
+            ControlManager.init(this);
+            LOG.i("App", "Web服务器初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "Web服务器初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化数据库
+            AppDataManager.init();
+            LOG.i("App", "数据库初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "数据库初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化播放器
+            PlayerHelper.init();
+            LOG.i("App", "播放器初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "播放器初始化失败: " + e.getMessage());
+        }
+
+        // 尝试加载QuickJS库
+        if (isArchitectureSupported()) {
+            boolean quickJSLoaded = com.whl.quickjs.android.QuickJSLoader.init();
+            if (quickJSLoaded) {
+                LOG.i("App", "QuickJS库加载成功");
+            } else {
+                LOG.e("App", "QuickJS库加载失败，相关功能将被禁用");
+            }
+        } else {
+            LOG.e("App", "QuickJS已禁用，因为当前设备架构不受支持");
+        }
+
+        try {
+            // 清理播放器缓存
+            FileUtils.cleanPlayerCache();
+            LOG.i("App", "清理播放器缓存成功");
+        } catch (Exception e) {
+            LOG.e("App", "清理播放器缓存失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始Material Symbols字体
+            ThreadPoolManager.executeMain(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        MaterialSymbolsLoader.init(App.this);
+                        LOG.i("App", "Material Symbols字体初始化成功");
+                    } catch (Exception e) {
+                        LOG.e("App", "Material Symbols字体初始化失败: " + e.getMessage());
+                    }
+                }
+            });
+        } catch (Exception e) {
+            LOG.e("App", "Material Symbols字体初始化调度失败: " + e.getMessage());
+        }
+
+        LOG.i("App", "应用非关键组件初始化完成");
     }
 
     private void initParams() {
@@ -258,6 +288,38 @@ public class App extends MultiDexApplication {
         // 投屏功能已完全移除
         // 关闭线程池
         com.github.tvbox.osc.util.ThreadPoolManager.shutdown();
+    }
+
+    /**
+     * 当系统内存不足时调用
+     * 释放非必要资源
+     */
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        LOG.w("App", "系统内存不足，开始释放资源");
+        // 清理内存
+        com.github.tvbox.osc.util.MemoryOptimizer.cleanMemory();
+    }
+
+    /**
+     * 当系统内存接近不足时调用
+     * 释放部分非必要资源
+     */
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        // 根据内存紧张程度采取不同措施
+        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_MODERATE) {
+            // 内存紧张，清理缓存
+            LOG.w("App", "系统内存紧张，开始释放资源");
+            com.github.tvbox.osc.util.MemoryOptimizer.cleanMemory();
+        } else if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) {
+            // 应用处于后台，可以释放一些资源
+            LOG.i("App", "应用进入后台，释放部分资源");
+            // 清理图片缓存
+            com.github.tvbox.osc.util.GlideHelper.clearMemoryCache(this);
+        }
     }
 
     private void putDefault(String key, Object value) {

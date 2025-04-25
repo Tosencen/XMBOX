@@ -217,7 +217,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
-                        style="@style/Widget.App.SwitchMaterial.M3.Fixed"/>
+                        style="@style/Widget.App.SwitchMaterial.M3.NoPurple"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -335,7 +335,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        style="@style/Widget.App.SwitchMaterial.M3.Fixed"/>
+                        style="@style/Widget.App.SwitchMaterial.M3.NoPurple"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -662,7 +662,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
-                        style="@style/Widget.App.SwitchMaterial.M3.Fixed"/>
+                        style="@style/Widget.App.SwitchMaterial.M3.NoPurple"/>
                 </LinearLayout>
 
             </LinearLayout>

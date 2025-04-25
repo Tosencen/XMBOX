@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:padding="20dp">
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:padding="20dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -190,6 +194,68 @@
             <!-- 播放链接功能已移除 -->
 
             <LinearLayout
+                android:id="@+id/llCheckUpdate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="16dp"
+                android:paddingHorizontal="24dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_menu_item_m3"
+                android:foreground="?android:selectableItemBackground"
+                android:elevation="1dp">
+
+                <!-- 使用TextView作为字体图标 -->
+                <TextView
+                    android:id="@+id/icon_update"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/ms_system_update"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="24sp"
+                    style="@style/Widget.App.MaterialSymbols"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="20dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:gravity="center"
+                    android:text="检查更新"
+                    android:textAlignment="gravity"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <!-- 新版本提醒标识 -->
+                <View
+                    android:id="@+id/update_badge"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/shape_update_badge"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_chevron_right_m3"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/llAbout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -297,5 +363,8 @@
         android:textColor="?attr/colorOnSurfaceVariant"
         android:fontFamily="sans-serif"
         />
-</LinearLayout>
+    </LinearLayout>
 
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

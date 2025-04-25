@@ -15,6 +15,7 @@ import com.github.tvbox.osc.bean.Source
 import com.github.tvbox.osc.bean.Subscription
 import com.github.tvbox.osc.callback.EmptySubscriptionCallback
 import com.github.tvbox.osc.databinding.ActivitySubscriptionBinding
+import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.ui.dialog.ConfirmDialog
 import com.github.tvbox.osc.ui.adapter.MenuAdapter
 import com.github.tvbox.osc.ui.adapter.SubscriptionAdapter
@@ -25,6 +26,7 @@ import com.github.tvbox.osc.ui.dialog.SubsTipDialog
 import com.github.tvbox.osc.ui.dialog.SubsciptionDialog
 import com.github.tvbox.osc.ui.dialog.SubsciptionDialog.OnSubsciptionListener
 import com.github.tvbox.osc.util.HawkConfig
+import com.github.tvbox.osc.util.UrlUtil
 import com.github.tvbox.osc.util.Utils
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -37,6 +39,7 @@ import com.lzy.okgo.callback.AbsCallback
 import com.lzy.okgo.model.Response
 import com.obsez.android.lib.filechooser.ChooserDialog
 import com.orhanobut.hawk.Hawk
+import org.greenrobot.eventbus.EventBus
 import java.util.function.Consumer
 
 class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
@@ -237,14 +240,16 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
             showLoadingDialog()
 
             // 对于特定的URL直接添加，不尝试解析内容
-            if (url == "http://ok321.top/tv" || url == "https://7213.kstore.vip/吃猫的鱼" || url.startsWith("https://7213.kstore.vip/")) {
+            if (url == "http://ok321.top/tv" || url == "https://7213.kstore.vip/吃猫的鱼" || url.startsWith("https://7213.kstore.vip/") || url == "http://www.饭太硬.com/tv") {
                 dismissLoadingDialog()
                 addSub2List(name, url, checked)
                 MD3ToastUtils.showToast("添加订阅成功")
                 return
             }
 
-            OkGo.get<String>(url)
+            // 处理URL，包括特殊URL映射和Punycode转换
+            val encodedUrl = UrlUtil.processUrl(url)
+            OkGo.get<String>(encodedUrl)
                 .tag("get_subscription")
                 .execute(object : AbsCallback<String?>() {
                     override fun onSuccess(response: Response<String?>) {
@@ -387,9 +392,15 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
     override fun finish() {
         //切换了订阅地址
         if (!TextUtils.isEmpty(mSelectedUrl) && mBeforeUrl != mSelectedUrl) {
+            // 使用EventBus发送源变更事件，而不是重启整个应用
+            EventBus.getDefault().post(RefreshEvent(RefreshEvent.TYPE_API_URL_CHANGE))
+
+            // 创建返回到首页的Intent
             val intent = Intent(this, MainActivity::class.java)
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            // 清除任务栈中MainActivity之上的所有Activity
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
+            // 添加过渡动画
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         }
         super.finish()

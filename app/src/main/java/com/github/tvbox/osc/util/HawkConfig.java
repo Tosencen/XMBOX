@@ -21,7 +21,7 @@ public class HawkConfig {
     public static final String PLAY_RENDER = "play_render"; //0 texture 2
     public static final String PLAY_SCALE = "play_scale"; //0 texture 2
     public static final String PLAY_TIME_STEP = "play_time_step"; //0 texture 2
-    public static final String DOH_URL = "doh_url";
+    public static final String DOH_URL = "doh_url"; // 默认值为1（阿里DNS）
     /**
      * 0 豆瓣热播 1 数据源推荐 2 关闭主页
      */

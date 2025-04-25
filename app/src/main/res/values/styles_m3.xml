@@ -17,9 +17,12 @@
         <item name="track">@drawable/switch_track_m3</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:minWidth">40dp</item>
-        <item name="android:minHeight">20dp</item>
-        <item name="android:thumbOffset">2dp</item>
+        <item name="android:minWidth">52dp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:thumbOffset">4dp</item>
+        <!-- 使用Material Design 3的主题属性 -->
+        <item name="thumbTint">@null</item>
+        <item name="trackTint">@null</item>
     </style>
 
     <!-- Material Design 3 SwitchCompat 样式 -->

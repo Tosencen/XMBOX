@@ -68,11 +68,23 @@ public class TextureRenderView extends TextureView implements IRenderView, Textu
 
     @Override
     public void release() {
-        if (mSurface != null)
-            mSurface.release();
+        try {
+            if (mSurface != null) {
+                mSurface.release();
+                mSurface = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        if (mSurfaceTexture != null)
-            mSurfaceTexture.release();
+        try {
+            if (mSurfaceTexture != null) {
+                mSurfaceTexture.release();
+                mSurfaceTexture = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

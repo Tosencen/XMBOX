@@ -362,38 +362,53 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
      */
     public void release() {
         if (!isInIdleState()) {
-            //释放播放器
-            if (mMediaPlayer != null) {
-                mMediaPlayer.release();
-                mMediaPlayer = null;
-            }
-            //释放renderView
-            if (mRenderView != null) {
-                mPlayerContainer.removeView(mRenderView.getView());
-                mRenderView.release();
-                mRenderView = null;
-            }
-            //释放Assets资源
-            if (mAssetFileDescriptor != null) {
-                try {
-                    mAssetFileDescriptor.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            try {
+                //释放播放器
+                if (mMediaPlayer != null) {
+                    mMediaPlayer.release();
+                    mMediaPlayer = null;
                 }
+                //释放renderView - 添加安全检查
+                if (mRenderView != null) {
+                    try {
+                        if (mPlayerContainer != null) {
+                            mPlayerContainer.removeView(mRenderView.getView());
+                        }
+                        mRenderView.release();
+                    } catch (Exception e) {
+                        //忽略renderView释放时的异常
+                        e.printStackTrace();
+                    } finally {
+                        mRenderView = null;
+                    }
+                }
+                //释放Assets资源
+                if (mAssetFileDescriptor != null) {
+                    try {
+                        mAssetFileDescriptor.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                //关闭AudioFocus监听
+                if (mAudioFocusHelper != null) {
+                    mAudioFocusHelper.abandonFocus();
+                    mAudioFocusHelper = null;
+                }
+                //关闭屏幕常亮
+                if (mPlayerContainer != null) {
+                    mPlayerContainer.setKeepScreenOn(false);
+                }
+                //保存播放进度
+                saveProgress();
+                //重置播放进度
+                mCurrentPosition = 0;
+                //切换转态
+                setPlayState(STATE_IDLE);
+            } catch (Exception e) {
+                //捕获所有异常，确保释放过程不会崩溃
+                e.printStackTrace();
             }
-            //关闭AudioFocus监听
-            if (mAudioFocusHelper != null) {
-                mAudioFocusHelper.abandonFocus();
-                mAudioFocusHelper = null;
-            }
-            //关闭屏幕常亮
-            mPlayerContainer.setKeepScreenOn(false);
-            //保存播放进度
-            saveProgress();
-            //重置播放进度
-            mCurrentPosition = 0;
-            //切换转态
-            setPlayState(STATE_IDLE);
         }
     }
 

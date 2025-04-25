@@ -10,9 +10,14 @@ import com.blankj.utilcode.util.ToastUtils
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.constant.IntentKey
 import com.github.tvbox.osc.databinding.ActivityMainBinding
+import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.ui.fragment.GridFragment
 import com.github.tvbox.osc.ui.fragment.HomeFragment
 import com.github.tvbox.osc.ui.fragment.MyFragment
+import com.github.tvbox.osc.util.MD3ToastUtils
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import kotlin.system.exitProcess
 
 class MainActivity : BaseVbActivity<ActivityMainBinding>() {
@@ -22,6 +27,10 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
     private var exitTime = 0L
 
     override fun init() {
+        // 注册EventBus
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this)
+        }
 
         useCacheConfig = intent.extras?.getBoolean(IntentKey.CACHE_CONFIG_CHANGED, false)?:false
 
@@ -81,6 +90,32 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
             ActivityUtils.finishAllActivities(true)
             Process.killProcess(Process.myPid())
             exitProcess(0)
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    override fun refresh(event: RefreshEvent) {
+        if (event.type == RefreshEvent.TYPE_API_URL_CHANGE) {
+            // 显示加载提示
+            MD3ToastUtils.showToast("正在切换订阅源...")
+
+            // 获取HomeFragment并刷新数据
+            val homeFragment = fragments[0] as HomeFragment
+            if (homeFragment.isAdded) {
+                // 重置初始化状态
+                homeFragment.dataInitOk = false
+                homeFragment.jarInitOk = false
+                // 重新加载数据
+                homeFragment.initData()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 注销EventBus
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this)
         }
     }
 }

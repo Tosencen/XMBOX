@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -71,6 +72,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         initStatusBar();
         initTitleBar();
         init();
+
+        // 自动应用Material Symbols字体到所有使用该字体的TextView
+        applyMaterialSymbolsToAllTextViews();
+
         if (!App.getInstance().isNormalStart){
             AppUtils.relaunchApp(true);
         }
@@ -285,4 +290,97 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         }
     }
 
+    /**
+     * 自动应用Material Symbols字体到所有使用该字体的TextView
+     * 递归查找视图层次结构中的所有TextView，检查是否使用了Material Symbols字体
+     */
+    protected void applyMaterialSymbolsToAllTextViews() {
+        try {
+            // 获取根视图
+            View rootView = getWindow().getDecorView().findViewById(android.R.id.content);
+            // 递归应用字体
+            applyMaterialSymbolsToViewGroup((ViewGroup) rootView);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 递归应用Material Symbols字体到ViewGroup中的所有TextView
+     *
+     * @param viewGroup 要处理的ViewGroup
+     */
+    private void applyMaterialSymbolsToViewGroup(ViewGroup viewGroup) {
+        // 遍历ViewGroup中的所有子视图
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View view = viewGroup.getChildAt(i);
+
+            // 如果是TextView，检查是否使用了Material Symbols字体
+            if (view instanceof TextView) {
+                TextView textView = (TextView) view;
+                // 检查字体是否为Material Symbols
+                if (isMaterialSymbolsFont(textView)) {
+                    // 应用Material Symbols字体
+                    com.github.tvbox.osc.util.MaterialSymbolsLoader.apply(textView);
+                }
+            }
+
+            // 如果是ViewGroup，递归处理
+            if (view instanceof ViewGroup) {
+                applyMaterialSymbolsToViewGroup((ViewGroup) view);
+            }
+        }
+    }
+
+    /**
+     * 检查TextView是否使用了Material Symbols字体
+     *
+     * @param textView 要检查的TextView
+     * @return 是否使用了Material Symbols字体
+     */
+    private boolean isMaterialSymbolsFont(TextView textView) {
+        try {
+            // 检查字体名称
+            String fontFamily = textView.getFontFeatureSettings();
+            if (fontFamily != null && fontFamily.contains("material_symbols")) {
+                return true;
+            }
+
+            // 检查XML中设置的fontFamily属性
+            if (textView.getTypeface() != null) {
+                String typefaceName = textView.getTypeface().toString().toLowerCase();
+                if (typefaceName.contains("material") && typefaceName.contains("symbols")) {
+                    return true;
+                }
+            }
+
+            // 检查资源ID
+            if (textView.getId() != View.NO_ID) {
+                String resourceName = getResources().getResourceEntryName(textView.getId());
+                // 常见的Material Symbols图标ID命名模式
+                if (resourceName != null && (
+                        resourceName.startsWith("ms_") ||
+                        resourceName.startsWith("icon_") ||
+                        resourceName.equals("tvSort") ||
+                        resourceName.equals("tv_all_series"))) {
+                    return true;
+                }
+            }
+
+            // 检查文本内容是否是Unicode图标
+            String text = textView.getText().toString();
+            if (text.length() == 1) {
+                char c = text.charAt(0);
+                // Material Symbols图标的Unicode范围
+                if (c >= '\uE000' && c <= '\uF000') {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

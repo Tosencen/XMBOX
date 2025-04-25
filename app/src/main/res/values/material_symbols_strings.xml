@@ -69,4 +69,15 @@
     <string name="ms_cloud_download">\ue2c0</string>
     <string name="ms_lock">\ue897</string>
     <string name="ms_lock_open">\ue898</string>
+    <string name="ms_palette">\ue40a</string>
+    <string name="ms_visibility">\ue8f4</string>
+    <string name="ms_visibility_off">\ue8f5</string>
+    <string name="ms_security">\ue32a</string>
+    <string name="ms_play_circle">\ue039</string>
+    <string name="ms_block">\ue14b</string>
+    <string name="ms_speed">\ue9e4</string>
+    <string name="ms_settings_brightness">\ueb61</string>
+    <string name="ms_settings_backup_restore">\ue8ba</string>
+    <string name="ms_dns">\ue875</string>
+    <string name="ms_system_update">\ue8d7</string>
 </resources>

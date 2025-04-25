@@ -66,6 +66,7 @@ import com.github.tvbox.osc.ui.dialog.QuickSearchDialog;
 import com.github.tvbox.osc.ui.dialog.VideoDetailDialog;
 import com.github.tvbox.osc.ui.fragment.PlayFragment;
 import com.github.tvbox.osc.ui.widget.LinearSpacingItemDecoration;
+import com.github.tvbox.osc.util.AppConstants;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.ScreenShotListenManager;
@@ -221,37 +222,21 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         }
 
         // 设置下载按钮的点击事件
-        findViewById(R.id.tvDownload).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                use1DMDownload();
-            }
-        });
+        findViewById(R.id.tvDownload).setOnClickListener(view -> use1DMDownload());
 
         // 设置下载按钮的父容器点击事件
         ViewParent downloadParent = findViewById(R.id.tvDownload).getParent();
         if (downloadParent instanceof View) {
-            ((View) downloadParent).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    use1DMDownload();
-                }
-            });
+            ((View) downloadParent).setOnClickListener(view -> use1DMDownload());
         }
 
-        // 排序按钮已在下面处理
-        mBinding.tvSort.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onClick(View v) {
-                sortSeries();
-            }
-        });
+        // 排序按钮
+        mBinding.tvSort.setOnClickListener(v -> sortSeries());
 
         // 设置投屏按钮的点击事件 - 已禁用
         mBinding.tvCast.setOnClickListener(v -> {
             // showCastDialog();
-            MD3ToastUtils.showToast("投屏功能已禁用");
+            MD3ToastUtils.showToast(getString(R.string.detail_cast_disabled));
         });
 
         // 设置投屏按钮的父容器点击事件
@@ -259,27 +244,17 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         if (castParent instanceof View) {
             ((View) castParent).setOnClickListener(v -> {
                 // showCastDialog();
-                MD3ToastUtils.showToast("投屏功能已禁用");
+                MD3ToastUtils.showToast(getString(R.string.detail_cast_disabled));
             });
         }
 
         // 设置收藏按钮的点击事件
-        mBinding.tvCollect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleCollect();
-            }
-        });
+        mBinding.tvCollect.setOnClickListener(v -> toggleCollect());
 
         // 设置收藏按钮的父容器点击事件
         ViewParent collectParent = findViewById(R.id.tvCollect).getParent();
         if (collectParent instanceof View) {
-            ((View) collectParent).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    toggleCollect();
-                }
-            });
+            ((View) collectParent).setOnClickListener(v -> toggleCollect());
         }
 
         seriesFlagAdapter.setOnItemClickListener((adapter, view, position) -> {
@@ -287,12 +262,9 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             chooseFlag(position);
         });
 
-        seriesAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                FastClickCheckUtil.check(view);
-                chooseSeries(position, false);
-            }
+        seriesAdapter.setOnItemClickListener((adapter, view, position) -> {
+            FastClickCheckUtil.check(view);
+            chooseSeries(position, false);
         });
 
         mBinding.tvAllSeries.setOnClickListener(view -> {
@@ -383,10 +355,10 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
 
     public void showCastDialog() {
         // 投屏功能已禁用
-        MD3ToastUtils.showToast("投屏功能已禁用");
+        MD3ToastUtils.showToast(getString(R.string.detail_cast_disabled));
         /*
         if (vodInfo == null || playFragment == null) {
-            MD3ToastUtils.showLongToast("暂无可投屏内容");
+            MD3ToastUtils.showLongToast(getString(R.string.detail_no_cast_content));
             return;
         }
 
@@ -501,16 +473,15 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
 //            bundle.putSerializable("VodInfo", vodInfo);
             App.getInstance().setVodInfo(vodInfo);
             if (previewVodInfo == null) {
+                // 使用Gson进行深拷贝，比序列化更高效
                 try {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    ObjectOutputStream oos = new ObjectOutputStream(bos);
-                    oos.writeObject(vodInfo);
-                    oos.flush();
-                    oos.close();
-                    ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
-                    previewVodInfo = (VodInfo) ois.readObject();
+                    Gson gson = new Gson();
+                    String json = gson.toJson(vodInfo);
+                    previewVodInfo = gson.fromJson(json, VodInfo.class);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LogUtils.e("深拷贝VodInfo失败", e);
+                    // 如果深拷贝失败，直接使用原对象
+                    previewVodInfo = vodInfo;
                 }
             }
             if (previewVodInfo != null) {
@@ -566,7 +537,8 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                     mBinding.tvTitle.setText(mVideo.name);
                     mBinding.tvVideoTitle.setText(mVideo.name);
                     String srcName = ApiConfig.get().getSource(mVideo.sourceKey).getName();
-                    mBinding.tvSite.setText("来源：" + (TextUtils.isEmpty(srcName) ? "未知" : srcName));
+                    mBinding.tvSite.setText(getString(R.string.detail_source_prefix) +
+                        (TextUtils.isEmpty(srcName) ? getString(R.string.detail_source_unknown) : srcName));
 
                     if (vodInfo.seriesMap != null && vodInfo.seriesMap.size() > 0) {//线路
                         mBinding.mGridViewFlag.setVisibility(View.VISIBLE);
@@ -654,11 +626,11 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             TextView favoriteIcon = (TextView) ((ViewGroup) mBinding.tvCollect.getParent()).getChildAt(0);
 
             if (isVodCollect) {
-                mBinding.tvCollect.setText("取消收藏");
+                mBinding.tvCollect.setText(getString(R.string.detail_remove_from_favorites));
                 // 设置为填充图标颜色
                 favoriteIcon.setTextColor(getResources().getColor(R.color.md3_primary));
             } else {
-                mBinding.tvCollect.setText("加入收藏");
+                mBinding.tvCollect.setText(getString(R.string.detail_add_to_favorites));
                 // 设置为线框图标颜色
                 favoriteIcon.setTextColor(getResources().getColor(R.color.text_foreground));
             }
@@ -742,7 +714,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         quickSearchData.clear();
         quickSearchWord.addAll(SearchHelper.splitWords(searchTitle));
         // 分词
-        OkGo.<String>get("http://api.pullword.com/get.php?source=" + URLEncoder.encode(searchTitle) + "&param1=0&param2=0&json=1")
+        OkGo.<String>get(String.format(getString(R.string.detail_fenci_api_url), URLEncoder.encode(searchTitle)))
                 .tag("fenci")
                 .execute(new AbsCallback<String>() {
                     @Override
@@ -1010,7 +982,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             intent.setDataAndType(Uri.parse(url), "video/mp4");
             intent.putExtra("title", vodInfo.name + " " + vod.name); // 传入文件保存名
 //            intent.setClassName("idm.internet.download.manager.plus", "idm.internet.download.manager.MainActivity");
-            intent.setClassName("idm.internet.download.manager.plus", "idm.internet.download.manager.Downloader");
+            intent.setClassName(AppConstants.ExternalApps.PKG_1DM, AppConstants.ExternalApps.CLS_1DM_DOWNLOADER);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             // 检查1DM App是否已安装
@@ -1024,20 +996,20 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                 // 如果1DM App未安装，提示用户安装1DM App
                 MD3DialogUtils.showAlertDialog(
                     this,
-                    "请先安装1DM+下载管理器",
-                    "为了下载视频，请先安装1DM+下载管理器。是否现在安装？",
-                    "立即下载",
-                    "取消",
+                    getString(R.string.detail_install_1dm_title),
+                    getString(R.string.detail_install_1dm_message),
+                    getString(R.string.detail_install_1dm_positive),
+                    getString(R.string.detail_install_1dm_negative),
                     (dialog, which) -> {
                         // 跳转到下载链接
-                        Intent downloadIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://od.lk/d/MzRfMTg0NTcxMDdf/1DM _v15.6.apk"));
+                        Intent downloadIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.detail_1dm_download_url)));
                         startActivity(downloadIntent);
                     },
                     null
                 );
             }
         } else {
-            MD3ToastUtils.showToast("资源异常,请稍后重试");
+            MD3ToastUtils.showToast(getString(R.string.detail_resource_error));
         }
     }
 
@@ -1233,16 +1205,16 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             if (isVodCollect) {
                 // 使用vodInfo对象而不是vodId
                 RoomDataManger.deleteVodCollect(sourceKey, vodInfo);
-                mBinding.tvCollect.setText("加入收藏");
+                mBinding.tvCollect.setText(getString(R.string.detail_add_to_favorites));
                 // 设置为线框图标
                 favoriteIcon.setTextColor(getResources().getColor(R.color.text_foreground));
-                MD3ToastUtils.showToast("已取消收藏");
+                MD3ToastUtils.showToast(getString(R.string.detail_removed_from_favorites));
             } else {
                 RoomDataManger.insertVodCollect(sourceKey, vodInfo);
-                mBinding.tvCollect.setText("取消收藏");
+                mBinding.tvCollect.setText(getString(R.string.detail_remove_from_favorites));
                 // 设置为填充图标
                 favoriteIcon.setTextColor(getResources().getColor(R.color.md3_primary));
-                MD3ToastUtils.showToast("已加入收藏");
+                MD3ToastUtils.showToast(getString(R.string.detail_added_to_favorites));
             }
         }
     }
@@ -1265,16 +1237,16 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                             String cls = "";
                             switch (position) {
                                 case 0:
-                                    pkg = "com.alicloud.databox";
-                                    cls = "com.alicloud.databox.launcher.splash.SplashActivity";
+                                    pkg = AppConstants.ExternalApps.PKG_ALI_CLOUD;
+                                    cls = AppConstants.ExternalApps.CLS_ALI_CLOUD_SPLASH;
                                     break;
                                 case 1:
-                                    pkg = "com.UCMobile";
-                                    cls = "com.uc.browser.InnerUCMobile";
+                                    pkg = AppConstants.ExternalApps.PKG_UC_BROWSER;
+                                    cls = AppConstants.ExternalApps.CLS_UC_BROWSER_MAIN;
                                     break;
                                 case 2:
-                                    pkg = "com.quark.browser";
-                                    cls = "com.ucpro.MainActivity";
+                                    pkg = AppConstants.ExternalApps.PKG_QUARK_BROWSER;
+                                    cls = AppConstants.ExternalApps.CLS_QUARK_BROWSER_MAIN;
                                     break;
                                 case 3:
                                     return;
@@ -1282,7 +1254,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                             try {
                                 startActivity(new Intent().setComponent(new ComponentName(pkg, cls)));
                             } catch (Exception e) {
-                                MD3ToastUtils.showToast("未找到应用");
+                                MD3ToastUtils.showToast(getString(R.string.detail_app_not_found));
                             }
                         })
                         .show();
