@@ -75,11 +75,23 @@
 
     <!-- 版本信息 -->
     <TextView
+        android:id="@+id/tvVersionInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="正在更新至 v2.0.3"
+        android:text="正在更新..."
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="12sp" />
+
+    <!-- 取消按钮 -->
+    <Button
+        android:id="@+id/btnCancel"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="16dp"
+        android:text="取消"
+        android:textColor="?attr/colorPrimary" />
 
 </LinearLayout>

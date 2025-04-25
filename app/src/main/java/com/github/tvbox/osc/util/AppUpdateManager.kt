@@ -41,6 +41,12 @@ class AppUpdateManager(private val context: Context) {
     // 下载完成广播接收器
     private var downloadCompleteReceiver: BroadcastReceiver? = null
 
+    // 目标版本号
+    private var targetVersion: String? = null
+
+    // 是否正在下载
+    private var isDownloading = false
+
     // 更新检查回调接口
     interface UpdateCheckCallback {
         fun onUpdateAvailable(newVersion: String)
@@ -137,10 +143,15 @@ class AppUpdateManager(private val context: Context) {
      */
     private fun downloadApk(downloadUrl: String, version: String) {
         try {
+            // 设置目标版本号和下载状态
+            targetVersion = version
+            isDownloading = true
+
             // 创建下载目录
             val downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
             if (downloadDir == null) {
                 MD3ToastUtils.showToast("无法获取下载目录")
+                isDownloading = false
                 return
             }
 
@@ -186,12 +197,35 @@ class AppUpdateManager(private val context: Context) {
      */
     private fun showProgressDialog() {
         if (context is Activity && !context.isFinishing) {
-            progressDialog = UpdateProgressDialog(context)
+            progressDialog = UpdateProgressDialog(context, targetVersion) {
+                // 取消下载的回调
+                cancelDownload()
+            }
             XPopup.Builder(context)
-                .dismissOnBackPressed(false)
+                .dismissOnBackPressed(true)  // 允许按返回键取消
                 .dismissOnTouchOutside(false)
                 .asCustom(progressDialog)
                 .show()
+        }
+    }
+
+    /**
+     * 取消下载
+     */
+    private fun cancelDownload() {
+        try {
+            if (isDownloading && downloadId > 0) {
+                // 取消下载任务
+                downloadManager?.remove(downloadId)
+                isDownloading = false
+
+                // 清理资源
+                unregisterDownloadCompleteReceiver()
+
+                Log.d(TAG, "下载已取消")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "取消下载失败", e)
         }
     }
 
@@ -226,9 +260,11 @@ class AppUpdateManager(private val context: Context) {
                                 when (status) {
                                     DownloadManager.STATUS_SUCCESSFUL -> {
                                         isDownloading = false
+                                        Log.d(TAG, "下载完成")
                                     }
                                     DownloadManager.STATUS_FAILED -> {
                                         isDownloading = false
+                                        Log.e(TAG, "下载失败")
                                         (context as Activity).runOnUiThread {
                                             MD3ToastUtils.showToast("下载失败")
                                             dismissProgressDialog()
@@ -423,7 +459,13 @@ class AppUpdateManager(private val context: Context) {
      * 释放资源
      */
     fun release() {
+        // 如果正在下载，取消下载
+        if (isDownloading) {
+            cancelDownload()
+        }
+
         unregisterDownloadCompleteReceiver()
         dismissProgressDialog()
+        isDownloading = false
     }
 }
