@@ -902,8 +902,12 @@
                             android:layout_height="wrap_content"
                             android:text="清空缓存"
                             android:textSize="14sp"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="8dp"
                             app:cornerRadius="8dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                            app:elevation="2dp"
+                            style="@style/Widget.Material3.Button" />
                     </LinearLayout>
 
                 </LinearLayout>
