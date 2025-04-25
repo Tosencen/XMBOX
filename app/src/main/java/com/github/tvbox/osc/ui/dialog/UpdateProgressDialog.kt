@@ -14,19 +14,25 @@ import com.lxj.xpopup.core.CenterPopupView
 class UpdateProgressDialog(context: Context) : CenterPopupView(context) {
 
     private lateinit var binding: DialogUpdateProgressBinding
-    
+
     override fun getImplLayoutId(): Int {
         return R.layout.dialog_update_progress
     }
-    
+
     override fun onCreate() {
         super.onCreate()
         binding = DialogUpdateProgressBinding.bind(popupImplView)
-        
+
+        // 应用Material Symbols字体到图标
+        val iconView = popupImplView.findViewById<TextView>(R.id.tvUpdateIcon)
+        if (iconView != null) {
+            com.github.tvbox.osc.util.MaterialSymbolsLoader.apply(iconView)
+        }
+
         // 初始化进度为0
         updateProgress(0)
     }
-    
+
     /**
      * 更新进度
      * @param progress 进度值(0-100)

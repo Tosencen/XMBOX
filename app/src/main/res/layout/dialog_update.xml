@@ -7,15 +7,37 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <TextView
-        android:id="@+id/tvVersion"
+    <!-- 顶部图标和标题区域 -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="发现新版本"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
+        <TextView
+            android:id="@+id/tvUpdateIcon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_icon_circle"
+            android:gravity="center"
+            android:text="system_update"
+            android:textColor="?attr/colorOnPrimaryContainer"
+            android:textSize="24sp"
+            android:fontFamily="sans-serif" />
+
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:text="发现新版本"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 更新内容区域 -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,6 +53,7 @@
             android:textSize="14sp" />
     </ScrollView>
 
+    <!-- 按钮区域 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

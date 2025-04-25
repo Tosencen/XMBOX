@@ -28,18 +28,24 @@ class UpdateDialog(
         super.onCreate()
         binding = DialogUpdateBinding.bind(popupImplView)
 
+        // 应用Material Symbols字体到图标
+        val iconView = popupImplView.findViewById<TextView>(R.id.tvUpdateIcon)
+        if (iconView != null) {
+            com.github.tvbox.osc.util.MaterialSymbolsLoader.apply(iconView)
+        }
+
         // 设置版本信息
         binding.tvVersion.text = "发现新版本：v$newVersion"
-        
+
         // 设置更新内容
         binding.tvReleaseNotes.text = releaseNotes
-        
+
         // 设置按钮点击事件
         binding.btnUpdate.setOnClickListener {
             UpdateChecker.openDownloadUrl(context, downloadUrl)
             dismiss()
         }
-        
+
         binding.btnCancel.setOnClickListener {
             dismiss()
         }
