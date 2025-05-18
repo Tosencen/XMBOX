@@ -10,11 +10,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.util.Log
-import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import com.github.tvbox.osc.network.repository.ReleaseInfo
+import com.github.tvbox.osc.network.repository.UpdateRepository
 import com.github.tvbox.osc.ui.dialog.UpdateProgressDialog
 import com.lxj.xpopup.XPopup
-import org.json.JSONObject
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.regex.Pattern
 
@@ -25,11 +28,11 @@ import java.util.regex.Pattern
 class AppUpdateManager(private val context: Context) {
     private val TAG = "AppUpdateManager"
 
-    // GitHub API 地址
-    private val GITHUB_API_URL = "https://api.github.com/repos/Tosencen/XMBOX/releases/latest"
-
     // 版本号正则表达式
     private val VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)")
+
+    // 更新仓库
+    private val updateRepository = UpdateRepository()
 
     // 下载管理器
     private var downloadManager: DownloadManager? = null
@@ -60,35 +63,27 @@ class AppUpdateManager(private val context: Context) {
      */
     fun checkUpdate(showNoUpdate: Boolean = false) {
         try {
+            // 确保context是LifecycleOwner
+            if (context !is LifecycleOwner) {
+                Log.e(TAG, "Context不是LifecycleOwner，无法启动协程")
+                return
+            }
+
             // 获取当前版本
             val currentVersion = com.blankj.utilcode.util.AppUtils.getAppVersionName()
             Log.d(TAG, "当前版本: $currentVersion")
 
-            // 请求GitHub API获取最新版本
-            com.lzy.okgo.OkGo.get<String>(GITHUB_API_URL)
-                .headers("Accept", "application/vnd.github.v3+json")
-                .execute(object : com.lzy.okgo.callback.StringCallback() {
-                    override fun onSuccess(response: com.lzy.okgo.model.Response<String>) {
-                        try {
-                            val jsonObject = JSONObject(response.body())
-                            val latestVersion = jsonObject.getString("tag_name").replace("v", "")
-                            val releaseNotes = jsonObject.getString("body")
+            // 使用协程和Retrofit处理网络请求
+            (context as LifecycleOwner).lifecycleScope.launch {
+                try {
+                    // 调用仓库方法获取最新版本
+                    val result = updateRepository.getLatestVersion()
 
-                            // 获取下载链接
-                            val assets = jsonObject.getJSONArray("assets")
-                            var downloadUrl = ""
-                            for (i in 0 until assets.length()) {
-                                val asset = assets.getJSONObject(i)
-                                val name = asset.getString("name")
-                                if (name.endsWith(".apk")) {
-                                    downloadUrl = asset.getString("browser_download_url")
-                                    break
-                                }
-                            }
-
-                            if (downloadUrl.isEmpty()) {
-                                downloadUrl = jsonObject.getString("html_url")
-                            }
+                    result.fold(
+                        onSuccess = { releaseInfo ->
+                            val latestVersion = releaseInfo.version
+                            val releaseNotes = releaseInfo.releaseNotes
+                            val downloadUrl = releaseInfo.downloadUrl
 
                             Log.d(TAG, "最新版本: $latestVersion, 下载链接: $downloadUrl")
 
@@ -98,21 +93,21 @@ class AppUpdateManager(private val context: Context) {
                             } else if (showNoUpdate) {
                                 MD3ToastUtils.showToast("当前已是最新版本")
                             }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "解析更新信息失败", e)
+                        },
+                        onFailure = { error ->
+                            Log.e(TAG, "获取最新版本失败: ${error.message}")
                             if (showNoUpdate) {
                                 MD3ToastUtils.showToast("检查更新失败")
                             }
                         }
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "检查更新过程中发生错误", e)
+                    if (showNoUpdate) {
+                        MD3ToastUtils.showToast("检查更新失败")
                     }
-
-                    override fun onError(response: com.lzy.okgo.model.Response<String>) {
-                        Log.e(TAG, "检查更新请求失败: ${response.message()}")
-                        if (showNoUpdate) {
-                            MD3ToastUtils.showToast("检查更新失败")
-                        }
-                    }
-                })
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "检查更新过程中发生错误", e)
             if (showNoUpdate) {
@@ -419,18 +414,26 @@ class AppUpdateManager(private val context: Context) {
      */
     fun checkUpdateSilently(callback: UpdateCheckCallback) {
         try {
+            // 确保context是LifecycleOwner
+            if (context !is LifecycleOwner) {
+                Log.e(TAG, "Context不是LifecycleOwner，无法启动协程")
+                callback.onCheckFailed()
+                return
+            }
+
             // 获取当前版本
             val currentVersion = com.blankj.utilcode.util.AppUtils.getAppVersionName()
             Log.d(TAG, "当前版本: $currentVersion")
 
-            // 请求GitHub API获取最新版本
-            com.lzy.okgo.OkGo.get<String>(GITHUB_API_URL)
-                .headers("Accept", "application/vnd.github.v3+json")
-                .execute(object : com.lzy.okgo.callback.StringCallback() {
-                    override fun onSuccess(response: com.lzy.okgo.model.Response<String>) {
-                        try {
-                            val jsonObject = JSONObject(response.body())
-                            val latestVersion = jsonObject.getString("tag_name").replace("v", "")
+            // 使用协程和Retrofit处理网络请求
+            (context as LifecycleOwner).lifecycleScope.launch {
+                try {
+                    // 调用仓库方法获取最新版本
+                    val result = updateRepository.getLatestVersion()
+
+                    result.fold(
+                        onSuccess = { releaseInfo ->
+                            val latestVersion = releaseInfo.version
 
                             // 比较版本号
                             if (isNewerVersion(currentVersion, latestVersion)) {
@@ -438,17 +441,17 @@ class AppUpdateManager(private val context: Context) {
                             } else {
                                 callback.onNoUpdateAvailable()
                             }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "解析更新信息失败", e)
+                        },
+                        onFailure = { error ->
+                            Log.e(TAG, "获取最新版本失败: ${error.message}")
                             callback.onCheckFailed()
                         }
-                    }
-
-                    override fun onError(response: com.lzy.okgo.model.Response<String>) {
-                        Log.e(TAG, "检查更新请求失败: ${response.message()}")
-                        callback.onCheckFailed()
-                    }
-                })
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "检查更新过程中发生错误", e)
+                    callback.onCheckFailed()
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "检查更新过程中发生错误", e)
             callback.onCheckFailed()

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.text.TextUtils
 import android.view.View
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
@@ -16,6 +17,9 @@ import com.github.tvbox.osc.bean.Subscription
 import com.github.tvbox.osc.callback.EmptySubscriptionCallback
 import com.github.tvbox.osc.databinding.ActivitySubscriptionBinding
 import com.github.tvbox.osc.event.RefreshEvent
+import com.github.tvbox.osc.network.repository.SourceItem
+import com.github.tvbox.osc.network.repository.SubscriptionRepository
+import com.github.tvbox.osc.network.repository.SubscriptionResult
 import com.github.tvbox.osc.ui.dialog.ConfirmDialog
 import com.github.tvbox.osc.ui.adapter.MenuAdapter
 import com.github.tvbox.osc.ui.adapter.SubscriptionAdapter
@@ -34,11 +38,10 @@ import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
 import com.lxj.xpopup.XPopup
-import com.lzy.okgo.OkGo
-import com.lzy.okgo.callback.AbsCallback
-import com.lzy.okgo.model.Response
+
 import com.obsez.android.lib.filechooser.ChooserDialog
 import com.orhanobut.hawk.Hawk
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import java.util.function.Consumer
 
@@ -49,6 +52,9 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
     private var mSubscriptions: MutableList<Subscription> = Hawk.get(HawkConfig.SUBSCRIPTIONS, ArrayList())
     private var mSubscriptionAdapter = SubscriptionAdapter()
     private val mSources: MutableList<Source> = ArrayList()
+
+    // 添加订阅仓库
+    private val subscriptionRepository = SubscriptionRepository()
 
     override fun init() {
         // 自定义返回图标，使用Material Symbols字体
@@ -239,67 +245,55 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
         } else if (url.startsWith("http")) {
             showLoadingDialog()
 
-            // 对于特定的URL直接添加，不尝试解析内容
-            if (url == "http://ok321.top/tv" || url == "https://7213.kstore.vip/吃猫的鱼" || url.startsWith("https://7213.kstore.vip/") || url == "http://www.饭太硬.com/tv") {
-                dismissLoadingDialog()
-                addSub2List(name, url, checked)
-                MD3ToastUtils.showToast("添加订阅成功")
-                return
-            }
+            // 使用协程和Retrofit处理网络请求
+            lifecycleScope.launch {
+                try {
+                    // 调用仓库方法获取订阅
+                    val result = subscriptionRepository.addSubscription(name, url)
 
-            // 处理URL，包括特殊URL映射和Punycode转换
-            val encodedUrl = UrlUtil.processUrl(url)
-            OkGo.get<String>(encodedUrl)
-                .tag("get_subscription")
-                .execute(object : AbsCallback<String?>() {
-                    override fun onSuccess(response: Response<String?>) {
-                        dismissLoadingDialog()
-                        try {
-                            val json = JsonParser.parseString(response.body()).asJsonObject
-                            // 多线路?
-                            val urls = json["urls"]
-                            // 多仓?
-                            val storeHouse = json["storeHouse"]
-                            if (urls != null && urls.isJsonArray) { // 多线路
-                                if (checked) {
-                                    ToastUtils.showLong("多条线路请主动选择")
+                    result.fold(
+                        onSuccess = { subscriptionResult ->
+                            dismissLoadingDialog()
+
+                            when (subscriptionResult) {
+                                // 单线路订阅
+                                is SubscriptionResult.SingleSubscription -> {
+                                    val subscription = subscriptionResult.subscription
+                                    addSub2List(subscription.name, subscription.url, checked)
+                                    MD3ToastUtils.showToast("添加订阅成功")
                                 }
-                                val urlList = urls.asJsonArray
-                                if (urlList != null && urlList.size() > 0 && urlList[0].isJsonObject
-                                    && urlList[0].asJsonObject.has("url")
-                                    && urlList[0].asJsonObject.has("name")
-                                ) { //多线路格式
-                                    for (i in 0 until urlList.size()) {
-                                        val obj = urlList[i] as JsonObject
-                                        val name = obj["name"].asString.trim { it <= ' ' }
-                                            .replace("<|>|《|》|-".toRegex(), "")
-                                        val url = obj["url"].asString.trim { it <= ' ' }
-                                        mSubscriptions.add(Subscription(name, url))
+
+                                // 多线路订阅
+                                is SubscriptionResult.MultipleSubscriptions -> {
+                                    if (checked) {
+                                        ToastUtils.showLong("多条线路请主动选择")
                                     }
+
+                                    // 添加所有订阅
+                                    mSubscriptions.addAll(subscriptionResult.subscriptions)
+
                                     // 立即保存数据并刷新UI
                                     saveSubscriptions()
                                     mSubscriptionAdapter.setNewData(mSubscriptions)
+
                                     // 确保显示内容
                                     if (mSubscriptions.isNotEmpty()) {
                                         showSuccess()
                                     }
+
                                     // 提示用户
                                     MD3ToastUtils.showToast("添加多线路订阅成功")
                                 }
-                            } else if (storeHouse != null && storeHouse.isJsonArray) { // 多仓
-                                val storeHouseList = storeHouse.asJsonArray
-                                if (storeHouseList != null && storeHouseList.size() > 0 && storeHouseList[0].isJsonObject
-                                    && storeHouseList[0].asJsonObject.has("sourceName")
-                                    && storeHouseList[0].asJsonObject.has("sourceUrl")
-                                ) { //多仓格式
+
+                                // 多仓订阅
+                                is SubscriptionResult.MultipleStoreHouses -> {
+                                    // 转换SourceItem到Source
                                     mSources.clear()
-                                    for (i in 0 until storeHouseList.size()) {
-                                        val obj = storeHouseList[i] as JsonObject
-                                        val name = obj["sourceName"].asString.trim { it <= ' ' }
-                                            .replace("<|>|《|》|-".toRegex(), "")
-                                        val url = obj["sourceUrl"].asString.trim { it <= ' ' }
-                                        mSources.add(Source(name, url))
+                                    for (sourceItem in subscriptionResult.sources) {
+                                        mSources.add(Source(sourceItem.sourceName, sourceItem.sourceUrl))
                                     }
+
+                                    // 显示选择对话框
                                     XPopup.Builder(this@SubscriptionActivity)
                                         .asCustom(
                                             ChooseSourceDialog(
@@ -315,30 +309,20 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
                                             })
                                         .show()
                                 }
-                            } else { // 单线路/其余
-                                addSub2List(name, url, checked)
-                                // 提示用户
-                                MD3ToastUtils.showToast("添加订阅成功")
                             }
-                        } catch (th: Throwable) {
-                            // 异常情况下作为单线路处理
-                            addSub2List(name, url, checked)
-                            // 提示用户
-                            MD3ToastUtils.showToast("添加订阅成功")
+                        },
+                        onFailure = { error ->
+                            dismissLoadingDialog()
+                            ToastUtils.showLong("订阅失败: ${error.message}")
                         }
-                    }
-
-                    @Throws(Throwable::class)
-                    override fun convertResponse(response: okhttp3.Response): String {
-                        return response.body()!!.string()
-                    }
-
-                    override fun onError(response: Response<String?>) {
-                        super.onError(response)
-                        dismissLoadingDialog()
-                        ToastUtils.showLong("订阅失败,请检查地址或网络状态")
-                    }
-                })
+                    )
+                } catch (e: Exception) {
+                    dismissLoadingDialog()
+                    // 异常情况下作为单线路处理
+                    addSub2List(name, url, checked)
+                    MD3ToastUtils.showToast("添加订阅成功")
+                }
+            }
         } else {
             ToastUtils.showShort("订阅格式不正确")
         }
@@ -408,6 +392,6 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
-        OkGo.getInstance().cancelTag("get_subscription")
+        // 已迁移到Retrofit，不再需要取消OkGo请求
     }
 }

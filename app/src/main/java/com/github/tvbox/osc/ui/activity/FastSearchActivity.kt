@@ -44,13 +44,11 @@ import com.google.gson.reflect.TypeToken
 import com.lxj.xpopup.XPopup
 import com.lxj.xpopup.core.BasePopupView
 import com.lxj.xpopup.interfaces.SimpleCallback
-import com.lzy.okgo.OkGo
-import com.lzy.okgo.callback.AbsCallback
-import com.lzy.okgo.callback.StringCallback
 import com.orhanobut.hawk.Hawk
 import com.zhy.view.flowlayout.FlowLayout
 import com.zhy.view.flowlayout.TagAdapter
-import okhttp3.Response
+import com.github.tvbox.osc.network.repository.SearchRepository
+import com.github.tvbox.osc.network.repository.DoubanRepository
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import com.github.tvbox.osc.util.ThreadPoolManager
@@ -69,6 +67,12 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
             mCheckSources = checkedSources
         }
     }
+
+    // 搜索仓库
+    private val searchRepository = SearchRepository()
+
+    // 豆瓣仓库
+    private val doubanRepository = DoubanRepository()
 
     private lateinit var sourceViewModel : SourceViewModel
     private var searchAdapter = FastSearchAdapter()
@@ -395,24 +399,14 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
      */
     private val hotWords: Unit
         get() {
-            // 加载热词
-            OkGo.get<String>("https://node.video.qq.com/x/api/hot_search")
-                .params("channdlId", "0")
-                .params("_", System.currentTimeMillis())
-                .execute(object : AbsCallback<String?>() {
-                    override fun onSuccess(response: com.lzy.okgo.model.Response<String?>) {
-                        try {
-                            val hots = ArrayList<String>()
-                            val itemList =
-                                JsonParser.parseString(response.body()).asJsonObject["data"].asJsonObject["mapResult"].asJsonObject["0"].asJsonObject["listInfo"].asJsonArray
-                            //                            JsonArray itemList = JsonParser.parseString(response.body()).getAsJsonObject().get("data").getAsJsonArray();
-                            for (ele: JsonElement in itemList) {
-                                val obj = ele as JsonObject
-                                hots.add(obj["title"].asString.trim { it <= ' ' }
-                                    .replace("<|>|《|》|-".toRegex(), "").split(" ".toRegex())
-                                    .dropLastWhile { it.isEmpty() }
-                                    .toTypedArray()[0])
-                            }
+            // 使用协程和Retrofit处理网络请求
+            lifecycleScope.launch {
+                try {
+                    // 调用仓库方法获取热门搜索词
+                    val result = searchRepository.getHotSearch()
+
+                    result.fold(
+                        onSuccess = { hots ->
                             mBinding.flHot.adapter = object : TagAdapter<String?>(hots as List<String?>?) {
                                 override fun getView(
                                     parent: FlowLayout,
@@ -429,7 +423,7 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
                                 }
                             }
                             mBinding.flHot.setOnTagClickListener { _: View?, position: Int, _: FlowLayout? ->
-                                val keyword = hots.get(position)
+                                val keyword = hots[position]
                                 LogUtils.d("Hot search clicked: " + keyword)
                                 // 先确保搜索结果容器可见
                                 mBinding.llSearchResult.visibility = View.VISIBLE
@@ -438,47 +432,41 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
                                 search(keyword)
                                 true
                             }
-                        } catch (th: Throwable) {
-                            th.printStackTrace()
+                        },
+                        onFailure = { error ->
+                            LogUtils.e("FastSearchActivity", "获取热门搜索词失败: ${error.message}")
                         }
-                    }
-
-                    @Throws(Throwable::class)
-                    override fun convertResponse(response: Response): String {
-                        return response.body()!!.string()
-                    }
-                })
+                    )
+                } catch (e: Exception) {
+                    LogUtils.e("FastSearchActivity", "获取热门搜索词过程中发生错误: ${e.message}")
+                }
+            }
         }
 
     /**
      * 联想搜索
      */
     private fun getSuggest(text: String) {
-        // 加载热词
-        OkGo.get<String>("https://suggest.video.iqiyi.com/?if=mobile&key=$text")
-            .execute(object : AbsCallback<String?>() {
-                override fun onSuccess(response: com.lzy.okgo.model.Response<String?>) {
-                    val titles: MutableList<String> = ArrayList()
-                    try {
-                        val json = JsonParser.parseString(response.body()).asJsonObject
-                        val datas = json["data"].asJsonArray
-                        for (data: JsonElement in datas) {
-                            val item = data as JsonObject
-                            titles.add(item["name"].asString.trim { it <= ' ' })
-                        }
-                    } catch (th: Throwable) {
-                        LogUtils.d(th.toString())
-                    }
-                    if (titles.isNotEmpty()) {
-                        showSuggestDialog(titles)
-                    }
-                }
+        // 使用协程和Retrofit处理网络请求
+        lifecycleScope.launch {
+            try {
+                // 调用仓库方法获取搜索建议
+                val result = searchRepository.getSearchSuggestions(text)
 
-                @Throws(Throwable::class)
-                override fun convertResponse(response: Response): String {
-                    return response.body()!!.string()
-                }
-            })
+                result.fold(
+                    onSuccess = { titles ->
+                        if (titles.isNotEmpty()) {
+                            showSuggestDialog(titles)
+                        }
+                    },
+                    onFailure = { error ->
+                        LogUtils.e("FastSearchActivity", "获取搜索建议失败: ${error.message}")
+                    }
+                )
+            } catch (e: Exception) {
+                LogUtils.e("FastSearchActivity", "获取搜索建议过程中发生错误: ${e.message}")
+            }
+        }
     }
 
     private fun showSuggestDialog(list: List<String>) {
@@ -908,12 +896,11 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
     }
 
     private fun cancel() {
-        OkGo.getInstance().cancelTag("search")
+        // 已迁移到Retrofit，不再需要取消OkGo请求
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        cancel()
         try {
             // Remove any pending search callbacks
             searchDebounceRunnable?.let { searchHandler.removeSearchCallback(it) }
@@ -979,28 +966,37 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
     }
 
     private fun getDoubanSuggest(text: String) {
-        OkGo.get<String>("https://movie.douban.com/j/subject_suggest?q="+text.trim())
-            .execute(object : StringCallback(){
-                override fun onSuccess(response: com.lzy.okgo.model.Response<String>?) {
-                    val list = GsonUtils.fromJson<List<DoubanSuggestBean>>(
-                        response?.body(),
-                        object : TypeToken<List<DoubanSuggestBean>>() {}.type
-                    )
+        // 使用协程和Retrofit处理网络请求
+        lifecycleScope.launch {
+            try {
+                // 调用仓库方法获取豆瓣搜索建议
+                val result = doubanRepository.getDoubanSuggest(text.trim())
 
-                    //暂时只保留第一个,分数查询接口有限制
-                    val filterList = list.filter {
-                        it.title == text
-                    }
-                    if (filterList.isEmpty()){
-                        ToastUtils.showShort("暂无评分信息")
-                        return
-                    }
+                result.fold(
+                    onSuccess = { suggestions ->
+                        //暂时只保留第一个,分数查询接口有限制
+                        val filterList = suggestions.filter {
+                            it.title == text
+                        }
+                        if (filterList.isEmpty()){
+                            ToastUtils.showShort("暂无评分信息")
+                            return@fold
+                        }
 
-                    XPopup.Builder(this@FastSearchActivity)
-                        .maxHeight(ScreenUtils.getScreenHeight() - (ScreenUtils.getScreenHeight() / 4))
-                        .asCustom(DoubanSuggestDialog(this@FastSearchActivity,filterList.subList(0,1)))
-                        .show()
-                }
-            })
+                        XPopup.Builder(this@FastSearchActivity)
+                            .maxHeight(ScreenUtils.getScreenHeight() - (ScreenUtils.getScreenHeight() / 4))
+                            .asCustom(DoubanSuggestDialog(this@FastSearchActivity, filterList.subList(0, 1)))
+                            .show()
+                    },
+                    onFailure = { error ->
+                        LogUtils.e("FastSearchActivity", "获取豆瓣搜索建议失败: ${error.message}")
+                        ToastUtils.showShort("获取评分信息失败")
+                    }
+                )
+            } catch (e: Exception) {
+                LogUtils.e("FastSearchActivity", "获取豆瓣搜索建议过程中发生错误: ${e.message}")
+                ToastUtils.showShort("获取评分信息失败")
+            }
+        }
     }
 }
