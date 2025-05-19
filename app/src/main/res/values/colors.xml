@@ -107,15 +107,15 @@
     <!-- 新增颜色 -->
     <color name="gray_999">#999999</color>
 
-    <!-- 搜索详情页左侧标签背景色 - 主色的低饱和度变体 -->
-    <color name="search_category_bg">#E5F8F8</color>
+    <!-- 搜索详情页左侧标签背景色 - 浅灰色 -->
+    <color name="search_category_bg">#E6E9E9</color>
 
     <!-- 菜单项背景色 - 日间模式使用浅灰色 -->
     <color name="menu_item_bg">@color/md3_surface_variant</color>
 
-    <!-- 深色模式背景色 - 深灰色 -->
-    <color name="color_232626">#232626</color>
-    <color name="color_dialog_bg_dark">#232626</color>
+    <!-- 深色模式背景色 - 明显更亮的深灰色 -->
+    <color name="color_232626">#3A3F3F</color>
+    <color name="color_dialog_bg_dark">#3A3F3F</color>
 
     <!-- 波纹效果颜色 - 日间模式 -->
     <color name="ripple_color">#1A006A6A</color>
@@ -123,8 +123,8 @@
     <!-- 对话框背景色 -->
     <color name="dialog_bg">@color/md3_background</color>
 
-    <!-- 底部导航栏活动指示器颜色 - 日间模式使用更淡的颜色 -->
-    <color name="bottom_nav_indicator_light">#E5F8F8</color>
+    <!-- 底部导航栏活动指示器颜色 - 日间模式使用浅灰色 -->
+    <color name="bottom_nav_indicator_light">#E6E9E9</color>
 
     <!-- 详情页线路和选集未选中背景色 - 日间模式 -->
     <color name="item_series_bg_light">#E6E9E9</color>

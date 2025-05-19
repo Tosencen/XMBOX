@@ -12,22 +12,34 @@
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/header_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:padding="20dp">
+            android:padding="20dp"
+            android:orientation="vertical"
+            android:foreground="?android:attr/selectableItemBackground">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginLeft="20dp"
-            android:layout_marginBottom="4dp"
-            android:text="XMBOX"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="22sp"
-            android:fontFamily="sans-serif-medium" />
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="XMBOX"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="22sp"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tv_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                tools:text="v2.0.4"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:fontFamily="sans-serif" />
+        </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -351,18 +363,6 @@
         </LinearLayout>
 
     </ScrollView>
-
-    <TextView
-        android:id="@+id/tv_version"
-        android:textSize="11sp"
-        tools:text="v0.01"
-        android:paddingBottom="6dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:fontFamily="sans-serif"
-        />
     </LinearLayout>
 
 

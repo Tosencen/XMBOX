@@ -45,8 +45,8 @@
     <!-- 搜索详情页左侧标签背景色 - 主色的低饱和度变体 -->
     <color name="search_category_bg">#1A1E1E</color>
 
-    <!-- 菜单项背景色 - 夜间模式使用深灰色 -->
-    <color name="menu_item_bg">#232626</color>
+    <!-- 菜单项背景色 - 夜间模式使用明显更亮的深灰色 -->
+    <color name="menu_item_bg">#3A3F3F</color>
 
     <!-- 波纹效果颜色 - 更暗更柔和的波纹颜色 -->
     <color name="ripple_color_dark">#33006A6A</color>
@@ -55,10 +55,10 @@
     <color name="ripple_color">#3364D8D8</color>
 
     <!-- 详情页线路和选集未选中背景色 - 夜间模式 -->
-    <color name="item_series_bg_light">#232626</color>
+    <color name="item_series_bg_light">#3A3F3F</color>
 
     <!-- 倒序和全部按钮背景色 - 夜间模式 -->
-    <color name="sort_all_button_bg_light">#232626</color>
+    <color name="sort_all_button_bg_light">#3A3F3F</color>
 
     <!-- 选中状态的文本颜色 - 夜间模式 -->
     <color name="selected_text_color_light">#FFFFFF</color>

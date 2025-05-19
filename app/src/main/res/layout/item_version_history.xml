@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
+
+    <!-- 版本号和日期 -->
+    <TextView
+        android:id="@+id/tv_version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"
+        tools:text="v2.0.4 (2025-04-25)" />
+
+    <!-- 版本特性 -->
+    <TextView
+        android:id="@+id/tv_features"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="14sp"
+        android:lineSpacingMultiplier="1.2"
+        tools:text="• 在我的页面添加了版本号显示，位于XMBOX标题下方\n• 添加了应用更新过程中的取消功能，用户可以在下载过程中取消更新\n• 在首页添加了上次看到提示功能，显示用户最近观看的内容" />
+
+    <!-- 分隔线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="?attr/colorSurfaceVariant" />
+
+</LinearLayout>

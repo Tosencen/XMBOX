@@ -2,6 +2,6 @@
 <resources>
     <!-- 底部导航栏活动指示器样式 - 夜间模式 -->
     <style name="Widget.App.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">#232626</item>
+        <item name="android:color">#3A3F3F</item>
     </style>
 </resources>

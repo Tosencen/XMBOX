@@ -482,7 +482,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                         .isDestroyOnDismiss(true)
                         .isCenterHorizontal(true)
                         .isTouchThrough(false)
-                        .isDarkTheme(true) // 强制使用深色主题
+                        // 使用系统主题
                         .offsetY(ScreenUtils.getAppScreenHeight() - 400)
                         .asCustom(LastViewedDialog(requireContext(), vodInfoList[0]))
                         .show()

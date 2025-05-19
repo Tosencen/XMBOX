@@ -47,8 +47,10 @@ public class LastViewedDialog extends PositionPopupView {
         MaterialCardView cardView = rootView.findViewById(R.id.card_view);
         if (cardView != null) {
             if (Utils.isDarkTheme()) {
-                cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.color_dialog_bg_dark));
+                // 夜间模式使用明显更亮的深灰色背景
+                cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.color_232626));
             } else {
+                // 白天模式使用白色背景，提高可读性
                 cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.white));
             }
         }

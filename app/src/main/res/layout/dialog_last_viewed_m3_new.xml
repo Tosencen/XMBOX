@@ -11,9 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="16dp"
-        app:cardElevation="2dp"
-        style="@style/Widget.Material3.CardView.Elevated"
-        app:cardBackgroundColor="?attr/colorSurface">
+        app:cardElevation="4dp"
+        style="@style/Widget.Material3.CardView.Elevated">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -29,7 +28,7 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:textColor="@color/md3_on_surface"
+                android:textColor="?attr/colorOnSurface"
                 tools:text="上次看到: 念无双 第12集"/>
 
             <com.google.android.material.button.MaterialButton

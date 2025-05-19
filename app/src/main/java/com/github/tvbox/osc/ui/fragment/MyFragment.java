@@ -11,6 +11,7 @@ import com.github.tvbox.osc.ui.activity.SubscriptionActivity;
 import com.github.tvbox.osc.ui.dialog.AboutDialog;
 import com.github.tvbox.osc.ui.dialog.ChooseSourceDialog;
 import com.github.tvbox.osc.ui.dialog.SubsciptionDialog;
+import com.github.tvbox.osc.ui.dialog.VersionHistoryDialog;
 import com.github.tvbox.osc.util.AppUpdateManager;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.MaterialSymbolsLoader;
@@ -57,6 +58,20 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
 
         // 静默检查更新
         checkUpdateSilently();
+
+        // 设置版本号点击事件，显示版本历史
+        View.OnClickListener versionClickListener = v -> {
+            new XPopup.Builder(mActivity)
+                    .asCustom(new VersionHistoryDialog(mActivity))
+                    .show();
+        };
+
+        // 为XMBOX标题和版本号设置点击事件
+        View headerLayout = mBinding.getRoot().findViewById(com.github.tvbox.osc.R.id.header_layout);
+        if (headerLayout != null) {
+            headerLayout.setOnClickListener(versionClickListener);
+        }
+        mBinding.tvVersion.setOnClickListener(versionClickListener);
 
         // 播放链接功能已移除
         // 直播功能已移除
