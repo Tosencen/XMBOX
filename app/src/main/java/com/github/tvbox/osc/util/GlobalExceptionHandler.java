@@ -29,19 +29,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
     private static final String TAG = "GlobalExceptionHandler";
-    
+
     // 单例
     private static GlobalExceptionHandler instance;
-    
+
     // 系统默认的异常处理器
     private Thread.UncaughtExceptionHandler defaultHandler;
-    
+
     // 用于存储设备信息和异常信息
     private final ConcurrentHashMap<String, String> deviceInfoMap = new ConcurrentHashMap<>();
-    
+
     // 应用上下文
     private Context context;
-    
+
     // crash日志保存路径
     private String crashDirPath;
 
@@ -90,7 +90,7 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         // 如果系统提供了默认异常处理器，则交给系统处理
         if (defaultHandler != null) {
             defaultHandler.uncaughtException(thread, ex);
@@ -108,46 +108,48 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
         if (ex == null) {
             return;
         }
-        
+
         try {
             // 生成日志文件名
             long timestamp = System.currentTimeMillis();
             String time = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date(timestamp));
             String fileName = "crash_" + time + ".log";
-            
+
             // 创建日志文件
             File file = new File(crashDirPath + File.separator + fileName);
             if (!file.exists()) {
                 file.createNewFile();
             }
-            
-            // 写入崩溃日志
-            PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-            pw.println("时间: " + time);
-            
-            // 写入设备信息
-            for (String key : deviceInfoMap.keySet()) {
-                pw.println(key + ": " + deviceInfoMap.get(key));
+
+            // 使用try-with-resources确保资源正确关闭
+            try (StringWriter sw = new StringWriter();
+                 PrintWriter printWriter = new PrintWriter(sw);
+                 FileWriter fileWriter = new FileWriter(file);
+                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                 PrintWriter pw = new PrintWriter(bufferedWriter)) {
+
+                pw.println("时间: " + time);
+
+                // 写入设备信息
+                for (String key : deviceInfoMap.keySet()) {
+                    pw.println(key + ": " + deviceInfoMap.get(key));
+                }
+
+                pw.println("\n异常信息: " + ex.getLocalizedMessage());
+                pw.println("\n堆栈跟踪:");
+
+                // 获取完整的堆栈跟踪
+                ex.printStackTrace(printWriter);
+                Throwable cause = ex.getCause();
+                while (cause != null) {
+                    cause.printStackTrace(printWriter);
+                    cause = cause.getCause();
+                }
+                pw.println(sw.toString());
+
+                // 不需要手动关闭资源，try-with-resources会自动处理
             }
-            
-            pw.println("\n异常信息: " + ex.getLocalizedMessage());
-            pw.println("\n堆栈跟踪:");
-            
-            // 获取完整的堆栈跟踪
-            StringWriter sw = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(sw);
-            ex.printStackTrace(printWriter);
-            Throwable cause = ex.getCause();
-            while (cause != null) {
-                cause.printStackTrace(printWriter);
-                cause = cause.getCause();
-            }
-            pw.println(sw.toString());
-            
-            // 关闭资源
-            printWriter.close();
-            pw.close();
-            
+
             // 删除过期日志（保留最近10个）
             cleanOldCrashLogs();
         } catch (Exception e) {
@@ -163,7 +165,7 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
             // 获取应用信息
             PackageManager pm = context.getPackageManager();
             PackageInfo pi = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_ACTIVITIES);
-            
+
             deviceInfoMap.put("应用版本", pi.versionName);
             deviceInfoMap.put("应用版本号", String.valueOf(pi.versionCode));
             deviceInfoMap.put("Android版本", Build.VERSION.RELEASE);
@@ -172,7 +174,7 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
             deviceInfoMap.put("设备厂商", Build.MANUFACTURER);
             deviceInfoMap.put("设备ID", DeviceUtils.getUniqueDeviceId());
             deviceInfoMap.put("CPU架构", Build.SUPPORTED_ABIS[0]);
-            
+
         } catch (PackageManager.NameNotFoundException e) {
             LOG.e(TAG, "收集应用信息失败：" + e.getMessage());
         }
@@ -188,7 +190,7 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
             if (files != null && files.length > 10) {
                 // 按照修改时间排序
                 java.util.Arrays.sort(files, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
-                
+
                 // 删除多余的日志文件
                 for (int i = 10; i < files.length; i++) {
                     files[i].delete();
@@ -196,4 +198,4 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
             }
         }
     }
-} 
+}

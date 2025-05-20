@@ -239,7 +239,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
             // 减少超时时间到5秒，提升用户体验
             ThreadPoolManager.executeMainDelayed(timeoutRunnable, 5000)
-            
+
             // 尝试预加载内置JAR以加快启动速度
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
@@ -247,6 +247,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                     val defaultParser = ApiConfig.get().getDefaultParser()
                     withContext(Dispatchers.Main) {
                         if (defaultParser != null) {
+                            // 取消超时处理
+                            ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                             jarInitOk = true
                             initData()
                             // 后台继续加载完整JAR
@@ -255,7 +257,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                             }
                             return@withContext
                         }
-                        
+
                         // 默认解析器加载失败，使用常规加载
                         ApiConfig.get().loadJar(
                             onlyConfigChanged,
