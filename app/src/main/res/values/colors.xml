@@ -117,6 +117,11 @@
     <color name="color_232626">#3A3F3F</color>
     <color name="color_dialog_bg_dark">#3A3F3F</color>
 
+    <!-- 弹窗内部模块背景色 - 日间模式 -->
+    <color name="color_surface_container_light">@color/md3_surface_container_low</color>
+    <!-- 弹窗内部模块背景色 - 夜间模式 -->
+    <color name="color_surface_container">@color/md3_surface_container</color>
+
     <!-- 波纹效果颜色 - 日间模式 -->
     <color name="ripple_color">#1A006A6A</color>
 
