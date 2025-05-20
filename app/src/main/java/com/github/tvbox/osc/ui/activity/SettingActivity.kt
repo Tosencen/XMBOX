@@ -88,8 +88,8 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
 
 
 
-        // 确保使用有效的索引访问 dnsHttpsList
-        val dnsIndex = Hawk.get(HawkConfig.DOH_URL, 1) // 默认值改为1（开启阿里DNS）
+        // 确保使用有效的索引访问 dnsHttpsList，默认使用阿里DNS
+        val dnsIndex = Hawk.get(HawkConfig.DOH_URL, 1) // 默认值为1（阿里DNS）
         val safeDnsIndex = if (dnsIndex >= 0 && dnsIndex < OkGoHelper.dnsHttpsList.size) {
             dnsIndex
         } else {
@@ -195,31 +195,54 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
         // DNS设置功能
         mBinding.llDns.setOnClickListener { v: View? ->
             FastClickCheckUtil.check(v)
-            val currentValue = Hawk.get(HawkConfig.DOH_URL, 0)
-            // 切换DNS状态：如果当前是关闭状态，则开启；如果当前是开启状态，则关闭
-            val newValue = if (currentValue == 0) 1 else 0
-            // 确保新值在有效范围内
-            if (newValue >= 0 && newValue < OkGoHelper.dnsHttpsList.size) {
-                Hawk.put(HawkConfig.DOH_URL, newValue)
-                mBinding.tvDns.text = OkGoHelper.dnsHttpsList[newValue]
-                dnsOpt = newValue
-                OkGoHelper.dnsOverHttps = null
-                OkGoHelper.init()
-                // 显示提示信息
-                if (newValue == 1) {
-                    MD3ToastUtils.showToast("已开启阿里DNS，网络访问更安全")
-                } else {
-                    MD3ToastUtils.showToast("已关闭安全DNS")
-                }
-            } else {
-                // 如果新值无效，重置为0（关闭）
-                Hawk.put(HawkConfig.DOH_URL, 0)
-                mBinding.tvDns.text = OkGoHelper.dnsHttpsList[0]
-                dnsOpt = 0
-                OkGoHelper.dnsOverHttps = null
-                OkGoHelper.init()
-                MD3ToastUtils.showToast("已关闭安全DNS")
+            val currentValue = Hawk.get(HawkConfig.DOH_URL, 1) // 默认值为1（阿里DNS）
+
+            // 创建DNS选项列表
+            val dnsOptions = ArrayList<Int>()
+            for (i in 0 until OkGoHelper.dnsHttpsList.size) {
+                dnsOptions.add(i)
             }
+
+            // 显示选择对话框
+            val dialog = SelectDialog<Int>(this@SettingActivity)
+            dialog.setTip("请选择DNS服务商")
+            dialog.setAdapter(object : SelectDialogInterface<Int?> {
+                override fun click(value: Int?, pos: Int) {
+                    if (value != null && value >= 0 && value < OkGoHelper.dnsHttpsList.size) {
+                        Hawk.put(HawkConfig.DOH_URL, value)
+                        mBinding.tvDns.text = OkGoHelper.dnsHttpsList[value]
+                        dnsOpt = value
+                        OkGoHelper.dnsOverHttps = null
+                        OkGoHelper.init()
+
+                        // 显示提示信息
+                        when (value) {
+                            0 -> MD3ToastUtils.showToast("已关闭安全DNS")
+                            1 -> MD3ToastUtils.showToast("已启用阿里DNS，网络访问更安全")
+                            2 -> MD3ToastUtils.showToast("已启用腾讯DNS，网络访问更安全")
+                            3 -> MD3ToastUtils.showToast("已启用360DNS，网络访问更安全")
+                            else -> MD3ToastUtils.showToast("已更改DNS设置")
+                        }
+                    }
+                }
+
+                override fun getDisplay(value: Int?): String {
+                    return if (value != null && value >= 0 && value < OkGoHelper.dnsHttpsList.size) {
+                        OkGoHelper.dnsHttpsList[value]
+                    } else {
+                        "未知"
+                    }
+                }
+            }, object : DiffUtil.ItemCallback<Int>() {
+                override fun areItemsTheSame(oldItem: Int, newItem: Int): Boolean {
+                    return oldItem == newItem
+                }
+
+                override fun areContentsTheSame(oldItem: Int, newItem: Int): Boolean {
+                    return oldItem == newItem
+                }
+            }, dnsOptions, currentValue)
+            dialog.show()
         }
 
         mBinding.llMediaCodec.setOnClickListener { v: View? ->

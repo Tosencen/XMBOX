@@ -114,16 +114,16 @@ public class OkGoHelper {
         int safeType = Math.min(Math.max(type, 0), 3);
         switch (safeType) {
             case 1: {
-                return "https://dns.alidns.com/dns-query";
+                return "https://dns.alidns.com/dns-query"; // 阿里DNS
             }
             case 2: {
-                return "https://doh.pub/dns-query";
+                return "https://doh.pub/dns-query"; // 腾讯DNS
             }
             case 3: {
-                return "https://dns.google/dns-query";
+                return "https://doh.360.cn/dns-query"; // 360DNS
             }
         }
-        return "";
+        return ""; // 关闭DNS
     }
 
     static void initDnsOverHttps() {
@@ -132,7 +132,7 @@ public class OkGoHelper {
         dnsHttpsList.add("关闭");
         dnsHttpsList.add("阿里DNS");
         dnsHttpsList.add("腾讯DNS");
-        dnsHttpsList.add("谷歌DNS");
+        dnsHttpsList.add("360DNS");
 
         // 创建DoH客户端
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -177,7 +177,7 @@ public class OkGoHelper {
         OkHttpClient dohClient = builder.build();
 
         // 确保使用有效的DOH索引，默认使用阿里DNS
-        int dohIndex = Hawk.get(HawkConfig.DOH_URL, 1);
+        int dohIndex = Hawk.get(HawkConfig.DOH_URL, 1); // 默认值为1（阿里DNS）
         if (dohIndex < 0 || dohIndex >= dnsHttpsList.size()) {
             dohIndex = 1; // 默认使用阿里DNS
             Hawk.put(HawkConfig.DOH_URL, 1);
