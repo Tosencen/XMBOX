@@ -1,5 +1,7 @@
 package com.github.tvbox.osc.base;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 
@@ -35,6 +37,9 @@ import com.whl.quickjs.android.QuickJSLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.ComponentCallbacks2.TRIM_MEMORY_COMPLETE;
+import static android.content.ComponentCallbacks2.TRIM_MEMORY_MODERATE;
+
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
@@ -59,8 +64,9 @@ public class App extends MultiDexApplication {
     private boolean isArchitectureSupported() {
         String arch = System.getProperty("os.arch");
         LOG.i("App", "设备架构: " + arch);
-        // 只支持ARM架构
-        return arch != null && (arch.contains("arm") || arch.contains("ARM"));
+        // 扩大支持架构范围，支持ARM和x86架构
+        return arch != null && (arch.contains("arm") || arch.contains("ARM") || 
+                               arch.contains("x86") || arch.contains("X86"));
     }
 
     @Override
@@ -111,7 +117,9 @@ public class App extends MultiDexApplication {
         try {
             // 初始化崩溃处理（必须尽早初始化）
             initCrashConfig();
-            LOG.i("App", "崩溃配置初始化成功");
+            // 初始化全局异常处理
+            GlobalExceptionHandler.getInstance().init(this);
+            LOG.i("App", "崩溃配置和异常处理初始化成功");
         } catch (Exception e) {
             LOG.e("App", "崩溃配置初始化失败: " + e.getMessage());
         }
@@ -309,16 +317,64 @@ public class App extends MultiDexApplication {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        // 根据内存紧张程度采取不同措施
-        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_MODERATE) {
-            // 内存紧张，清理缓存
-            LOG.w("App", "系统内存紧张，开始释放资源");
-            com.github.tvbox.osc.util.MemoryOptimizer.cleanMemory();
-        } else if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) {
-            // 应用处于后台，可以释放一些资源
-            LOG.i("App", "应用进入后台，释放部分资源");
-            // 清理图片缓存
-            com.github.tvbox.osc.util.GlideHelper.clearMemoryCache(this);
+        if (level >= TRIM_MEMORY_MODERATE) {
+            // 适中内存压力
+            LOG.i("App", "内存压力适中，清理部分缓存");
+            FileUtils.cleanPlayerCache();
+        } else if (level >= TRIM_MEMORY_COMPLETE) {
+            // 高内存压力
+            LOG.i("App", "内存压力较大，清理所有非必要缓存");
+            FileUtils.cleanPlayerCache();
+            FileUtils.cleanThumbnails();
+            if (this.vodInfo != null && !isInPlayingState()) {
+                this.vodInfo = null;
+                System.gc();
+            }
+        }
+    }
+
+    /**
+     * 判断当前是否在播放视频状态
+     * 如果正在播放视频，则不清理相关资源
+     */
+    private boolean isInPlayingState() {
+        // 检查是否有播放相关的活动处于前台
+        // 如果在这些活动中，即使内存压力大也不应清理视频相关资源
+        return isActivityInForeground("DetailActivity") || 
+               isActivityInForeground("LiveActivity") || 
+               isActivityInForeground("LocalPlayActivity");
+    }
+
+    /**
+     * 判断指定Activity是否在前台
+     */
+    private boolean isActivityInForeground(String activityName) {
+        try {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+            if (!tasks.isEmpty()) {
+                String topActivityName = tasks.get(0).topActivity.getClassName();
+                return topActivityName.contains(activityName);
+            }
+        } catch (Exception e) {
+            LOG.e("App", "检查前台Activity失败: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * 播放器内存优化
+     * 释放不必要的播放器资源
+     */
+    public void releasePlayerResources() {
+        try {
+            ThreadPoolManager.executeIO(() -> {
+                LOG.i("App", "释放播放器相关资源");
+                FileUtils.cleanPlayerCache();
+                // 清理其他可释放的资源
+            });
+        } catch (Exception e) {
+            LOG.e("App", "释放播放器资源出错: " + e.getMessage());
         }
     }
 

@@ -72,4 +72,19 @@
     <string name="play_sniffing_address">正在嗅探播放地址</string>
     <string name="play_parse_error">解析错误</string>
     <string name="play_parse_from">解析来自:%s</string>
+
+    <!-- Update related strings -->
+    <string name="update_msg">发现新版本，是否立即更新？</string>
+    <string name="update_confirm">立即更新</string>
+    <string name="update_later">稍后再说</string>
+    <string name="update_force_msg">发现新版本，请立即更新！</string>
+
+    <!-- Permission related strings -->
+    <string name="dialog_permission_title">需要授予权限</string>
+    <string name="basic_storage_permission_tip">应用需要存储权限来读取媒体文件，否则无法正常显示图片和播放视频</string>
+    <string name="backup_permission_tip">备份功能需要管理存储权限，以便于读写备份数据</string>
+    <string name="permission_denied">获取权限失败，部分功能可能无法正常使用</string>
+    <string name="permission_denied_forever">权限被拒绝，请在系统设置中手动授予权限</string>
+    <string name="dialog_permission_confirm">确定</string>
+    <string name="dialog_permission_cancel">取消</string>
 </resources>

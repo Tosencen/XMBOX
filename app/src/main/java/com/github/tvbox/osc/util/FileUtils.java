@@ -440,6 +440,35 @@ public class FileUtils {
         }
     }
 
+    /**
+     * 清理缩略图缓存目录
+     */
+    public static void cleanThumbnails() {
+        String thumbnailsPath = getCachePath() + "/thumbnails/";
+        String glideCache = getCachePath() + "/glide_cache/";
+        String picassoCache = getCachePath() + "/picasso_cache/";
+        
+        File thumbnailsDir = new File(thumbnailsPath);
+        File glideDir = new File(glideCache);
+        File picassoDir = new File(picassoCache);
+        
+        try {
+            if (thumbnailsDir.exists()) deleteDir(thumbnailsDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            if (glideDir.exists()) deleteDir(glideDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            if (picassoDir.exists()) deleteDir(picassoDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     //0805同步q版
     public static String getFileName(String filePath) {
         if (TextUtils.isEmpty(filePath)) return "";

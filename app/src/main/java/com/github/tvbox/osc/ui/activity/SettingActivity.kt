@@ -178,33 +178,18 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
 
         mBinding.llBackup.setOnClickListener { v: View? ->
             FastClickCheckUtil.check(v)
-            if (XXPermissions.isGranted(this@SettingActivity, Permission.MANAGE_EXTERNAL_STORAGE)) {
-                val dialog = BackupDialog(this@SettingActivity)
-                dialog.show()
-            } else {
-                XXPermissions.with(this@SettingActivity)
-                    .permission(Permission.MANAGE_EXTERNAL_STORAGE)
-                    .request(object : OnPermissionCallback {
-                        override fun onGranted(permissions: List<String>, all: Boolean) {
-                            if (all) {
-                                val dialog = BackupDialog(this@SettingActivity)
-                                dialog.show()
-                            }
-                        }
+            PermissionHelper.requestBackupPermission(this@SettingActivity, object : OnPermissionCallback {
+                override fun onGranted(permissions: List<String>, all: Boolean) {
+                    if (all) {
+                        val dialog = BackupDialog(this@SettingActivity)
+                        dialog.show()
+                    }
+                }
 
-                        override fun onDenied(permissions: List<String>, never: Boolean) {
-                            if (never) {
-                                ToastUtils.showLong("获取存储权限失败,请在系统设置中开启")
-                                XXPermissions.startPermissionActivity(
-                                    this@SettingActivity,
-                                    permissions
-                                )
-                            } else {
-                                ToastUtils.showShort("获取存储权限失败")
-                            }
-                        }
-                    })
-            }
+                override fun onDenied(permissions: List<String>, never: Boolean) {
+                    // 权限拒绝时的处理已在PermissionHelper内完成
+                }
+            })
         }
 
         // DNS设置功能

@@ -166,8 +166,23 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             }
         }
 
-        // 设置15秒超时
-        ThreadPoolManager.executeMainDelayed(timeoutRunnable, 15000)
+        // 减少超时时间到10秒，提升用户体验
+        ThreadPoolManager.executeMainDelayed(timeoutRunnable, 10000)
+
+        // 优先尝试使用缓存数据
+        if (ApiConfig.get().getStoreHouse().isNotEmpty()) {
+            LOG.i("loadConfig", "使用缓存数据快速加载")
+            ThreadPoolManager.executeMainDelayed({
+                dataInitOk = true
+                // 后台异步加载最新数据
+                ThreadPoolManager.executeIO {
+                    ApiConfig.get().loadLastConfig()
+                }
+                // 立即进入页面
+                initData()
+            }, 50)
+            return
+        }
 
         ApiConfig.get().loadConfig(onlyConfigChanged, object : LoadConfigCallback {
 
@@ -222,40 +237,98 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                 }
             }
 
-            // 设置10秒超时
-            ThreadPoolManager.executeMainDelayed(timeoutRunnable, 10000)
-
-            ApiConfig.get().loadJar(
-                onlyConfigChanged,
-                ApiConfig.get().spider,
-                object : LoadConfigCallback {
-                    override fun success() {
-                        ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
-                        jarInitOk = true
-                        ThreadPoolManager.executeMainDelayed({
-                            if (!onlyConfigChanged) {
-                                queryHistory()
-                            }
+            // 减少超时时间到5秒，提升用户体验
+            ThreadPoolManager.executeMainDelayed(timeoutRunnable, 5000)
+            
+            // 尝试预加载内置JAR以加快启动速度
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    // 预加载内置的JAR解析器
+                    val defaultParser = ApiConfig.get().getDefaultParser()
+                    withContext(Dispatchers.Main) {
+                        if (defaultParser != null) {
+                            jarInitOk = true
                             initData()
-                        }, 50)
-                    }
-
-                    override fun retry() {
-                        ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
-                    }
-
-                    override fun error(msg: String) {
-                        ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
-                        jarInitOk = true
-                        ThreadPoolManager.executeMain {
-                            // 确保Fragment仍然附加到Activity
-                            if (isAdded && activity != null) {
-                                MD3ToastUtils.showToast("更新订阅失败")
+                            // 后台继续加载完整JAR
+                            ThreadPoolManager.executeIO {
+                                ApiConfig.get().loadJarComplete()
                             }
-                            initData()
+                            return@withContext
                         }
+                        
+                        // 默认解析器加载失败，使用常规加载
+                        ApiConfig.get().loadJar(
+                            onlyConfigChanged,
+                            ApiConfig.get().spider,
+                            object : LoadConfigCallback {
+                                override fun success() {
+                                    ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
+                                    jarInitOk = true
+                                    ThreadPoolManager.executeMainDelayed({
+                                        if (!onlyConfigChanged) {
+                                            queryHistory()
+                                        }
+                                        initData()
+                                    }, 50)
+                                }
+
+                                override fun retry() {
+                                    ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
+                                }
+
+                                override fun error(msg: String) {
+                                    ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
+                                    jarInitOk = true
+                                    ThreadPoolManager.executeMain {
+                                        // 确保Fragment仍然附加到Activity
+                                        if (isAdded && activity != null) {
+                                            MD3ToastUtils.showToast("更新订阅失败")
+                                        }
+                                        initData()
+                                    }
+                                }
+                            }
+                        )
                     }
-                })
+                } catch (e: Exception) {
+                    LOG.e("loadJar", "预加载失败: ${e.message}")
+                    withContext(Dispatchers.Main) {
+                        // 默认预加载失败，使用常规加载
+                        ApiConfig.get().loadJar(
+                            onlyConfigChanged,
+                            ApiConfig.get().spider,
+                            object : LoadConfigCallback {
+                                override fun success() {
+                                    ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
+                                    jarInitOk = true
+                                    ThreadPoolManager.executeMainDelayed({
+                                        if (!onlyConfigChanged) {
+                                            queryHistory()
+                                        }
+                                        initData()
+                                    }, 50)
+                                }
+
+                                override fun retry() {
+                                    ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
+                                }
+
+                                override fun error(msg: String) {
+                                    ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
+                                    jarInitOk = true
+                                    ThreadPoolManager.executeMain {
+                                        // 确保Fragment仍然附加到Activity
+                                        if (isAdded && activity != null) {
+                                            MD3ToastUtils.showToast("更新订阅失败")
+                                        }
+                                        initData()
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 
