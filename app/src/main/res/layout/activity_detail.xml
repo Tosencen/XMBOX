@@ -31,17 +31,27 @@
 
             <TextView
                 android:id="@+id/tv_title"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="16dp"
                 android:layout_toEndOf="@id/iv_back"
+                android:layout_toStartOf="@+id/toolbar_right_space"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@color/text_foreground"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 tools:text="影片标题" />
+
+            <!-- 右侧预留空间，防止标题与可能的按钮重叠 -->
+            <View
+                android:id="@+id/toolbar_right_space"
+                android:layout_width="56dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true" />
         </RelativeLayout>
 
         <ScrollView

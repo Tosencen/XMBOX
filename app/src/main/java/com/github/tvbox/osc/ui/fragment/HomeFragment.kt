@@ -92,12 +92,25 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             val sources = ApiConfig.get().sourceBeanList
             android.util.Log.d("HomeFragment", "当前数据源数量: ${sources?.size ?: 0}")
 
-            if (dataInitOk && jarInitOk) {
-                android.util.Log.d("HomeFragment", "调用 showSiteSwitch()")
+            // 优化用户体验：即使数据未完全加载，也尝试显示可用的数据源
+            if (sources != null && sources.size > 0) {
+                android.util.Log.d("HomeFragment", "调用 showSiteSwitch() - 有可用数据源")
                 showSiteSwitch()
+            } else if (dataInitOk && jarInitOk) {
+                // 数据已加载完成但没有数据源
+                android.util.Log.d("HomeFragment", "数据加载完成但无可用数据源")
+                MD3ToastUtils.showToast("暂无可用数据源，请检查订阅配置")
             } else {
-                android.util.Log.d("HomeFragment", "数据源未加载完成")
-                MD3ToastUtils.showToast("数据源未加载，长按刷新或切换订阅")
+                // 数据仍在加载中
+                android.util.Log.d("HomeFragment", "数据源正在加载中...")
+                MD3ToastUtils.showToast("数据源正在加载中，请稍候...")
+
+                // 自动重试机制：延迟后再次检查
+                ThreadPoolManager.executeMainDelayed({
+                    if (isAdded && ApiConfig.get().sourceBeanList?.isNotEmpty() == true) {
+                        MD3ToastUtils.showToast("数据源加载完成，请重新点击")
+                    }
+                }, 2000)
             }
         }
         mBinding.tvName.setOnLongClickListener {
@@ -145,7 +158,11 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             return
         }
 
-        onlyConfigChanged = mainActivity.useCacheConfig
+        // 只有在onlyConfigChanged还没有被设置时才使用MainActivity的值
+        // 这样可以保持refreshHomeSources()中设置的true值不被覆盖
+        if (!onlyConfigChanged) {
+            onlyConfigChanged = mainActivity.useCacheConfig
+        }
 
         // 确保订阅源区域始终可见
         mBinding.nameContainer.visibility = View.VISIBLE
