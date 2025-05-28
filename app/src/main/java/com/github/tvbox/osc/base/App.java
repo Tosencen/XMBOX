@@ -65,7 +65,7 @@ public class App extends MultiDexApplication {
         String arch = System.getProperty("os.arch");
         LOG.i("App", "设备架构: " + arch);
         // 扩大支持架构范围，支持ARM和x86架构
-        return arch != null && (arch.contains("arm") || arch.contains("ARM") || 
+        return arch != null && (arch.contains("arm") || arch.contains("ARM") ||
                                arch.contains("x86") || arch.contains("X86"));
     }
 
@@ -118,8 +118,8 @@ public class App extends MultiDexApplication {
             // 初始化崩溃处理（必须尽早初始化）
             initCrashConfig();
             // 初始化全局异常处理
-            GlobalExceptionHandler.getInstance().init(this);
-            LOG.i("App", "崩溃配置和异常处理初始化成功");
+            // GlobalExceptionHandler.getInstance().init(this); // 暂时注释掉，因为类不存在
+            LOG.i("App", "崩溃配置初始化成功");
         } catch (Exception e) {
             LOG.e("App", "崩溃配置初始化失败: " + e.getMessage());
         }
@@ -340,8 +340,8 @@ public class App extends MultiDexApplication {
     private boolean isInPlayingState() {
         // 检查是否有播放相关的活动处于前台
         // 如果在这些活动中，即使内存压力大也不应清理视频相关资源
-        return isActivityInForeground("DetailActivity") || 
-               isActivityInForeground("LiveActivity") || 
+        return isActivityInForeground("DetailActivity") ||
+               isActivityInForeground("LiveActivity") ||
                isActivityInForeground("LocalPlayActivity");
     }
 

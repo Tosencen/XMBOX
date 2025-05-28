@@ -178,7 +178,7 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
 
         mBinding.llBackup.setOnClickListener { v: View? ->
             FastClickCheckUtil.check(v)
-            PermissionHelper.requestBackupPermission(this@SettingActivity, object : OnPermissionCallback {
+            com.github.tvbox.osc.util.PermissionHelper.requestBackupPermission(this@SettingActivity, object : OnPermissionCallback {
                 override fun onGranted(permissions: List<String>, all: Boolean) {
                     if (all) {
                         val dialog = BackupDialog(this@SettingActivity)

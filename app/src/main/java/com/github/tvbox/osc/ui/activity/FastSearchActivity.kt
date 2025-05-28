@@ -445,7 +445,7 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
 
                     @Throws(Throwable::class)
                     override fun convertResponse(response: Response): String {
-                        return response.body()!!.string()
+                        return response.body!!.string()
                     }
                 })
         }
@@ -476,7 +476,7 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
 
                 @Throws(Throwable::class)
                 override fun convertResponse(response: Response): String {
-                    return response.body()!!.string()
+                    return response.body!!.string()
                 }
             })
     }
@@ -487,10 +487,15 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
                 SearchSuggestionsDialog(this@FastSearchActivity, list
                 ) { _, text ->
                     LogUtils.d("搜索:$text")
-                    // 先确保搜索结果容器可见
-                    mBinding.llSearchResult.visibility = View.VISIBLE
-                    mBinding.mGridView.visibility = View.VISIBLE
-                    mSearchSuggestionsDialog!!.dismissWith { search(text) }
+                    // 先关闭搜索建议对话框
+                    mSearchSuggestionsDialog?.dismiss()
+                    // 延迟执行搜索，确保对话框完全消失
+                    mBinding.etSearch.postDelayed({
+                        // 确保搜索结果容器可见
+                        mBinding.llSearchResult.visibility = View.VISIBLE
+                        mBinding.mGridView.visibility = View.VISIBLE
+                        search(text)
+                    }, 100) // 100ms延迟确保对话框完全消失
                 }
             XPopup.Builder(this@FastSearchActivity)
                 .atView(mBinding.etSearch)
@@ -961,11 +966,8 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
             // 取消之前的搜索建议请求
             searchDebounceRunnable?.let { searchHandler.removeSearchCallback(it) }
 
-            // 如果文本长度大于等于2个字符，立即执行搜索
-            if (text.length >= 2) {
-                // 立即执行搜索，不设置延迟
-                search(text)
-            }
+            // 移除自动搜索逻辑，只显示搜索建议
+            // 用户需要点击搜索按钮或选择搜索建议才会执行搜索
 
             // 创建新的延迟任务，仅用于获取搜索建议
             searchDebounceRunnable = Runnable {

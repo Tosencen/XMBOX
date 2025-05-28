@@ -282,8 +282,13 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void onTracksChanged(Tracks tracks) {
-        if (trackNameProvider == null)
-            trackNameProvider = new ExoTrackNameProvider(mAppContext.getResources());
+        if (mAppContext != null && trackNameProvider == null) {
+            try {
+                trackNameProvider = new ExoTrackNameProvider(mAppContext.getResources());
+            } catch (Exception e) {
+                // 防止资源获取失败
+            }
+        }
     }
 
     @Override

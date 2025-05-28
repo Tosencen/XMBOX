@@ -330,7 +330,7 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
 
                     @Throws(Throwable::class)
                     override fun convertResponse(response: okhttp3.Response): String {
-                        return response.body()!!.string()
+                        return response.body!!.string()
                     }
 
                     override fun onError(response: Response<String?>) {

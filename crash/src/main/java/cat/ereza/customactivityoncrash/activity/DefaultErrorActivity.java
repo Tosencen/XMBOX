@@ -101,7 +101,7 @@ public final class DefaultErrorActivity extends AppCompatActivity {
                                     (dialog1, which) -> copyErrorToClipboard());
 
                     AlertDialog dialog = builder.create();
-                    dialog.getWindow().setBackgroundDrawableResource(R.drawable.bg_error_dialog_m3);
+                    dialog.getWindow().setBackgroundDrawableResource(R.drawable.customactivityoncrash_bg_error_dialog_m3);
                     dialog.show();
 
                     // 设置按钮文字颜色
@@ -121,7 +121,12 @@ public final class DefaultErrorActivity extends AppCompatActivity {
                     TextView textView = dialog.findViewById(android.R.id.message);
                     if (textView != null) {
                         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.customactivityoncrash_error_activity_error_details_text_size));
-                        textView.setTextColor(getResources().getColor(android.R.color.darker_gray, getTheme()));
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                            textView.setTextColor(getResources().getColor(android.R.color.darker_gray, getTheme()));
+                        } else {
+                            //noinspection deprecation
+                            textView.setTextColor(getResources().getColor(android.R.color.darker_gray));
+                        }
                     }
                 }
             });

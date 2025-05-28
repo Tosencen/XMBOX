@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
+    id 'com.google.devtools.ksp' version '1.9.22-1.0.16' apply false
 }
 
 android {
@@ -139,7 +140,7 @@ dependencies {
     implementation 'com.github.getActivity:XXPermissions:18.5'
     implementation 'org.jsoup:jsoup:1.17.1'
     implementation 'com.github.hedzr:android-file-chooser:v1.2.0-final'
-    implementation 'commons-io:commons-io:2.15.1'
+    implementation 'commons-io:commons-io:2.11.0'
     implementation 'com.googlecode.juniversalchardet:juniversalchardet:1.0.3'
 
     //沉浸式状态栏
@@ -158,7 +159,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.16.0'
 
     //使用官方TabLayout和ViewPager2替代自定义TabLayout
-    implementation 'androidx.viewpager2:viewpager2:1.1.0'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
     //TabLayout的非kt项目需要依赖这个包实现点击事件等
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     //展开收缩tv
@@ -179,9 +180,9 @@ dependencies {
     //小米投屏SDK - 暂时移除依赖以解决构建问题
     // implementation files('libs/xiaomi-cast-sdk.aar')
     // Lifecycles
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.7.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.6.2"
 
     // 内存泄漏检测 - 仅在debug模式下使用
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'

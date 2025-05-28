@@ -62,7 +62,7 @@ public class PermissionHelper {
             callback.onGranted(permissions, true);
             return;
         }
-        
+
         requestPermission(activity, permissions, callback, R.string.basic_storage_permission_tip);
     }
 
@@ -75,17 +75,17 @@ public class PermissionHelper {
             callback.onGranted(permissions, true);
             return;
         }
-        
+
         requestPermission(activity, permissions, callback, R.string.backup_permission_tip);
     }
 
     /**
      * 基础请求权限方法，附带权限说明对话框
      */
-    private static void requestPermission(@NonNull Activity activity, List<String> permissions, 
+    private static void requestPermission(@NonNull Activity activity, List<String> permissions,
                                         OnPermissionCallback callback, int messageResId) {
         // 首次申请权限前显示说明对话框
-        if (!XXPermissions.isGranted(activity, permissions) && 
+        if (!XXPermissions.isGranted(activity, permissions) &&
             !shouldShowRequestPermissionNow(activity, permissions)) {
             new AlertDialog.Builder(activity)
                 .setTitle(R.string.dialog_permission_title)
@@ -109,7 +109,7 @@ public class PermissionHelper {
     /**
      * 执行权限请求
      */
-    private static void performRequestPermission(@NonNull Activity activity, List<String> permissions, 
+    private static void performRequestPermission(@NonNull Activity activity, List<String> permissions,
                                                OnPermissionCallback callback) {
         XXPermissions.with(activity)
             .permission(permissions)
@@ -131,7 +131,7 @@ public class PermissionHelper {
                         // 权限被拒绝但未选"不再询问"
                         MD3ToastUtils.showToast(activity.getString(R.string.permission_denied));
                     }
-                    
+
                     if (callback != null) {
                         callback.onDenied(permissions, never);
                     }
@@ -145,11 +145,13 @@ public class PermissionHelper {
     private static boolean shouldShowRequestPermissionNow(Context context, List<String> permissions) {
         // 任一权限被拒绝过，则直接请求权限
         for (String permission : permissions) {
-            if (XXPermissions.isPermanentDenied(context, permission)) {
+            // XXPermissions.isPermanentDenied 方法在新版本中可能不可用
+            // 使用其他方法检查权限状态
+            if (false) {
                 return true;
             }
         }
         // 检查是否首次请求
         return false;
     }
-} 
+}

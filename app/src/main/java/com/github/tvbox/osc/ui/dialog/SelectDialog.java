@@ -34,14 +34,20 @@ public class SelectDialog<T> extends BaseDialog {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        // 不调用super.onCreate()，避免BaseDialog的窗口设置干扰
+        // super.onCreate(savedInstanceState);
+        android.util.Log.d("SelectDialog", "onCreate() called");
 
+        // 直接设置窗口属性，避免继承的冲突
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         lp.copyFrom(getWindow().getAttributes());
         lp.gravity = Gravity.CENTER;
         lp.width = ConvertUtils.dp2px(330);
+        lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        lp.dimAmount = 0.5f;
         getWindow().setAttributes(lp);
         getWindow().setWindowAnimations(R.style.MD3DialogAnimation); // 使用Material Design 3风格的动画
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
         // 设置背景透明
         getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
@@ -58,6 +64,7 @@ public class SelectDialog<T> extends BaseDialog {
                 rootView.setBackgroundResource(R.drawable.bg_dialog_md3_light);
             }
         }
+        android.util.Log.d("SelectDialog", "onCreate() completed");
     }
 
     public void setTip(String tip) {
@@ -65,6 +72,7 @@ public class SelectDialog<T> extends BaseDialog {
     }
 
     public void setAdapter(SelectDialogAdapter.SelectDialogInterface<T> sourceBeanSelectDialogInterface, DiffUtil.ItemCallback<T> sourceBeanItemCallback, List<T> data, int select) {
+        android.util.Log.d("SelectDialog", "setAdapter() called with data size: " + (data != null ? data.size() : 0));
         SelectDialogAdapter<T> adapter = new SelectDialogAdapter(sourceBeanSelectDialogInterface, sourceBeanItemCallback);
         adapter.setData(data, select);
         TvRecyclerView tvRecyclerView = ((TvRecyclerView) findViewById(R.id.list));
@@ -84,5 +92,16 @@ public class SelectDialog<T> extends BaseDialog {
                 }
             }
         });
+    }
+
+    @Override
+    public void show() {
+        android.util.Log.d("SelectDialog", "show() called");
+        try {
+            super.show();
+            android.util.Log.d("SelectDialog", "show() completed successfully");
+        } catch (Exception e) {
+            android.util.Log.e("SelectDialog", "show() failed", e);
+        }
     }
 }

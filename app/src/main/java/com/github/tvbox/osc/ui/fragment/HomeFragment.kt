@@ -3,6 +3,7 @@ package com.github.tvbox.osc.ui.fragment
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -85,14 +86,22 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
     override fun init() {
         ControlManager.get().startServer()
-        mBinding.nameContainer.setOnClickListener {
+        mBinding.tvName.setOnClickListener {
+            // 添加调试日志
+            android.util.Log.d("HomeFragment", "点击视频源按钮 - dataInitOk: $dataInitOk, jarInitOk: $jarInitOk")
+            val sources = ApiConfig.get().sourceBeanList
+            android.util.Log.d("HomeFragment", "当前数据源数量: ${sources?.size ?: 0}")
+
             if (dataInitOk && jarInitOk) {
+                android.util.Log.d("HomeFragment", "调用 showSiteSwitch()")
                 showSiteSwitch()
             } else {
+                android.util.Log.d("HomeFragment", "数据源未加载完成")
                 MD3ToastUtils.showToast("数据源未加载，长按刷新或切换订阅")
             }
         }
-        mBinding.nameContainer.setOnLongClickListener {
+        mBinding.tvName.setOnLongClickListener {
+            android.util.Log.d("HomeFragment", "长按视频源按钮 - 刷新数据源")
             refreshHomeSources()
             true
         }
@@ -132,10 +141,18 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
         val mainActivity = mActivity as MainActivity
         onlyConfigChanged = mainActivity.useCacheConfig
 
+        // 确保订阅源区域始终可见
+        mBinding.nameContainer.visibility = View.VISIBLE
+
         val home = ApiConfig.get().homeSourceBean
+        android.util.Log.d("HomeFragment", "initData() - homeSourceBean: ${home?.name}, dataInitOk: $dataInitOk, jarInitOk: $jarInitOk")
+
         if (home != null && !home.name.isNullOrEmpty()) {
             mBinding.tvName.text = home.name
             mBinding.tvName.postDelayed({ mBinding.tvName.isSelected = true }, 2000)
+        } else {
+            // 如果没有订阅源，显示默认文本
+            mBinding.tvName.text = "请选择订阅源"
         }
 
         showLoading()
@@ -143,12 +160,15 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             dataInitOk && jarInitOk -> {
                 //正常初始化会先加载,最终到这,此时数据有以下几种情况
                 // 1. api/jar/spider等均加载完,正常显示数据。2. 缺失spider(存疑?)/api配置有问题同样加载(最后空布局 或 只有豆瓣首页)
+                android.util.Log.d("HomeFragment", "调用 sourceViewModel.getSort")
                 sourceViewModel?.getSort(ApiConfig.get().homeSourceBean.key)
             }
             dataInitOk && !jarInitOk -> {
+                android.util.Log.d("HomeFragment", "调用 loadJar")
                 loadJar()
             }
             else -> {
+                android.util.Log.d("HomeFragment", "调用 loadConfig")
                 loadConfig()
             }
         }
@@ -170,6 +190,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
         ThreadPoolManager.executeMainDelayed(timeoutRunnable, 10000)
 
         // 优先尝试使用缓存数据
+        // 注释掉缓存数据加载逻辑，直接进行正常加载
+        /*
         if (ApiConfig.get().getStoreHouse().isNotEmpty()) {
             LOG.i("loadConfig", "使用缓存数据快速加载")
             ThreadPoolManager.executeMainDelayed({
@@ -183,6 +205,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             }, 50)
             return
         }
+        */
 
         ApiConfig.get().loadConfig(onlyConfigChanged, object : LoadConfigCallback {
 
@@ -243,9 +266,11 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             // 尝试预加载内置JAR以加快启动速度
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    // 预加载内置的JAR解析器
-                    val defaultParser = ApiConfig.get().getDefaultParser()
+                    // 预加载内置的JAR解析器 - 简化处理，直接跳过预加载
                     withContext(Dispatchers.Main) {
+                        // 直接进入常规加载流程
+                        /*
+                        val defaultParser = ApiConfig.get().getDefaultParser()
                         if (defaultParser != null) {
                             // 取消超时处理
                             ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
@@ -257,6 +282,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                             }
                             return@withContext
                         }
+                        */
 
                         // 默认解析器加载失败，使用常规加载
                         ApiConfig.get().loadJar(
@@ -448,6 +474,9 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
             // 在主线程更新UI
             ThreadPoolManager.executeMain {
+                // 确保订阅源区域始终可见
+                mBinding.nameContainer.visibility = View.VISIBLE
+
                 mBinding.tabLayout.removeAllTabs()
                 fragments.clear()
                 fragments.addAll(preparedFragments)
@@ -493,33 +522,44 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
     private fun showSiteSwitch() {
         val sites = ApiConfig.get().sourceBeanList
-        if (sites.size > 0) {
-            val dialog = SelectDialog<SourceBean>(requireActivity())
-            val tvRecyclerView = dialog.findViewById<TvRecyclerView>(R.id.list)
-            tvRecyclerView.setLayoutManager(V7GridLayoutManager(dialog.context, 2))
-            // 优化RecyclerView性能
-            RecyclerViewOptimizer.optimizeTvRecyclerView(tvRecyclerView)
-            dialog.setTip("请选择首页数据源")
-            dialog.setAdapter(object : SelectDialogInterface<SourceBean?> {
-                override fun click(value: SourceBean?, pos: Int) {
-                    ApiConfig.get().setSourceBean(value)
-                    refreshHomeSources()
-                }
+        android.util.Log.d("HomeFragment", "showSiteSwitch() - 数据源列表: ${sites?.size ?: 0}")
 
-                override fun getDisplay(source: SourceBean?): String {
-                    return if (source == null) "" else source.name
-                }
-            }, object : DiffUtil.ItemCallback<SourceBean>() {
-                override fun areItemsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
-                    return oldItem === newItem
-                }
+        if (sites != null && sites.size > 0) {
+            android.util.Log.d("HomeFragment", "创建选择对话框")
+            try {
+                val dialog = SelectDialog<SourceBean>(requireActivity())
+                val tvRecyclerView = dialog.findViewById<TvRecyclerView>(R.id.list)
+                tvRecyclerView.setLayoutManager(V7GridLayoutManager(dialog.context, 2))
+                // 优化RecyclerView性能
+                RecyclerViewOptimizer.optimizeTvRecyclerView(tvRecyclerView)
+                dialog.setTip("请选择首页数据源")
+                dialog.setAdapter(object : SelectDialogInterface<SourceBean?> {
+                    override fun click(value: SourceBean?, pos: Int) {
+                        android.util.Log.d("HomeFragment", "选择数据源: ${value?.name}")
+                        ApiConfig.get().setSourceBean(value)
+                        refreshHomeSources()
+                    }
 
-                override fun areContentsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
-                    return oldItem.key.contentEquals(newItem.key)
-                }
-            }, sites, sites.indexOf(ApiConfig.get().homeSourceBean))
-            dialog.show()
+                    override fun getDisplay(source: SourceBean?): String {
+                        return if (source == null) "" else source.name
+                    }
+                }, object : DiffUtil.ItemCallback<SourceBean>() {
+                    override fun areItemsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
+                        return oldItem === newItem
+                    }
+
+                    override fun areContentsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
+                        return oldItem.key.contentEquals(newItem.key)
+                    }
+                }, sites, sites.indexOf(ApiConfig.get().homeSourceBean))
+                android.util.Log.d("HomeFragment", "显示对话框")
+                dialog.show()
+            } catch (e: Exception) {
+                android.util.Log.e("HomeFragment", "创建对话框失败", e)
+                MD3ToastUtils.showLongToast("创建对话框失败: ${e.message}")
+            }
         } else {
+            android.util.Log.d("HomeFragment", "没有可用数据源")
             MD3ToastUtils.showLongToast("暂无可用数据源")
         }
     }
@@ -529,6 +569,17 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
         onlyConfigChanged = true
         dataInitOk = false
         jarInitOk = false
+
+        // 确保订阅源区域可见并更新名称
+        mBinding.nameContainer.visibility = View.VISIBLE
+        val home = ApiConfig.get().homeSourceBean
+        if (home != null && !home.name.isNullOrEmpty()) {
+            mBinding.tvName.text = home.name
+            mBinding.tvName.postDelayed({ mBinding.tvName.isSelected = true }, 2000)
+        } else {
+            mBinding.tvName.text = "请选择订阅源"
+        }
+
         MD3ToastUtils.showToast("正在切换数据源...")
         initData()
     }

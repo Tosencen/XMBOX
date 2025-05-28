@@ -14,7 +14,7 @@ public class JSObject {
     private final ConcurrentHashMap<Class<?>, BindingContext> bindingContextMap = new ConcurrentHashMap<>();
     private final QuickJSContext context;
     private final long pointer;
-    private boolean isReleased;
+    protected boolean isReleased;
 
     public JSObject(QuickJSContext context, long pointer) {
         this.context = context;
@@ -71,7 +71,13 @@ public class JSObject {
 
     public Object get(String name) {
         checkReleased();
-        return context.get(this, name);
+        try {
+            if (isReleased || context == null) return null;
+            return context.get(this, name);
+        } catch (Exception e) {
+            System.err.println("Error getting property: " + name + ", " + e.getMessage());
+            return null;
+        }
     }
 
     public void set(String name, Object value) {
@@ -110,8 +116,13 @@ public class JSObject {
     }
 
     public JSFunction getJSFunction(String name) {
-        Object value = get(name);
-        return value instanceof JSFunction ? (JSFunction) value : null;
+        try {
+            Object value = get(name);
+            return value instanceof JSFunction ? (JSFunction) value : null;
+        } catch (Exception e) {
+            System.err.println("Error getting JSFunction: " + name + ", " + e.getMessage());
+            return null;
+        }
     }
 
     public JSArray getJSArray(String name) {
@@ -163,9 +174,17 @@ public class JSObject {
     @Override
     public String toString() {
         checkReleased();
+        try {
+            if (isReleased || context == null) return "[Released JSObject]";
 
-        JSFunction toString = getJSFunction("toString");
-        return (String) toString.call();
+            JSFunction toString = getJSFunction("toString");
+            if (toString == null) return "[JSObject]";
+
+            Object result = toString.call();
+            return result instanceof String ? (String) result : "[JSObject]";
+        } catch (Exception e) {
+            return "[JSObject Error: " + e.getMessage() + "]";
+        }
     }
 
     public String toJsonString() {
@@ -239,8 +258,10 @@ public class JSObject {
     }
 
     final void checkReleased() {
-        if (isReleased) {
-            throw new NullPointerException("This JSObject was Released, Can not call this!");
+        if (isReleased || context == null) {
+            // 记录日志而不是抛出异常，防止应用崩溃
+            System.err.println("Warning: Attempting to use a released JSObject or null context");
+            // 不抛出异常，让调用方处理空值
         }
     }
 
@@ -273,8 +294,8 @@ public class JSObject {
             try {
                 contextSetter.invoke(callbackReceiver, this.context);
             } catch (Exception e) {
-                throw new QuickJSException(
-                        e.getMessage());
+                String errorMessage = e.getMessage() != null ? e.getMessage() : "Unknown error";
+                throw new QuickJSException(errorMessage);
             }
         }
 
@@ -287,18 +308,21 @@ public class JSObject {
                         @Override
                         public Object call(Object... args) {
                             try {
+                                if (isReleased || callbackReceiver == null) {
+                                    return new Object(); // 对象已释放或回调接收器为空，返回空对象
+                                }
                                 return functionMethod.invoke(callbackReceiver, args);
                             } catch (Exception e) {
                                 //试试暴力不处理不抛异常
-                                new QuickJSException(
-                                        e.getMessage()).printStackTrace();
+                                String errorMessage = e.getMessage() != null ? e.getMessage() : "Unknown error";
+                                new QuickJSException(errorMessage).printStackTrace();
                                 return new Object();
                             }
                         }
                     });
                 } catch (Exception e) {
-                    throw new QuickJSException(
-                            e.getMessage());
+                    String errorMessage = e.getMessage() != null ? e.getMessage() : "Unknown error";
+                    throw new QuickJSException(errorMessage);
                 }
             }
         }

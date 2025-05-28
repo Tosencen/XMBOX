@@ -32,8 +32,11 @@ import okhttp3.Dns;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.dnsoverhttps.DnsOverHttps;
-import okhttp3.internal.Util;
-import okhttp3.internal.Version;
+// import okhttp3.internal.Util;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+// import okhttp3.internal.Version;
 import xyz.doikki.videoplayer.exo.ExoMediaSourceHelper;
 import com.github.tvbox.osc.util.OkHttpSafetyUtil;
 
@@ -106,7 +109,12 @@ public class OkGoHelper {
     public static ArrayList<String> dnsHttpsList = new ArrayList<>();
 
     public static List<ConnectionSpec> getConnectionSpec() {
-        return Util.immutableList(RESTRICTED_TLS, MODERN_TLS, COMPATIBLE_TLS, CLEARTEXT);
+        List<ConnectionSpec> specs = new ArrayList<>();
+        specs.add(RESTRICTED_TLS);
+        specs.add(MODERN_TLS);
+        specs.add(COMPATIBLE_TLS);
+        specs.add(CLEARTEXT);
+        return Collections.unmodifiableList(specs);
     }
 
     public static String getDohUrl(int type) {
@@ -287,7 +295,7 @@ public class OkGoHelper {
         }
 
         // 设置User-Agent
-        HttpHeaders.setUserAgent(Version.userAgent());
+        HttpHeaders.setUserAgent("okhttp/4.9.0");
 
         // 构建客户端
         OkHttpClient okHttpClient = builder.build();

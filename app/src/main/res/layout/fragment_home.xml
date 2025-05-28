@@ -30,7 +30,7 @@
         android:id="@+id/search"
         android:layout_width="0dp"
         android:layout_height="36dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="120dp"
         android:layout_marginEnd="6dp"
         android:background="@drawable/bg_large_round_gray"
         android:drawableRight="@drawable/ic_search_m3"
@@ -41,7 +41,7 @@
         android:textColorHint="@color/text_light_foreground"
         app:layout_constraintBottom_toBottomOf="@+id/tvName"
         app:layout_constraintEnd_toStartOf="@+id/iv_collect"
-        app:layout_constraintStart_toEndOf="@+id/nameContainer"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tvName" />
 
     <ImageView

@@ -1145,6 +1145,11 @@ input.weui-btn_mini {
   flex: 1;
   min-width: 0;
 }
+
+/* 限制搜索框宽度，避免遮挡视频源选择功能 */
+#panel1 .weui-cell__bd {
+  max-width: 70%;
+}
 .weui-cell__ft {
   text-align: right;
   color: rgba(0, 0, 0, 0.5);
