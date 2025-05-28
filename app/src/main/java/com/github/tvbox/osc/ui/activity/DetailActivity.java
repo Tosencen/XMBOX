@@ -181,7 +181,8 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             @Override
             public void onClick(View v) {
                 android.util.Log.d("DetailActivity", "返回按钮被点击");
-                finish();
+                // 使用finishAndRemoveTask()确保Activity能够正常关闭
+                finishAndRemoveTask();
             }
         };
 
@@ -1023,8 +1024,10 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             mBinding.mGridView.requestFocus();
             return;
         }
-        android.util.Log.d("DetailActivity", "调用 super.onBackPressed()");
-        super.onBackPressed();
+        android.util.Log.d("DetailActivity", "调用 finishAndRemoveTask()");
+        // 使用finishAndRemoveTask()确保Activity能够正常关闭
+        // 这对于singleTask模式的Activity特别重要
+        finishAndRemoveTask();
     }
 
     @Override
