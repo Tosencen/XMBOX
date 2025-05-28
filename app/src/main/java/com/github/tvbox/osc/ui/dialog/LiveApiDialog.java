@@ -6,9 +6,9 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.blankj.utilcode.util.ToastUtils;
-import com.github.tvbox.osc.R;
-import com.github.tvbox.osc.databinding.DialogInputSubsriptionBinding;
-import com.github.tvbox.osc.databinding.DialogLiveApiBinding;
+import com.xmbox.app.R;
+import com.xmbox.app.databinding.DialogInputSubsriptionBinding;
+import com.xmbox.app.databinding.DialogLiveApiBinding;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.core.CenterPopupView;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 public class LiveApiDialog extends CenterPopupView {
 
-    private com.github.tvbox.osc.databinding.DialogLiveApiBinding mBinding;
+    private com.xmbox.app.databinding.DialogLiveApiBinding mBinding;
 
     public LiveApiDialog(@NonNull Context context) {
         super(context);

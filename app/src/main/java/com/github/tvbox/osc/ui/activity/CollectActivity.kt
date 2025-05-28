@@ -12,7 +12,7 @@ import com.github.tvbox.osc.bean.VodInfo
 import com.github.tvbox.osc.cache.RoomDataManger
 import com.github.tvbox.osc.cache.VodCollect
 import com.github.tvbox.osc.callback.EmptyCollectCallback
-import com.github.tvbox.osc.databinding.ActivityCollectBinding
+import com.xmbox.app.databinding.ActivityCollectBinding
 import com.github.tvbox.osc.ui.adapter.CollectAdapter
 import com.github.tvbox.osc.util.FastClickCheckUtil
 import com.github.tvbox.osc.util.MD3DialogUtils

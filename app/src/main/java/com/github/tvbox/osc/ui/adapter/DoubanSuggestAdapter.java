@@ -4,7 +4,7 @@ import android.widget.ImageView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.bean.DoubanSuggestBean;
 import com.github.tvbox.osc.util.GlideHelper;
 import com.github.tvbox.osc.util.MD5;

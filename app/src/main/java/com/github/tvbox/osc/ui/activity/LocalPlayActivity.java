@@ -16,7 +16,7 @@ import com.github.tvbox.osc.bean.ParseBean;
 import com.github.tvbox.osc.bean.VideoInfo;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.constant.CacheConst;
-import com.github.tvbox.osc.databinding.ActivityLocalPlayBinding;
+import com.xmbox.app.databinding.ActivityLocalPlayBinding;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.player.MyVideoView;
 import com.github.tvbox.osc.player.controller.LocalVideoController;

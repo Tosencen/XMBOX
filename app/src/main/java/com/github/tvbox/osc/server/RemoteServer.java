@@ -6,7 +6,7 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.util.Base64;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.event.ServerEvent;

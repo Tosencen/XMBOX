@@ -8,8 +8,8 @@ import com.google.android.material.button.MaterialButton;
 import androidx.annotation.NonNull;
 
 import com.blankj.utilcode.util.ColorUtils;
-import com.github.tvbox.osc.R;
-import com.github.tvbox.osc.databinding.DialogPlayingControlBinding;
+import com.xmbox.app.R;
+import com.xmbox.app.databinding.DialogPlayingControlBinding;
 import com.github.tvbox.osc.player.MyVideoView;
 import com.github.tvbox.osc.player.controller.VodController;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
@@ -23,7 +23,7 @@ public class PlayingControlDialog extends BottomPopupView {
     private final DetailActivity mDetailActivity;
     private final VodController mController;
     MyVideoView mPlayer;
-    private com.github.tvbox.osc.databinding.DialogPlayingControlBinding mBinding;
+    private com.xmbox.app.databinding.DialogPlayingControlBinding mBinding;
 
     public PlayingControlDialog(@NonNull @NotNull Context context, VodController controller, MyVideoView videoView) {
         super(context);

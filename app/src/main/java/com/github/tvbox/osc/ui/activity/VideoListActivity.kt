@@ -10,11 +10,11 @@ import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.SPUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.bean.VideoInfo
 import com.github.tvbox.osc.constant.CacheConst
-import com.github.tvbox.osc.databinding.ActivityMovieFoldersBinding
+import com.xmbox.app.databinding.ActivityMovieFoldersBinding
 import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.ui.adapter.LocalVideoAdapter
 import com.github.tvbox.osc.util.FastClickCheckUtil

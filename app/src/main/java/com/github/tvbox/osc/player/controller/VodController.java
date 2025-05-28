@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.DiffUtil;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.github.tvbox.osc.util.MD3ToastUtils;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.bean.IJKCode;
 import com.github.tvbox.osc.bean.ParseBean;

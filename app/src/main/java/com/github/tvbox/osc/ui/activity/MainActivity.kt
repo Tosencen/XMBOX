@@ -9,7 +9,7 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.constant.IntentKey
-import com.github.tvbox.osc.databinding.ActivityMainBinding
+import com.xmbox.app.databinding.ActivityMainBinding
 import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.ui.fragment.GridFragment
 import com.github.tvbox.osc.ui.fragment.HomeFragment

@@ -6,10 +6,10 @@ import android.os.Handler
 import android.util.Log
 import android.widget.ImageView
 import android.widget.RelativeLayout
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.base.App
 import com.github.tvbox.osc.base.BaseVbActivity
-import com.github.tvbox.osc.databinding.ActivitySplashBinding
+import com.xmbox.app.databinding.ActivitySplashBinding
 import com.github.tvbox.osc.util.WarmGreetingUtil
 
 class SplashActivity : BaseVbActivity<ActivitySplashBinding>() {

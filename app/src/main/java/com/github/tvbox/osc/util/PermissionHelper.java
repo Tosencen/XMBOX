@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.blankj.utilcode.util.ToastUtils;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.ui.dialog.PermissionM3Dialog;
 import com.github.tvbox.osc.util.MD3ToastUtils;
 import com.hjq.permissions.OnPermissionCallback;

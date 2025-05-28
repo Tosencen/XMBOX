@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.lxj.xpopup.impl.PartShadowPopupView;
 import com.lxj.xpopup.interfaces.OnSelectListener;
 import com.zhy.view.flowlayout.FlowLayout;

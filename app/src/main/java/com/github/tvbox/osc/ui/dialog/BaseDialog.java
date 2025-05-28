@@ -12,7 +12,7 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 
 import xyz.doikki.videoplayer.util.CutoutUtil;
 

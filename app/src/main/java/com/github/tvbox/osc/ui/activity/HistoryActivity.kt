@@ -9,7 +9,7 @@ import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.bean.VodInfo
 import com.github.tvbox.osc.cache.RoomDataManger
 import com.github.tvbox.osc.callback.EmptyHistoryCallback
-import com.github.tvbox.osc.databinding.ActivityHistoryBinding
+import com.xmbox.app.databinding.ActivityHistoryBinding
 import com.github.tvbox.osc.ui.activity.DetailActivity
 import com.github.tvbox.osc.ui.adapter.HistoryAdapter
 

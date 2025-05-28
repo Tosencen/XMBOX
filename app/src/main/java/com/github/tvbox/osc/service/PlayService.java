@@ -18,7 +18,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.blankj.utilcode.util.LogUtils;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.constant.IntentKey;
 import com.github.tvbox.osc.event.RefreshEvent;

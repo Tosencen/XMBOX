@@ -37,7 +37,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name=".base.App"
+        android:name="com.github.tvbox.osc.base.App"
         android:allowBackup="true"
         android:configChanges="orientation|keyboardHidden|screenSize"
         android:hardwareAccelerated="true"
@@ -48,7 +48,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ui.activity.SplashActivity"
+            android:name="com.github.tvbox.osc.ui.activity.SplashActivity"
             android:exported="true"
             android:theme="@style/SplashTheme">
             <intent-filter>
@@ -58,54 +58,54 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.activity.SubscriptionActivity"
+            android:name="com.github.tvbox.osc.ui.activity.SubscriptionActivity"
             android:configChanges="orientation|screenSize"
             android:exported="false" />
         <activity
-            android:name=".ui.activity.VideoListActivity"
+            android:name="com.github.tvbox.osc.ui.activity.VideoListActivity"
             android:configChanges="orientation|screenSize"/>
         <activity
-            android:name=".ui.activity.MovieFoldersActivity"
+            android:name="com.github.tvbox.osc.ui.activity.MovieFoldersActivity"
             android:configChanges="orientation|screenSize"
             android:exported="false"/>
         <activity
-            android:name=".ui.activity.LocalPlayActivity"
+            android:name="com.github.tvbox.osc.ui.activity.LocalPlayActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false" />
         <activity
-            android:name=".ui.activity.MainActivity"
+            android:name="com.github.tvbox.osc.ui.activity.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
             android:exported="true"/>
         <activity
-            android:name=".ui.activity.LiveActivity"
+            android:name="com.github.tvbox.osc.ui.activity.LiveActivity"
             android:launchMode="singleTop"
             android:configChanges="orientation|screenSize|keyboardHidden|uiMode|screenLayout"/>
         <activity
-            android:name=".ui.activity.DetailActivity"
+            android:name="com.github.tvbox.osc.ui.activity.DetailActivity"
             android:supportsPictureInPicture="true"
             android:launchMode="singleTask"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode"/>
         <activity
-            android:name=".ui.activity.FastSearchActivity"
+            android:name="com.github.tvbox.osc.ui.activity.FastSearchActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             />
         <activity
-            android:name=".ui.activity.SearchDetailActivity"
+            android:name="com.github.tvbox.osc.ui.activity.SearchDetailActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             />
         <activity
-            android:name=".ui.activity.SettingActivity"
+            android:name="com.github.tvbox.osc.ui.activity.SettingActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"/>
         <activity
-            android:name=".ui.activity.HistoryActivity"
+            android:name="com.github.tvbox.osc.ui.activity.HistoryActivity"
             android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity
-            android:name=".ui.activity.CollectActivity"
+            android:name="com.github.tvbox.osc.ui.activity.CollectActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"/>
 
 
         <activity
-            android:name=".ui.activity.DevToolsActivity"
+            android:name="com.github.tvbox.osc.ui.activity.DevToolsActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="工具"/>
 
@@ -113,12 +113,12 @@
         <!-- <service android:name="com.github.tvbox.osc.cast.dlna.DLNAService"
             android:exported="false"/> -->
 
-        <receiver android:name=".receiver.SearchReceiver" android:exported="true">
+        <receiver android:name="com.github.tvbox.osc.receiver.SearchReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.content.movie.search.Action" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".receiver.CustomWebReceiver" android:exported="true">
+        <receiver android:name="com.github.tvbox.osc.receiver.CustomWebReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.content.movie.custom.web.Action" />
             </intent-filter>
@@ -135,7 +135,7 @@
         </provider>
 
         <service
-            android:name=".service.PlayService"
+            android:name="com.github.tvbox.osc.service.PlayService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 

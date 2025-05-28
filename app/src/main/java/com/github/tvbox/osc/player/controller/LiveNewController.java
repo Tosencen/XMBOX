@@ -5,7 +5,7 @@ import android.view.MotionEvent;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 
 import org.jetbrains.annotations.NotNull;
 

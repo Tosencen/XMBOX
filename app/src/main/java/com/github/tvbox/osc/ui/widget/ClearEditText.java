@@ -14,7 +14,7 @@ import android.view.animation.CycleInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 
 
 /**

@@ -4,9 +4,9 @@ import android.content.Context
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ScreenUtils
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.bean.DoubanSuggestBean
-import com.github.tvbox.osc.databinding.DialogDoubanSuggestBinding
+import com.xmbox.app.databinding.DialogDoubanSuggestBinding
 import com.github.tvbox.osc.ui.adapter.DoubanSuggestAdapter
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken

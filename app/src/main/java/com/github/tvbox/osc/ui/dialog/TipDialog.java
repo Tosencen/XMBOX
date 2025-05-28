@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.util.XPopupAnimUtil;
 import com.hjq.bar.TitleBar;
 import com.lxj.xpopup.XPopup;

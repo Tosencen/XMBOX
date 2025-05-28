@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.base.App;
 
 import java.lang.ref.WeakReference;

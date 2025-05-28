@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.ui.model.SettingItem
 import com.google.android.material.button.MaterialButton
 

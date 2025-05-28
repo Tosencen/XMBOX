@@ -3,7 +3,7 @@ package com.github.tvbox.osc.ui.fragment;
 import android.view.View;
 import com.blankj.utilcode.util.AppUtils;
 import com.github.tvbox.osc.base.BaseVbFragment;
-import com.github.tvbox.osc.databinding.FragmentMyBinding;
+import com.xmbox.app.databinding.FragmentMyBinding;
 import com.github.tvbox.osc.ui.activity.CollectActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
 import com.github.tvbox.osc.ui.activity.MovieFoldersActivity;
@@ -68,7 +68,7 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
         };
 
         // 为XMBOX标题和版本号设置点击事件
-        View headerLayout = mBinding.getRoot().findViewById(com.github.tvbox.osc.R.id.header_layout);
+        View headerLayout = mBinding.getRoot().findViewById(com.xmbox.app.R.id.header_layout);
         if (headerLayout != null) {
             headerLayout.setOnClickListener(versionClickListener);
         }

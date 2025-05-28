@@ -6,7 +6,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.bean.VideoFolder
 import com.github.tvbox.osc.bean.VideoInfo
-import com.github.tvbox.osc.databinding.ActivityMovieFoldersBinding
+import com.xmbox.app.databinding.ActivityMovieFoldersBinding
 import com.github.tvbox.osc.ui.adapter.FolderAdapter
 import com.github.tvbox.osc.util.PermissionHelper
 import com.github.tvbox.osc.util.Utils

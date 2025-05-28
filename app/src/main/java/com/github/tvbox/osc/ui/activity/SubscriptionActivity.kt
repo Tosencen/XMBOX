@@ -9,12 +9,12 @@ import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.github.tvbox.osc.util.MD3ToastUtils
 import com.chad.library.adapter.base.BaseQuickAdapter
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.bean.Source
 import com.github.tvbox.osc.bean.Subscription
 import com.github.tvbox.osc.callback.EmptySubscriptionCallback
-import com.github.tvbox.osc.databinding.ActivitySubscriptionBinding
+import com.xmbox.app.databinding.ActivitySubscriptionBinding
 import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.ui.dialog.ConfirmDialog
 import com.github.tvbox.osc.ui.adapter.MenuAdapter

@@ -40,7 +40,7 @@ import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.ServiceUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.base.BaseVbActivity;
@@ -53,7 +53,7 @@ import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.cache.RoomDataManger;
 import com.github.tvbox.osc.constant.IntentKey;
-import com.github.tvbox.osc.databinding.ActivityDetailBinding;
+import com.xmbox.app.databinding.ActivityDetailBinding;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.receiver.BatteryReceiver;
 import com.github.tvbox.osc.service.PlayService;
@@ -76,6 +76,7 @@ import com.github.tvbox.osc.util.SubtitleHelper;
 import com.github.tvbox.osc.util.Utils;
 import com.github.tvbox.osc.util.MD3DialogUtils;
 import com.github.tvbox.osc.util.MD3ToastUtils;
+import com.github.tvbox.osc.util.SpiderExceptionHandler;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -176,30 +177,77 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     private void initView() {
+        // 调试：检查ViewBinding是否正确
+        android.util.Log.d("DetailActivity", "initView 开始");
+        android.util.Log.d("DetailActivity", "mBinding: " + (mBinding != null ? "不为null" : "为null"));
+        android.util.Log.d("DetailActivity", "mBinding.ivBack: " + (mBinding.ivBack != null ? "不为null" : "为null"));
+
         // 创建返回操作的点击监听器
         View.OnClickListener backClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                android.util.Log.d("DetailActivity", "返回按钮被点击");
-                // 使用finishAndRemoveTask()确保Activity能够正常关闭
-                finishAndRemoveTask();
+                android.util.Log.d("DetailActivity", "返回按钮被点击 - 层级分析");
+                android.util.Log.d("DetailActivity", "点击的View ID: " + v.getId());
+                android.util.Log.d("DetailActivity", "返回按钮位置层级：");
+                android.util.Log.d("DetailActivity", "1. FrameLayout (根容器)");
+                android.util.Log.d("DetailActivity", "   └── LinearLayout (主布局容器)");
+                android.util.Log.d("DetailActivity", "       └── RelativeLayout (toolbar工具栏)");
+                android.util.Log.d("DetailActivity", "           └── ImageView (iv_back返回按钮) ← 当前点击的按钮");
+                android.util.Log.d("DetailActivity", "返回按钮属性：48dp x 48dp，左边距4dp，居中垂直对齐");
+                finish();
             }
         };
 
-        // 设置返回按钮点击事件
-        mBinding.ivBack.setOnClickListener(backClickListener);
+        // 检查返回按钮是否存在
+        if (mBinding.ivBack != null) {
+            android.util.Log.d("DetailActivity", "设置返回按钮点击事件");
+            android.util.Log.d("DetailActivity", "返回按钮可见性: " + (mBinding.ivBack.getVisibility() == View.VISIBLE ? "可见" : "不可见"));
+            android.util.Log.d("DetailActivity", "返回按钮可点击: " + mBinding.ivBack.isClickable());
+            android.util.Log.d("DetailActivity", "返回按钮可获得焦点: " + mBinding.ivBack.isFocusable());
+
+            // 设置返回按钮点击事件
+            mBinding.ivBack.setOnClickListener(backClickListener);
+
+            // 确保按钮可点击
+            mBinding.ivBack.setClickable(true);
+            mBinding.ivBack.setFocusable(true);
+
+            // 添加触摸事件监听器来调试
+            mBinding.ivBack.setOnTouchListener((v, event) -> {
+                android.util.Log.d("DetailActivity", "返回按钮触摸事件: " + event.getAction());
+                return false; // 返回false让点击事件继续传递
+            });
+
+            // 移除padding扩展，使用原始的点击区域
+            // 注释掉padding扩展，因为可能导致点击问题
+            /*
+            mBinding.ivBack.setPadding(
+                mBinding.ivBack.getPaddingLeft() + 20,
+                mBinding.ivBack.getPaddingTop() + 20,
+                mBinding.ivBack.getPaddingRight() + 100, // 向右扩展更多
+                mBinding.ivBack.getPaddingBottom() + 20
+            );
+            */
+
+            // 检查父容器是否可能拦截触摸事件
+            ViewGroup parent = (ViewGroup) mBinding.ivBack.getParent();
+            if (parent != null) {
+                android.util.Log.d("DetailActivity", "返回按钮父容器: " + parent.getClass().getSimpleName());
+                android.util.Log.d("DetailActivity", "父容器可点击: " + parent.isClickable());
+            }
+
+            android.util.Log.d("DetailActivity", "返回按钮设置完成");
+        } else {
+            android.util.Log.e("DetailActivity", "返回按钮为null，无法设置点击事件");
+        }
 
         // 设置标题点击返回功能
-        mBinding.tvTitle.setOnClickListener(backClickListener);
-
-        // 扩大返回按钮的点击区域 - 使用更安全的方法
-        // 增加返回按钮的padding来扩大点击区域
-        mBinding.ivBack.setPadding(
-            mBinding.ivBack.getPaddingLeft() + 20,
-            mBinding.ivBack.getPaddingTop() + 20,
-            mBinding.ivBack.getPaddingRight() + 100, // 向右扩展更多
-            mBinding.ivBack.getPaddingBottom() + 20
-        );
+        if (mBinding.tvTitle != null) {
+            android.util.Log.d("DetailActivity", "设置标题点击返回功能");
+            mBinding.tvTitle.setOnClickListener(backClickListener);
+        } else {
+            android.util.Log.e("DetailActivity", "标题为null");
+        }
 
         mBinding.ivPrivateBrowsing.setVisibility(Hawk.get(HawkConfig.PRIVATE_BROWSING, false) ? View.VISIBLE : View.GONE);
         mBinding.ivPrivateBrowsing.setOnClickListener(view -> MD3ToastUtils.showToast("当前为无痕浏览"));
@@ -631,31 +679,53 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     private void initData() {
-        Intent intent = getIntent();
-        if (intent != null && intent.getExtras() != null) {
-            Bundle bundle = intent.getExtras();
-            loadDetail(bundle.getString("id", null), bundle.getString("sourceKey", ""));
+        try {
+            Intent intent = getIntent();
+            if (intent != null && intent.getExtras() != null) {
+                Bundle bundle = intent.getExtras();
+                loadDetail(bundle.getString("id", null), bundle.getString("sourceKey", ""));
+            }
+        } catch (Exception e) {
+            android.util.Log.e("DetailActivity", "initData发生异常: " + e.getMessage());
+            e.printStackTrace();
+            // 显示错误提示并关闭Activity
+            MD3ToastUtils.showToast("加载详情失败，请重试");
+            finish();
         }
     }
 
     private void loadDetail(String vid, String key) {
         if (vid != null) {
-            vodId = vid;
-            sourceKey = key;
-            showLoading();
-            sourceViewModel.getDetail(sourceKey, vodId);
-            boolean isVodCollect = RoomDataManger.isVodCollect(sourceKey, vodId);
-            // 找到收藏图标
-            TextView favoriteIcon = (TextView) ((ViewGroup) mBinding.tvCollect.getParent()).getChildAt(0);
+            try {
+                vodId = vid;
+                sourceKey = key;
+                showLoading();
 
-            if (isVodCollect) {
-                mBinding.tvCollect.setText(getString(R.string.detail_remove_from_favorites));
-                // 设置为填充图标颜色
-                favoriteIcon.setTextColor(getResources().getColor(R.color.md3_primary));
-            } else {
-                mBinding.tvCollect.setText(getString(R.string.detail_add_to_favorites));
-                // 设置为线框图标颜色
-                favoriteIcon.setTextColor(getResources().getColor(R.color.text_foreground));
+                // 添加spider初始化的安全检查
+                android.util.Log.d("DetailActivity", "开始加载详情，sourceKey: " + sourceKey + ", vodId: " + vodId);
+
+                // 使用SpiderExceptionHandler安全执行spider相关操作
+                SpiderExceptionHandler.safeExecute(() -> {
+                    sourceViewModel.getDetail(sourceKey, vodId);
+                }, "加载视频详情失败");
+                boolean isVodCollect = RoomDataManger.isVodCollect(sourceKey, vodId);
+                // 找到收藏图标
+                TextView favoriteIcon = (TextView) ((ViewGroup) mBinding.tvCollect.getParent()).getChildAt(0);
+
+                if (isVodCollect) {
+                    mBinding.tvCollect.setText(getString(R.string.detail_remove_from_favorites));
+                    // 设置为填充图标颜色
+                    favoriteIcon.setTextColor(getResources().getColor(R.color.md3_primary));
+                } else {
+                    mBinding.tvCollect.setText(getString(R.string.detail_add_to_favorites));
+                    // 设置为线框图标颜色
+                    favoriteIcon.setTextColor(getResources().getColor(R.color.text_foreground));
+                }
+            } catch (Exception e) {
+                android.util.Log.e("DetailActivity", "loadDetail发生异常: " + e.getMessage());
+                e.printStackTrace();
+                showEmpty();
+                MD3ToastUtils.showToast("加载详情失败: " + e.getMessage());
             }
         }
     }
@@ -1024,10 +1094,8 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             mBinding.mGridView.requestFocus();
             return;
         }
-        android.util.Log.d("DetailActivity", "调用 finishAndRemoveTask()");
-        // 使用finishAndRemoveTask()确保Activity能够正常关闭
-        // 这对于singleTask模式的Activity特别重要
-        finishAndRemoveTask();
+        android.util.Log.d("DetailActivity", "调用 super.onBackPressed()");
+        super.onBackPressed();
     }
 
     @Override

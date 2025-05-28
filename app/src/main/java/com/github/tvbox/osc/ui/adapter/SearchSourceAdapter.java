@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.util.SearchHelper;
 import com.google.android.material.radiobutton.MaterialRadioButton;

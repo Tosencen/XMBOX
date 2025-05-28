@@ -17,7 +17,7 @@ import com.github.tvbox.osc.util.LOG
 import com.github.tvbox.osc.util.MD3ToastUtils
 import com.github.tvbox.osc.util.RecyclerViewOptimizer
 import com.github.tvbox.osc.util.ThreadPoolManager
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.api.ApiConfig
 import com.github.tvbox.osc.api.ApiConfig.LoadConfigCallback
 import com.github.tvbox.osc.base.App
@@ -29,7 +29,7 @@ import com.github.tvbox.osc.bean.SourceBean
 import com.github.tvbox.osc.bean.VodInfo
 import com.github.tvbox.osc.cache.RoomDataManger
 import com.github.tvbox.osc.constant.IntentKey
-import com.github.tvbox.osc.databinding.FragmentHomeBinding
+import com.xmbox.app.databinding.FragmentHomeBinding
 import com.github.tvbox.osc.server.ControlManager
 import com.github.tvbox.osc.ui.activity.CollectActivity
 import com.github.tvbox.osc.ui.activity.FastSearchActivity

@@ -19,14 +19,14 @@ import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.github.catvod.crawler.JsLoader
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.api.ApiConfig
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.bean.AbsXml
 import com.github.tvbox.osc.bean.DoubanSuggestBean
 import com.github.tvbox.osc.bean.Movie
 import com.github.tvbox.osc.bean.SourceBean
-import com.github.tvbox.osc.databinding.ActivityFastSearchBinding
+import com.xmbox.app.databinding.ActivityFastSearchBinding
 import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.event.ServerEvent
 import com.github.tvbox.osc.ui.adapter.FastSearchAdapter

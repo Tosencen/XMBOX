@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseActivity;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.SearchCategoryBean;
-import com.github.tvbox.osc.databinding.ActivitySearchDetailBinding;
+import com.xmbox.app.databinding.ActivitySearchDetailBinding;
 import com.github.tvbox.osc.ui.adapter.FastSearchAdapter;
 import com.github.tvbox.osc.ui.adapter.SearchCategoryAdapter;
 import com.github.tvbox.osc.util.FastClickCheckUtil;

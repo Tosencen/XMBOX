@@ -8,7 +8,7 @@ plugins {
 android {
     compileSdkVersion 34
 
-    namespace 'com.github.tvbox.osc'
+    namespace 'com.xmbox.app'
     defaultConfig {
         applicationId 'com.xmbox.app'
         minSdkVersion 24

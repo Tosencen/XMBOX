@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 
 import java.util.ArrayList;
 import java.util.List;

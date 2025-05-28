@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.GlideHelper;

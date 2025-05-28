@@ -8,7 +8,7 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.graphics.ColorUtils
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 
 /**
  * @Author : Liu XiaoRan

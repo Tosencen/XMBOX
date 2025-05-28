@@ -6,8 +6,8 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.blankj.utilcode.util.AppUtils
-import com.github.tvbox.osc.R
-import com.github.tvbox.osc.databinding.DialogUpdateProgressBinding
+import com.xmbox.app.R
+import com.xmbox.app.databinding.DialogUpdateProgressBinding
 import com.github.tvbox.osc.util.MD3ToastUtils
 import com.lxj.xpopup.core.CenterPopupView
 

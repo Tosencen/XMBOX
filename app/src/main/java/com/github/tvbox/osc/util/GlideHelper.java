@@ -24,7 +24,7 @@ import com.bumptech.glide.module.AppGlideModule;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.util.urlhttp.BrotliInterceptor;
 import com.github.tvbox.osc.util.OkHttpSafetyUtil;

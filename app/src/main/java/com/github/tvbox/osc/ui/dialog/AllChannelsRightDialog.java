@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.ColorUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.bean.VodInfo;
-import com.github.tvbox.osc.databinding.DialogAllChannelBinding;
+import com.xmbox.app.databinding.DialogAllChannelBinding;
 import com.github.tvbox.osc.ui.activity.LiveActivity;
 import com.github.tvbox.osc.ui.adapter.LiveChannelGroupNewAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveChannelItemNewAdapter;
@@ -31,7 +31,7 @@ import java.util.List;
 public class AllChannelsRightDialog extends DrawerPopupView {
 
     private final LiveActivity mActivity;
-    private com.github.tvbox.osc.databinding.DialogAllChannelBinding mBinding;
+    private com.xmbox.app.databinding.DialogAllChannelBinding mBinding;
 
     public AllChannelsRightDialog(@NonNull @NotNull Context context) {
         super(context);

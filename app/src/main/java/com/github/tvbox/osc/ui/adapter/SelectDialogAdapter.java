@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.ColorUtils;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 
 import org.jetbrains.annotations.NotNull;

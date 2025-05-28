@@ -2,7 +2,7 @@ package com.github.tvbox.osc.util;
 
 import android.content.Context;
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.enums.PopupAnimation;
 

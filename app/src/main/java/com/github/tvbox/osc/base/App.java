@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import androidx.multidex.MultiDexApplication;
 
 import com.github.catvod.crawler.JsLoader;
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 import com.github.tvbox.osc.bean.Subscription;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.callback.EmptyCallback;

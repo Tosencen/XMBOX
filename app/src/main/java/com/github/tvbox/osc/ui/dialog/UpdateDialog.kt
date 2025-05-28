@@ -3,8 +3,8 @@ package com.github.tvbox.osc.ui.dialog
 import android.content.Context
 import android.view.View
 import android.widget.TextView
-import com.github.tvbox.osc.R
-import com.github.tvbox.osc.databinding.DialogUpdateBinding
+import com.xmbox.app.R
+import com.xmbox.app.databinding.DialogUpdateBinding
 import com.github.tvbox.osc.util.UpdateChecker
 import com.lxj.xpopup.core.CenterPopupView
 

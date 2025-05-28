@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.ui.model.ToolItem
 import com.github.tvbox.osc.util.MaterialSymbolsLoader
 

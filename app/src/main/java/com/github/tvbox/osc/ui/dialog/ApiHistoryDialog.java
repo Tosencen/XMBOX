@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.github.tvbox.osc.R;
-import com.github.tvbox.osc.databinding.DialogTitleListBinding;
+import com.xmbox.app.R;
+import com.xmbox.app.databinding.DialogTitleListBinding;
 import com.github.tvbox.osc.ui.adapter.TitleWithDelAdapter;
 import com.github.tvbox.osc.ui.widget.LinearSpacingItemDecoration;
 import com.github.tvbox.osc.util.HawkConfig;

@@ -1,7 +1,7 @@
 package com.github.tvbox.osc.ui.tv.widget;
 
 
-import com.github.tvbox.osc.R;
+import com.xmbox.app.R;
 
 public final class LoadMoreView extends com.chad.library.adapter.base.loadmore.LoadMoreView {
 

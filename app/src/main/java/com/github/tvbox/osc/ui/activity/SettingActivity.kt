@@ -8,13 +8,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ToastUtils
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.util.MD3ToastUtils
 import com.github.tvbox.osc.api.ApiConfig
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.bean.IJKCode
 import com.github.tvbox.osc.constant.IntentKey
-import com.github.tvbox.osc.databinding.ActivitySettingBinding
+import com.xmbox.app.databinding.ActivitySettingBinding
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter.SelectDialogInterface
 

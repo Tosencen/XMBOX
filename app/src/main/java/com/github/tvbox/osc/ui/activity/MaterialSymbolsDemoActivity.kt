@@ -3,7 +3,7 @@ package com.github.tvbox.osc.ui.activity
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 import com.github.tvbox.osc.util.MaterialSymbols
 import com.github.tvbox.osc.util.MaterialSymbolsLoader
 

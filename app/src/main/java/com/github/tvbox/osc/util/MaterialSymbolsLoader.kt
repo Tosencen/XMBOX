@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
-import com.github.tvbox.osc.R
+import com.xmbox.app.R
 
 /**
  * Material Symbols字体加载器
