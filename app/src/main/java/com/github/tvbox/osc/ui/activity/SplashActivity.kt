@@ -10,6 +10,7 @@ import com.github.tvbox.osc.R
 import com.github.tvbox.osc.base.App
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.databinding.ActivitySplashBinding
+import com.github.tvbox.osc.util.WarmGreetingUtil
 
 class SplashActivity : BaseVbActivity<ActivitySplashBinding>() {
     override fun init() {
@@ -41,6 +42,18 @@ class SplashActivity : BaseVbActivity<ActivitySplashBinding>() {
                 Log.d("SplashActivity", "成功加载启动页插图")
             } catch (e: Exception) {
                 Log.e("SplashActivity", "加载启动页插图失败: ${e.message}")
+            }
+
+            // 设置温暖话语
+            try {
+                val specialGreeting = WarmGreetingUtil.getSpecialGreeting()
+                val greeting = specialGreeting ?: WarmGreetingUtil.getCurrentGreeting()
+                mBinding.tvWarmGreeting.text = greeting
+                Log.d("SplashActivity", "设置温暖话语: $greeting")
+            } catch (e: Exception) {
+                Log.e("SplashActivity", "设置温暖话语失败: ${e.message}")
+                // 设置默认话语
+                mBinding.tvWarmGreeting.text = "欢迎使用 XMBOX"
             }
 
             // 预加载一些必要的组件，但不初始化可能导致崩溃的功能
