@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -175,21 +176,29 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     private void initView() {
-        // 设置返回按钮点击事件 - 使用最简单直接的方法
-        mBinding.ivBack.setOnClickListener(new View.OnClickListener() {
+        // 创建返回操作的点击监听器
+        View.OnClickListener backClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                android.util.Log.d("DetailActivity", "返回按钮被点击");
                 finish();
             }
-        });
+        };
+
+        // 设置返回按钮点击事件
+        mBinding.ivBack.setOnClickListener(backClickListener);
 
         // 设置标题点击返回功能
-        mBinding.tvTitle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        mBinding.tvTitle.setOnClickListener(backClickListener);
+
+        // 扩大返回按钮的点击区域 - 使用更安全的方法
+        // 增加返回按钮的padding来扩大点击区域
+        mBinding.ivBack.setPadding(
+            mBinding.ivBack.getPaddingLeft() + 20,
+            mBinding.ivBack.getPaddingTop() + 20,
+            mBinding.ivBack.getPaddingRight() + 100, // 向右扩展更多
+            mBinding.ivBack.getPaddingBottom() + 20
+        );
 
         mBinding.ivPrivateBrowsing.setVisibility(Hawk.get(HawkConfig.PRIVATE_BROWSING, false) ? View.VISIBLE : View.GONE);
         mBinding.ivPrivateBrowsing.setOnClickListener(view -> MD3ToastUtils.showToast("当前为无痕浏览"));
