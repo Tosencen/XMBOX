@@ -11,35 +11,57 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/header_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:padding="20dp"
-            android:orientation="vertical"
             android:foreground="?android:attr/selectableItemBackground">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:text="XMBOX"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="22sp"
-                android:fontFamily="sans-serif-medium" />
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_version"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginTop="4dp"
-                android:textSize="12sp"
-                tools:text="v2.0.4"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:fontFamily="sans-serif" />
-        </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="XMBOX"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="22sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:id="@+id/tv_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="4dp"
+                    android:textSize="12sp"
+                    tools:text="v2.0.4"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:fontFamily="sans-serif" />
+            </LinearLayout>
+
+            <!-- GitHub图标 -->
+            <ImageView
+                android:id="@+id/iv_github"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="20dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_github"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="GitHub"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+        </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"

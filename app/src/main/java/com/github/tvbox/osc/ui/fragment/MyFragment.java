@@ -16,6 +16,8 @@ import com.github.tvbox.osc.ui.dialog.VersionHistoryDialog;
 import com.github.tvbox.osc.util.AppUpdateManager;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.MaterialSymbolsLoader;
+import android.content.Intent;
+import android.net.Uri;
 import com.github.tvbox.osc.bean.Source;
 import com.github.tvbox.osc.bean.Subscription;
 import com.blankj.utilcode.util.ToastUtils;
@@ -104,6 +106,17 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
             new XPopup.Builder(mActivity)
                     .asCustom(new AboutDialog(mActivity))
                     .show();
+        });
+
+        // GitHub图标点击事件
+        mBinding.ivGithub.setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://github.com/Tosencen"));
+                startActivity(intent);
+            } catch (Exception e) {
+                com.github.tvbox.osc.util.MD3ToastUtils.showToast("无法打开GitHub链接");
+            }
         });
     }
 

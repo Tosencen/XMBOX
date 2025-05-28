@@ -83,19 +83,33 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
      * false: 全部重载(api变更、重启app等)
      */
     var onlyConfigChanged = false
+    private var lastClickTime = 0L
 
     override fun init() {
         ControlManager.get().startServer()
         mBinding.tvName.setOnClickListener {
+            // 防止重复点击
+            if (System.currentTimeMillis() - lastClickTime < 500) {
+                return@setOnClickListener
+            }
+            lastClickTime = System.currentTimeMillis()
+
             // 添加调试日志
             android.util.Log.d("HomeFragment", "点击视频源按钮 - dataInitOk: $dataInitOk, jarInitOk: $jarInitOk")
             val sources = ApiConfig.get().sourceBeanList
             android.util.Log.d("HomeFragment", "当前数据源数量: ${sources?.size ?: 0}")
 
+            // 立即给用户反馈
+            mBinding.tvName.alpha = 0.7f
+            mBinding.tvName.postDelayed({ mBinding.tvName.alpha = 1.0f }, 150)
+
             // 优化用户体验：即使数据未完全加载，也尝试显示可用的数据源
             if (sources != null && sources.size > 0) {
                 android.util.Log.d("HomeFragment", "调用 showSiteSwitch() - 有可用数据源")
-                showSiteSwitch()
+                // 使用异步方式显示对话框，避免阻塞UI
+                ThreadPoolManager.executeMain {
+                    showSiteSwitch()
+                }
             } else if (dataInitOk && jarInitOk) {
                 // 数据已加载完成但没有数据源
                 android.util.Log.d("HomeFragment", "数据加载完成但无可用数据源")
@@ -556,13 +570,42 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
         if (sites != null && sites.size > 0) {
             android.util.Log.d("HomeFragment", "创建选择对话框")
+
+            // 预先计算当前选中的索引，避免在UI线程中进行耗时操作
+            val currentHomeSource = ApiConfig.get().homeSourceBean
+            var selectedIndex = 0
+            if (currentHomeSource != null) {
+                for (i in sites.indices) {
+                    if (sites[i].key == currentHomeSource.key) {
+                        selectedIndex = i
+                        break
+                    }
+                }
+            }
+
             try {
                 val dialog = SelectDialog<SourceBean>(requireActivity())
                 val tvRecyclerView = dialog.findViewById<TvRecyclerView>(R.id.list)
                 tvRecyclerView.setLayoutManager(V7GridLayoutManager(dialog.context, 2))
-                // 优化RecyclerView性能
-                RecyclerViewOptimizer.optimizeTvRecyclerView(tvRecyclerView)
+
+                // 延迟执行RecyclerView优化，避免阻塞UI
+                tvRecyclerView.post {
+                    RecyclerViewOptimizer.optimizeTvRecyclerView(tvRecyclerView)
+                }
+
                 dialog.setTip("请选择首页数据源")
+
+                // 使用简化的DiffUtil回调
+                val diffCallback = object : DiffUtil.ItemCallback<SourceBean>() {
+                    override fun areItemsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
+                        return oldItem.key == newItem.key
+                    }
+
+                    override fun areContentsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
+                        return oldItem.name == newItem.name
+                    }
+                }
+
                 dialog.setAdapter(object : SelectDialogInterface<SourceBean?> {
                     override fun click(value: SourceBean?, pos: Int) {
                         android.util.Log.d("HomeFragment", "选择数据源: ${value?.name}")
@@ -571,17 +614,10 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                     }
 
                     override fun getDisplay(source: SourceBean?): String {
-                        return if (source == null) "" else source.name
+                        return source?.name ?: ""
                     }
-                }, object : DiffUtil.ItemCallback<SourceBean>() {
-                    override fun areItemsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
-                        return oldItem === newItem
-                    }
+                }, diffCallback, sites, selectedIndex)
 
-                    override fun areContentsTheSame(oldItem: SourceBean, newItem: SourceBean): Boolean {
-                        return oldItem.key.contentEquals(newItem.key)
-                    }
-                }, sites, sites.indexOf(ApiConfig.get().homeSourceBean))
                 android.util.Log.d("HomeFragment", "显示对话框")
                 dialog.show()
             } catch (e: Exception) {

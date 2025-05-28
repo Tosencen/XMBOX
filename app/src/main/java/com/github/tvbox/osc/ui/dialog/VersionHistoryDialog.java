@@ -71,6 +71,20 @@ public class VersionHistoryDialog extends BottomPopupView {
     private List<VersionInfo> getVersionHistory() {
         List<VersionInfo> versionInfoList = new ArrayList<>();
 
+        // v2.0.6
+        VersionInfo v206 = new VersionInfo();
+        v206.setVersion("v2.0.6");
+        v206.setDate("2025-05-28");
+        List<String> features206 = new ArrayList<>();
+        features206.add("修复了DetailActivity中的NullPointerException崩溃问题");
+        features206.add("修复了视频详情页返回按钮点击无效的问题");
+        features206.add("在我的页面右上角添加了GitHub图标，点击可跳转到GitHub主页");
+        features206.add("优化了spider异常处理，提升应用稳定性");
+        features206.add("改进了Context管理，避免Activity销毁导致的空指针异常");
+        features206.add("添加了详细的调试日志，便于问题定位");
+        v206.setFeatures(features206);
+        versionInfoList.add(v206);
+
         // v2.0.5
         VersionInfo v205 = new VersionInfo();
         v205.setVersion("v2.0.5");
