@@ -865,31 +865,25 @@
                             android:textSize="24sp"
                             style="@style/Widget.App.MaterialSymbols"/>
 
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            android:id="@+id/tvCacheSizeLabel"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:text="缓存大小"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="16sp"
+                            android:singleLine="true"/>
 
-                            <TextView
-                                android:id="@+id/tvCacheSizeLabel"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="缓存大小"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textSize="16sp"
-                                android:singleLine="true"/>
-
-                            <TextView
-                                android:id="@+id/tvCacheSize"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="14sp"
-                                android:layout_marginStart="8dp"
-                                android:singleLine="true"/>
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/tvCacheSize"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginStart="8dp"
+                            android:singleLine="true"
+                            android:maxLines="1"
+                            android:ellipsize="end"/>
 
                         <Space
                             android:layout_width="0dp"
@@ -902,7 +896,7 @@
                             android:layout_height="wrap_content"
                             android:text="清空缓存"
                             android:textSize="14sp"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="@android:color/white"
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="8dp"
                             app:cornerRadius="8dp"
