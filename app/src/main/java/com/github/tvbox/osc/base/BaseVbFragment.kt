@@ -126,4 +126,21 @@ abstract class BaseVbFragment<T : ViewBinding> : Fragment(), CustomAdapt {
     override fun isBaseOnWidth(): Boolean {
         return if (activity != null && activity is CustomAdapt) (activity as CustomAdapt?)!!.isBaseOnWidth else true
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // 清理LoadSir引用，防止内存泄漏
+        try {
+            mLoadService = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        // 清理Context和Activity引用
+        mContext = null
+        mActivity = null
+    }
 }

@@ -6,6 +6,7 @@ import com.github.tvbox.osc.base.BaseVbFragment;
 import com.github.tvbox.osc.databinding.FragmentMyBinding;
 import com.github.tvbox.osc.ui.activity.CollectActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
+import com.github.tvbox.osc.ui.activity.MovieFoldersActivity;
 import com.github.tvbox.osc.ui.activity.SettingActivity;
 import com.github.tvbox.osc.ui.activity.SubscriptionActivity;
 import com.github.tvbox.osc.ui.dialog.AboutDialog;
@@ -82,7 +83,8 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
 
         mBinding.tvFavorite.setOnClickListener(v -> jumpActivity(CollectActivity.class));
 
-        // 本地视频功能已移除
+        // 本地播放功能
+        mBinding.llLocalPlay.setOnClickListener(v -> jumpActivity(MovieFoldersActivity.class));
 
         mBinding.llSubscription.setOnClickListener(v -> jumpActivity(SubscriptionActivity.class));
 

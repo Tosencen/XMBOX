@@ -38,25 +38,42 @@ public class AllLocalSeriesDialog extends DrawerPopupView {
     }
 
     @Override
-    protected int getImplLayoutId() {//复用点播全集底部弹窗ui
-        return R.layout.dialog_all_series;
+    protected int getImplLayoutId() {//使用MD3样式的弹窗布局
+        return R.layout.dialog_all_series_m3;
     }
 
     @Override
     protected void onCreate() {
         super.onCreate();
         View bg = findViewById(R.id.bg);
-        bg.setBackgroundColor(ColorUtils.getColor(R.color.bg_popup));
-        // 拖动条现在使用include布局，不需要单独隐藏
+        // 使用MD3主题色彩
+        bg.setBackgroundColor(ColorUtils.getColor(R.color.md3_surface_container_high));
         RecyclerView rv = findViewById(R.id.rv);
 
-        // 固定使用8列，确保所有集数都能正确显示
-        int spanCount = 8;
+        // 根据屏幕方向和弹窗位置调整列数
+        int orientation = getContext().getResources().getConfiguration().orientation;
+        int spanCount;
+        if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            // 横屏时使用更多列
+            spanCount = 6;
+        } else {
+            // 竖屏时使用较少列
+            spanCount = 4;
+        }
+
         rv.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
-        rv.addItemDecoration(new GridSpacingItemDecoration(spanCount, 20, true));
+        rv.addItemDecoration(new GridSpacingItemDecoration(spanCount, com.blankj.utilcode.util.ConvertUtils.dp2px(12), true));
 
 
         SeriesAdapter seriesAdapter = new SeriesAdapter(true);
+
+        // 调试：检查数据内容
+        android.util.Log.d("AllLocalSeriesDialog", "数据列表大小: " + mList.size());
+        for (int i = 0; i < Math.min(mList.size(), 5); i++) {
+            VodInfo.VodSeries series = mList.get(i);
+            android.util.Log.d("AllLocalSeriesDialog", "第" + i + "项: name=" + series.name + ", selected=" + series.selected);
+        }
+
         seriesAdapter.setNewData(mList);
         rv.setAdapter(seriesAdapter);
 
@@ -67,13 +84,21 @@ public class AllLocalSeriesDialog extends DrawerPopupView {
         }
 
         seriesAdapter.setOnItemClickListener((adapter, view, position) -> {
+            // 更新选中状态
             for (int j = 0; j < seriesAdapter.getData().size(); j++) {
                 seriesAdapter.getData().get(j).selected = false;
                 seriesAdapter.notifyItemChanged(j);
             }
             seriesAdapter.getData().get(position).selected = true;
             seriesAdapter.notifyItemChanged(position);
+
+            // 回调选择事件
             mSelectListener.onSelect(position,"");
+
+            // 延迟关闭弹窗，让用户看到选中效果
+            view.postDelayed(() -> {
+                dismiss();
+            }, 200);
         });
     }
 }

@@ -138,7 +138,13 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
     }
 
     fun initData() {
-        val mainActivity = mActivity as MainActivity
+        // 安全地获取MainActivity实例
+        val mainActivity = mActivity as? MainActivity
+        if (mainActivity == null) {
+            android.util.Log.w("HomeFragment", "initData() - mActivity is null, Fragment may not be attached")
+            return
+        }
+
         onlyConfigChanged = mainActivity.useCacheConfig
 
         // 确保订阅源区域始终可见
@@ -207,6 +213,13 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
         }
         */
 
+        // 安全地获取activity引用
+        val currentActivity = activity
+        if (currentActivity == null) {
+            android.util.Log.w("HomeFragment", "loadConfig() - activity is null, Fragment may not be attached")
+            return
+        }
+
         ApiConfig.get().loadConfig(onlyConfigChanged, object : LoadConfigCallback {
 
             override fun retry() {
@@ -245,7 +258,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                     }
                 }
             }
-        }, activity)
+        }, currentActivity)
     }
 
     private fun loadJar(){
@@ -586,6 +599,26 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        // 清理ViewPager2相关引用，防止内存泄漏
+        try {
+            // 清理适配器
+            mBinding.mViewPager.adapter = null
+
+            // 清理TabLayout和ViewPager2的联动
+            // TabLayoutMediator会自动处理清理，但我们可以手动清理
+
+            // 清理Fragment列表
+            fragments.clear()
+
+            // 清理数据列表
+            mSortDataList = ArrayList()
+
+            android.util.Log.d("HomeFragment", "ViewPager2相关资源清理完成")
+        } catch (e: Exception) {
+            android.util.Log.e("HomeFragment", "清理ViewPager2资源时发生错误: ${e.message}")
+        }
+
         ControlManager.get().stopServer()
     }
 

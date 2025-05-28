@@ -9,9 +9,12 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.ui.dialog.PermissionM3Dialog;
+import com.github.tvbox.osc.util.MD3ToastUtils;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
+import com.lxj.xpopup.XPopup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,18 +90,28 @@ public class PermissionHelper {
         // 首次申请权限前显示说明对话框
         if (!XXPermissions.isGranted(activity, permissions) &&
             !shouldShowRequestPermissionNow(activity, permissions)) {
-            new AlertDialog.Builder(activity)
-                .setTitle(R.string.dialog_permission_title)
-                .setMessage(messageResId)
-                .setPositiveButton(R.string.dialog_permission_confirm, (dialog, which) -> {
-                    // 显示说明后申请权限
-                    performRequestPermission(activity, permissions, callback);
-                })
-                .setNegativeButton(R.string.dialog_permission_cancel, (dialog, which) -> {
-                    // 用户拒绝权限申请
-                    callback.onDenied(permissions, false);
-                })
-                .setCancelable(false)
+
+            // 使用M3风格的权限弹窗
+            String title = activity.getString(R.string.dialog_permission_title);
+            String message = activity.getString(messageResId);
+
+            new XPopup.Builder(activity)
+                .isDestroyOnDismiss(true)
+                .isCenterHorizontal(true)
+                .asCustom(new PermissionM3Dialog(activity, title, message, R.drawable.ic_storage_m3)
+                    .setListener(new PermissionM3Dialog.OnPermissionDialogListener() {
+                        @Override
+                        public void onConfirm() {
+                            // 显示说明后申请权限
+                            performRequestPermission(activity, permissions, callback);
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            // 用户拒绝权限申请
+                            callback.onDenied(permissions, false);
+                        }
+                    }))
                 .show();
         } else {
             // 已经请求过权限，或权限已经被拒绝过，直接申请权限

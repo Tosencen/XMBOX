@@ -199,11 +199,52 @@
 
             </LinearLayout>
 
-            <!-- 直播功能已移除 -->
+            <LinearLayout
+                android:id="@+id/llLocalPlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="16dp"
+                android:paddingHorizontal="24dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_menu_item_m3"
+                android:foreground="?android:selectableItemBackground"
+                android:elevation="1dp">
 
-            <!-- 本地视频功能已移除 -->
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_local_video_48"
+                    app:tint="?attr/colorOnSurface" />
 
-            <!-- 播放链接功能已移除 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="20dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:gravity="center"
+                    android:text="本地播放"
+                    android:textAlignment="gravity"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_chevron_right_m3"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/llCheckUpdate"

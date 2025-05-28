@@ -109,7 +109,7 @@ public class LocalVideoController extends BaseController {
     boolean mIsDragging;
     View mProgressRoot;
     TextView mProgressText;
-    ImageView mProgressIcon;
+    TextView mProgressIcon;
     LinearLayout mBottomRoot;
     LinearLayout mTopRoot1;
     View mTopRoot2;
@@ -132,7 +132,7 @@ public class LocalVideoController extends BaseController {
     TextView mZimuBtn;
     TextView mAudioTrackBtn;
     public TextView mLandscapePortraitBtn;
-    private ImageView mIvPlayStatus;
+    private TextView mIvPlayStatus;
     public MyBatteryView mMyBatteryView;
     Handler myHandle;
     Runnable myRunnable;
@@ -265,6 +265,9 @@ public class LocalVideoController extends BaseController {
         });
 
         mPlayTitle1.setOnClickListener(view -> listener.exit());
+
+        // 设置返回按钮点击事件
+        findViewById(R.id.tv_back_icon).setOnClickListener(view -> listener.exit());
 
         findViewById(R.id.play_retry).setOnClickListener(new OnClickListener() {
             @Override
@@ -626,25 +629,29 @@ public class LocalVideoController extends BaseController {
 
     public void initLandscapePortraitBtnInfo() {
         if (mControlWrapper != null && mActivity != null) {
-            int width = mControlWrapper.getVideoSize()[0];
-            int height = mControlWrapper.getVideoSize()[1];
-            double screenSqrt = ScreenUtils.getSqrt(mActivity);
-            if (screenSqrt < 10.0 && width < height) {
-                mLandscapePortraitBtn.setVisibility(View.VISIBLE);
+            // 始终显示横竖屏切换按钮
+            mLandscapePortraitBtn.setVisibility(View.VISIBLE);
+
+            // 根据当前屏幕方向设置按钮文本
+            int currentOrientation = mActivity.getRequestedOrientation();
+            if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT ||
+                currentOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT ||
+                currentOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT) {
+                mLandscapePortraitBtn.setText("横屏");
+            } else {
                 mLandscapePortraitBtn.setText("竖屏");
             }
         }
     }
 
     void setLandscapePortrait() {
-        int requestedOrientation = mActivity.getRequestedOrientation();
-        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE) {
-            mLandscapePortraitBtn.setText("横屏");
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-        } else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT) {
-            mLandscapePortraitBtn.setText("竖屏");
-            mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        // 调用Activity的toggleFullScreen方法来处理横竖屏切换
+        if (listener != null) {
+            listener.toggleFullScreen();
         }
+
+        // 更新按钮文本
+        initLandscapePortraitBtnInfo();
     }
 
     void initSubtitleInfo() {
@@ -802,10 +809,12 @@ public class LocalVideoController extends BaseController {
     protected void updateSeekUI(int curr, int seekTo, int duration) {
         super.updateSeekUI(curr, seekTo, duration);
         if (seekTo > curr) {
-            mProgressIcon.setImageResource(R.drawable.icon_pre);
+            mProgressIcon.setText(com.github.tvbox.osc.util.MaterialSymbols.FAST_FORWARD);
         } else {
-            mProgressIcon.setImageResource(R.drawable.icon_back);
+            mProgressIcon.setText(com.github.tvbox.osc.util.MaterialSymbols.FAST_REWIND);
         }
+        // 应用Material Symbols字体
+        com.github.tvbox.osc.util.MaterialSymbolsLoader.apply(mProgressIcon);
         mProgressText.setText(PlayerUtils.stringForTime(seekTo) + " / " + PlayerUtils.stringForTime(duration));
         mHandler.sendEmptyMessage(1000);
         mHandler.removeMessages(1001);
@@ -822,10 +831,12 @@ public class LocalVideoController extends BaseController {
             case VideoView.STATE_PLAYING:
                 initLandscapePortraitBtnInfo();
                 startProgress();
-                mIvPlayStatus.setImageResource(R.drawable.ic_pause);
+                mIvPlayStatus.setText(com.github.tvbox.osc.util.MaterialSymbols.PAUSE);
+                com.github.tvbox.osc.util.MaterialSymbolsLoader.apply(mIvPlayStatus);
                 break;
             case VideoView.STATE_PAUSED:
-                mIvPlayStatus.setImageResource(R.drawable.ic_play);
+                mIvPlayStatus.setText(com.github.tvbox.osc.util.MaterialSymbols.PLAY_ARROW);
+                com.github.tvbox.osc.util.MaterialSymbolsLoader.apply(mIvPlayStatus);
                 break;
             case VideoView.STATE_ERROR:
                 listener.errReplay();

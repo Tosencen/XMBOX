@@ -33,32 +33,44 @@ public class SeriesAdapter extends BaseQuickAdapter<VodInfo.VodSeries, BaseViewH
     protected void convert(BaseViewHolder helper, VodInfo.VodSeries item) {
         ShadowLayout sl = helper.getView(R.id.sl);
         TextView tvSeries = helper.getView(R.id.tvSeries);
-        sl.setSelected(item.selected);
 
         // 确保所有集数名称都能正确显示
         String seriesName = item.name;
+        if (seriesName == null || seriesName.trim().isEmpty()) {
+            seriesName = "第" + (helper.getAdapterPosition() + 1) + "集";
+        }
         tvSeries.setText(seriesName);
 
-        // 根据选中状态设置文本颜色
-        if (item.selected) {
-            // 选中状态下使用我们定义的颜色资源
-            tvSeries.setTextColor(helper.itemView.getContext().getResources().getColor(R.color.selected_text_color_light));
-        } else {
-            // 非选中状态下使用我们定义的颜色资源
-            tvSeries.setTextColor(helper.itemView.getContext().getResources().getColor(R.color.md3_on_surface_variant));
-        }
+        // 确保TextView可见
+        tvSeries.setVisibility(android.view.View.VISIBLE);
+
+        // 设置选中状态
+        sl.setSelected(item.selected);
 
         if (!isGird){// 详情页横向展示时固定宽度
             ViewGroup.LayoutParams layoutParams = sl.getLayoutParams();
             layoutParams.width = ConvertUtils.dp2px(120);
             sl.setLayoutParams(layoutParams);
         } else {
-            // 如果是网格布局，检查是否是横屏模式
-            if (helper.itemView.getContext().getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            // 网格布局模式
+            int orientation = helper.itemView.getContext().getResources().getConfiguration().orientation;
+            if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
                 // 横屏模式下调整文本大小
+                tvSeries.setTextSize(12);
+            } else {
+                // 竖屏模式
                 tvSeries.setTextSize(14);
             }
         }
+
+        // 最后设置文本颜色，确保不被覆盖
+        tvSeries.post(() -> {
+            if (item.selected) {
+                tvSeries.setTextColor(Color.WHITE);
+            } else {
+                tvSeries.setTextColor(Color.parseColor("#333333"));
+            }
+        });
     }
 
     public void setGird(boolean gird) {

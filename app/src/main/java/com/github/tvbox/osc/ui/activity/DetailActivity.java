@@ -175,8 +175,21 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     private void initView() {
-        // 设置返回按钮点击事件
-        mBinding.ivBack.setOnClickListener(v -> finish());
+        // 设置返回按钮点击事件 - 使用最简单直接的方法
+        mBinding.ivBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        // 设置标题点击返回功能
+        mBinding.tvTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         mBinding.ivPrivateBrowsing.setVisibility(Hawk.get(HawkConfig.PRIVATE_BROWSING, false) ? View.VISIBLE : View.GONE);
         mBinding.ivPrivateBrowsing.setOnClickListener(view -> MD3ToastUtils.showToast("当前为无痕浏览"));
@@ -814,12 +827,31 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
 
     @Override
     protected void onDestroy() {
+        // 记录销毁前的内存状态
+        try {
+            com.github.tvbox.osc.util.MemoryOptimizer.monitorMemory();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 先停止所有异步操作
         registerActionReceiver(false);
-        super.onDestroy();
+
+        // 清理ViewModel观察者
+        if (sourceViewModel != null) {
+            try {
+                sourceViewModel.detailResult.removeObservers(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         // 注销广播接收器
         try {
-            unregisterReceiver(mBatteryReceiver);
+            if (mBatteryReceiver != null) {
+                unregisterReceiver(mBatteryReceiver);
+                mBatteryReceiver = null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -845,9 +877,13 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         }
 
         // 取消网络请求
-        OkGo.getInstance().cancelTag("fenci");
-        OkGo.getInstance().cancelTag("detail");
-        OkGo.getInstance().cancelTag("quick_search");
+        try {
+            OkGo.getInstance().cancelTag("fenci");
+            OkGo.getInstance().cancelTag("detail");
+            OkGo.getInstance().cancelTag("quick_search");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // 停止截屏监听
         toggleScreenShotListen(false);
@@ -875,37 +911,92 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             mAllSeriesBottomDialog = null;
         }
 
+        // 清理RecyclerView和适配器引用
+        try {
+            if (mBinding != null) {
+                if (mBinding.mGridView != null) {
+                    mBinding.mGridView.setAdapter(null);
+                }
+                if (mBinding.mGridViewFlag != null) {
+                    mBinding.mGridViewFlag.setAdapter(null);
+                }
+                if (mBinding.rvParse != null) {
+                    mBinding.rvParse.setAdapter(null);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 清理适配器引用
         if (seriesFlagAdapter != null) {
-            seriesFlagAdapter.setNewData(null);
+            try {
+                seriesFlagAdapter.setNewData(null);
+                seriesFlagAdapter.setOnItemClickListener(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             seriesFlagAdapter = null;
         }
 
         if (seriesAdapter != null) {
-            seriesAdapter.setNewData(null);
+            try {
+                seriesAdapter.setNewData(null);
+                seriesAdapter.setOnItemClickListener(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             seriesAdapter = null;
         }
 
-        // 清理播放器引用
-        playFragment = null;
+        // 清理Fragment引用
+        if (playFragment != null) {
+            try {
+                // 如果Fragment还在，先移除
+                if (getSupportFragmentManager().findFragmentById(R.id.previewPlayer) != null) {
+                    getSupportFragmentManager().beginTransaction()
+                            .remove(playFragment)
+                            .commitAllowingStateLoss();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            playFragment = null;
+        }
 
         // 清理其他引用
         mVideo = null;
         vodInfo = null;
+        previewVodInfo = null;
         mCheckSources = null;
         pauseRunnable = null;
-        quickSearchWord.clear();
-        quickSearchData.clear();
+        seriesFlagFocus = null;
+
+        // 清理集合（final变量只能清空，不能设为null）
+        try {
+            quickSearchWord.clear();
+            quickSearchData.clear();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // 清理App中的vodInfo引用
-        App.getInstance().clearVodInfo();
+        try {
+            App.getInstance().clearVodInfo();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // 清理ViewModel引用
         sourceViewModel = null;
+
+        // 调用父类的onDestroy
+        super.onDestroy();
     }
 
     @Override
     public void onBackPressed() {
+        android.util.Log.d("DetailActivity", "onBackPressed 被调用");
         if (mAllSeriesRightDialog != null && mAllSeriesRightDialog.isShow()) {
             mAllSeriesRightDialog.dismiss();
             return;
@@ -914,7 +1005,8 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             mAllSeriesBottomDialog.dismiss();
             return;
         }
-        if (playFragment.hideAllDialogSuccess()) {//fragment有弹窗隐藏并拦截返回
+        // 检查 playFragment 是否为 null
+        if (playFragment != null && playFragment.hideAllDialogSuccess()) {//fragment有弹窗隐藏并拦截返回
             return;
         }
         if (fullWindows) {
@@ -922,6 +1014,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             mBinding.mGridView.requestFocus();
             return;
         }
+        android.util.Log.d("DetailActivity", "调用 super.onBackPressed()");
         super.onBackPressed();
     }
 

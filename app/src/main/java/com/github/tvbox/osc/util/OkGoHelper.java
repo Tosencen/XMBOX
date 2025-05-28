@@ -235,8 +235,8 @@ public class OkGoHelper {
         }
         return hosts;
     }
-    static OkHttpClient defaultClient = null;
-    static OkHttpClient noRedirectClient = null;
+    private static OkHttpClient defaultClient = null;
+    private static OkHttpClient noRedirectClient = null;
 
     public static OkHttpClient getDefaultClient() {
         return defaultClient;
@@ -316,6 +316,39 @@ public class OkGoHelper {
 
         // 初始化ExoPlayer的OkHttp客户端
         initExoOkHttpClient();
+    }
+
+    /**
+     * 清理静态引用，防止内存泄漏
+     * 建议在Application的onTerminate()中调用
+     */
+    public static void cleanup() {
+        try {
+            // 清理OkGo实例
+            if (defaultClient != null) {
+                // 关闭连接池
+                defaultClient.connectionPool().evictAll();
+                defaultClient.dispatcher().executorService().shutdown();
+            }
+            if (noRedirectClient != null) {
+                noRedirectClient.connectionPool().evictAll();
+                noRedirectClient.dispatcher().executorService().shutdown();
+            }
+
+            // 清空静态引用
+            defaultClient = null;
+            noRedirectClient = null;
+            dnsOverHttps = null;
+
+            // 清理DNS列表
+            if (dnsHttpsList != null) {
+                dnsHttpsList.clear();
+            }
+
+            LOG.i("OkGoHelper", "清理完成");
+        } catch (Exception e) {
+            LOG.e("OkGoHelper", "清理时发生错误: " + e.getMessage());
+        }
     }
 
     // Picasso初始化已移除，改为使用GlideHelper

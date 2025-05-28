@@ -13,12 +13,14 @@ import androidx.annotation.ColorInt;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.base.App;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Material Design 3风格的Toast工具类
  */
 public class MD3ToastUtils {
 
-    private static Toast mToast;
+    private static WeakReference<Toast> mToastRef;
 
     // 定义固定的颜色值
     @ColorInt private static final int TOAST_BACKGROUND_COLOR = 0xFF232626; // 深灰色背景
@@ -88,19 +90,35 @@ public class MD3ToastUtils {
         } else {
             // 在后台线程上，需要切换到主线程
             android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
-            mainHandler.post(() -> showToastOnMainThread(context, message, duration, iconResId));
+            mainHandler.post(() -> {
+                try {
+                    showToastOnMainThread(context, message, duration, iconResId);
+                } catch (Exception e) {
+                    // 如果显示Toast失败，使用最简单的方式
+                    try {
+                        Toast.makeText(context.getApplicationContext(), message, duration).show();
+                    } catch (Exception ignored) {}
+                }
+            });
         }
     }
 
     private static void showToastOnMainThread(Context context, String message, int duration, int iconResId) {
         try {
-            if (mToast != null) {
-                mToast.cancel();
+            // 取消之前的Toast，避免内存泄漏
+            Toast previousToast = mToastRef != null ? mToastRef.get() : null;
+            if (previousToast != null) {
+                previousToast.cancel();
             }
+            mToastRef = null; // 清空引用
+
+            // 使用ApplicationContext避免内存泄漏
+            Context appContext = context.getApplicationContext();
+            Toast newToast = null;
 
             // 尝试使用自定义布局
             try {
-                View view = LayoutInflater.from(context).inflate(R.layout.toast_md3, null);
+                View view = LayoutInflater.from(appContext).inflate(R.layout.toast_md3, null);
                 TextView textView = view.findViewById(R.id.toast_text);
                 ImageView iconView = view.findViewById(R.id.toast_icon);
 
@@ -114,19 +132,18 @@ public class MD3ToastUtils {
                     iconView.setVisibility(View.GONE);
                 }
 
-                mToast = new Toast(context);
-                mToast.setDuration(duration);
-                mToast.setView(view);
-                mToast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 120);
-                mToast.show();
+                newToast = new Toast(appContext);
+                newToast.setDuration(duration);
+                newToast.setView(view);
+                newToast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 120);
             } catch (Exception e) {
-                // 如果自定义布局失败，仍然尝试使用自定义样式
-                mToast = Toast.makeText(context, message, duration);
-                mToast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 120);
+                // 如果自定义布局失败，使用系统Toast
+                newToast = Toast.makeText(appContext, message, duration);
+                newToast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 120);
 
                 // 尝试为系统 Toast 设置背景和文字颜色
                 try {
-                    View toastView = mToast.getView();
+                    View toastView = newToast.getView();
                     if (toastView != null) {
                         toastView.setBackgroundColor(TOAST_BACKGROUND_COLOR);
                         TextView textView = toastView.findViewById(android.R.id.message);
@@ -135,27 +152,37 @@ public class MD3ToastUtils {
                         }
                     }
                 } catch (Exception ignored) {}
+            }
 
-                mToast.show();
+            // 显示Toast并保存弱引用
+            if (newToast != null) {
+                mToastRef = new WeakReference<>(newToast);
+                newToast.show();
             }
         } catch (Exception e) {
             // 最后的安全网，使用最简单的Toast
-            Toast toast = Toast.makeText(context, message, duration);
-            toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 120);
-
-            // 尝试为系统 Toast 设置背景和文字颜色
             try {
-                View toastView = toast.getView();
-                if (toastView != null) {
-                    toastView.setBackgroundColor(TOAST_BACKGROUND_COLOR);
-                    TextView textView = toastView.findViewById(android.R.id.message);
-                    if (textView != null) {
-                        textView.setTextColor(TOAST_TEXT_COLOR);
-                    }
-                }
+                Context appContext = context.getApplicationContext();
+                Toast toast = Toast.makeText(appContext, message, duration);
+                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 120);
+                toast.show();
             } catch (Exception ignored) {}
+        }
+    }
 
-            toast.show();
+    /**
+     * 清理Toast引用，防止内存泄漏
+     * 建议在Application的onTerminate()中调用
+     */
+    public static void cleanup() {
+        try {
+            Toast toast = mToastRef != null ? mToastRef.get() : null;
+            if (toast != null) {
+                toast.cancel();
+            }
+            mToastRef = null;
+        } catch (Exception e) {
+            // 忽略清理时的异常
         }
     }
 }

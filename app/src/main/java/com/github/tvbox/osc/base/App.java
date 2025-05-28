@@ -285,6 +285,24 @@ public class App extends MultiDexApplication {
     public void onTerminate() {
         super.onTerminate();
         JsLoader.load();
+
+        // 清理内存泄漏相关的静态引用
+        try {
+            // 清理Toast引用
+            com.github.tvbox.osc.util.MD3ToastUtils.cleanup();
+            LOG.i("App", "Toast清理完成");
+        } catch (Exception e) {
+            LOG.e("App", "Toast清理失败: " + e.getMessage());
+        }
+
+        try {
+            // 清理OkGo相关引用
+            OkGoHelper.cleanup();
+            LOG.i("App", "OkGo清理完成");
+        } catch (Exception e) {
+            LOG.e("App", "OkGo清理失败: " + e.getMessage());
+        }
+
         // 清理资源
         vodInfo = null;
         // 清理VideoView引用

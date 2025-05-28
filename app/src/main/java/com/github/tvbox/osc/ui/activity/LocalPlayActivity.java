@@ -2,6 +2,7 @@ package com.github.tvbox.osc.ui.activity;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,9 +55,13 @@ public class LocalPlayActivity extends BaseVbActivity<ActivityLocalPlayBinding> 
     private BasePopupView mAllSeriesRightDialog;
     @Override
     protected void init() {
+        // 设置默认为竖屏播放
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+
         registerReceiver(mBatteryReceiver,new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         mVideoView = mBinding.player;
-        mVideoView.startFullScreen();
+        // 不自动进入全屏模式，保持竖屏
+        // mVideoView.startFullScreen();
         Bundle bundle = getIntent().getExtras();
         String videoListJson =  bundle.getString("videoList");
         mVideoList = GsonUtils.fromJson(videoListJson, new TypeToken<List<VideoInfo>>(){}.getType());
@@ -89,17 +94,27 @@ public class LocalPlayActivity extends BaseVbActivity<ActivityLocalPlayBinding> 
      * 跳转到上/下一集,需重新播放
      */
     private void play(boolean fromSkip) {
-        VideoInfo videoInfo = mVideoList.get(mPosition);
+        try {
+            VideoInfo videoInfo = mVideoList.get(mPosition);
 
-        String path = videoInfo.getPath();
+            String path = videoInfo.getPath();
 
-        String uri = "";
-        File file = new File(path);
-        if(file.exists()){
-            uri = Uri.parse("file://"+file.getAbsolutePath()).toString();
-        }
-        mController.setTitle(videoInfo.getDisplayName());
-        mVideoView.setUrl(uri); //设置视频地址
+            String uri = "";
+            File file = new File(path);
+            if(file.exists()){
+                uri = Uri.parse("file://"+file.getAbsolutePath()).toString();
+            } else {
+                MD3ToastUtils.showToast("视频文件不存在：" + videoInfo.getDisplayName());
+                return;
+            }
+
+            if (uri.isEmpty()) {
+                MD3ToastUtils.showToast("无法播放该视频文件");
+                return;
+            }
+
+            mController.setTitle(videoInfo.getDisplayName());
+            mVideoView.setUrl(uri); //设置视频地址
 
         mVideoView.setProgressManager(new ProgressManager() {
             @Override
@@ -115,12 +130,17 @@ public class LocalPlayActivity extends BaseVbActivity<ActivityLocalPlayBinding> 
             }
         });
 
-        PlayerHelper.updateCfg(mVideoView, mVodPlayerCfg);
+            PlayerHelper.updateCfg(mVideoView, mVodPlayerCfg);
 
-        if (fromSkip){
-            mVideoView.replay(true);
-        }else {
-            mVideoView.start(); //开始播放，不调用则不自动播放
+            if (fromSkip){
+                mVideoView.replay(true);
+            }else {
+                mVideoView.start(); //开始播放，不调用则不自动播放
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            MD3ToastUtils.showToast("播放视频时发生错误");
+            finish();
         }
     }
 
@@ -193,7 +213,26 @@ public class LocalPlayActivity extends BaseVbActivity<ActivityLocalPlayBinding> 
 
             @Override
             public void toggleFullScreen() {
-                finish();
+                // 实现真正的横竖屏切换
+                int currentOrientation = getRequestedOrientation();
+                if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT ||
+                    currentOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT ||
+                    currentOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT) {
+                    // 当前是竖屏，切换到横屏
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                    mVideoView.startFullScreen();
+                } else {
+                    // 当前是横屏，切换到竖屏
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+                    mVideoView.stopFullScreen();
+                }
+
+                // 延迟更新控制器按钮文本，等待屏幕方向变化完成
+                new Handler().postDelayed(() -> {
+                    if (mController != null) {
+                        mController.initLandscapePortraitBtnInfo();
+                    }
+                }, 500);
             }
 
             @Override
@@ -265,29 +304,80 @@ public class LocalPlayActivity extends BaseVbActivity<ActivityLocalPlayBinding> 
     }
 
     @Override
+    public void onConfigurationChanged(android.content.res.Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // 屏幕方向改变时更新控制器按钮
+        if (mController != null) {
+            new Handler().postDelayed(() -> {
+                mController.initLandscapePortraitBtnInfo();
+            }, 100);
+        }
+    }
+
+    @Override
     public void finish() {
         super.finish();
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH, ""));
     }
 
     public void showAllSeriesDialog(){
-        mAllSeriesRightDialog = new XPopup.Builder(this)
-                .isViewMode(true)//隐藏导航栏(手势条)在dialog模式下会闪一下,改为view模式,但需处理onBackPress的隐藏,下方同理
-                .hasNavigationBar(false)
-                .popupHeight(com.blankj.utilcode.util.ScreenUtils.getScreenHeight())
-                .popupPosition(PopupPosition.Right)
-                .asCustom(new AllLocalSeriesDialog(this, convertLocalVideo(), (position, text) -> {
-                    mPosition = position;
-                    play(true);
-                }));
-        mAllSeriesRightDialog.show();
+        // 根据屏幕方向选择不同的弹窗样式
+        int orientation = getResources().getConfiguration().orientation;
+
+        if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            // 横屏时使用右侧弹窗
+            mAllSeriesRightDialog = new XPopup.Builder(this)
+                    .isViewMode(true)
+                    .hasNavigationBar(false)
+                    .popupHeight(com.blankj.utilcode.util.ScreenUtils.getScreenHeight())
+                    .popupWidth(com.blankj.utilcode.util.ScreenUtils.getAppScreenWidth() / 2)
+                    .popupPosition(PopupPosition.Right)
+                    .asCustom(new AllLocalSeriesDialog(this, convertLocalVideo(), (position, text) -> {
+                        mPosition = position;
+                        play(true);
+                        mAllSeriesRightDialog.dismiss();
+                    }));
+            mAllSeriesRightDialog.show();
+        } else {
+            // 竖屏时使用底部弹窗
+            mAllSeriesRightDialog = new XPopup.Builder(this)
+                    .isViewMode(true)
+                    .hasNavigationBar(false)
+                    .maxHeight(com.blankj.utilcode.util.ScreenUtils.getScreenHeight() - (com.blankj.utilcode.util.ScreenUtils.getScreenHeight() / 4))
+                    .asCustom(new AllLocalSeriesDialog(this, convertLocalVideo(), (position, text) -> {
+                        mPosition = position;
+                        play(true);
+                        mAllSeriesRightDialog.dismiss();
+                    }));
+            mAllSeriesRightDialog.show();
+        }
     }
 
     private List<VodInfo.VodSeries> convertLocalVideo(){
         List<VodInfo.VodSeries> seriesList = new ArrayList<>();
-        for (VideoInfo local : mVideoList) {
-            VodInfo.VodSeries vodSeries = new VodInfo.VodSeries(local.getDisplayName(), local.getPath());
-            vodSeries.selected = (Objects.equals(mVideoList.get(mPosition).getPath(), vodSeries.url));
+        for (int i = 0; i < mVideoList.size(); i++) {
+            VideoInfo local = mVideoList.get(i);
+            // 使用显示名称作为集数名称，如果没有则使用文件名
+            String displayName = local.getDisplayName();
+            if (displayName == null || displayName.trim().isEmpty()) {
+                // 从文件路径中提取文件名（不包含扩展名）
+                String fileName = local.getPath();
+                if (fileName.contains("/")) {
+                    fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+                }
+                if (fileName.contains(".")) {
+                    fileName = fileName.substring(0, fileName.lastIndexOf("."));
+                }
+                displayName = fileName;
+            }
+
+            // 如果显示名称仍然为空或者太长，使用序号
+            if (displayName == null || displayName.trim().isEmpty() || displayName.length() > 20) {
+                displayName = "第" + (i + 1) + "集";
+            }
+
+            VodInfo.VodSeries vodSeries = new VodInfo.VodSeries(displayName, local.getPath());
+            vodSeries.selected = (i == mPosition);
             seriesList.add(vodSeries);
         }
         return seriesList;

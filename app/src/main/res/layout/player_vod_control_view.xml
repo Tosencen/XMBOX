@@ -31,7 +31,10 @@
                 android:textSize="24sp"
                 android:fontFamily="@font/material_symbols_rounded"
                 style="@style/Widget.App.MaterialSymbols"
-                android:text="@string/ms_arrow_back" />
+                android:text="@string/ms_arrow_back"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:selectableItemBackgroundBorderless" />
 
             <TextView
                 android:id="@+id/tv_info_name1"
