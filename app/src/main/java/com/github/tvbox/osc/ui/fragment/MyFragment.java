@@ -108,14 +108,14 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
                     .show();
         });
 
-        // GitHub图标点击事件
+        // GitHub图标点击事件 - 跳转到应用下载页面
         mBinding.ivGithub.setOnClickListener(v -> {
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("https://github.com/Tosencen"));
+                intent.setData(Uri.parse("https://github.com/Tosencen/XMBOX/releases"));
                 startActivity(intent);
             } catch (Exception e) {
-                com.github.tvbox.osc.util.MD3ToastUtils.showToast("无法打开GitHub链接");
+                com.github.tvbox.osc.util.MD3ToastUtils.showToast("无法打开下载页面");
             }
         });
     }

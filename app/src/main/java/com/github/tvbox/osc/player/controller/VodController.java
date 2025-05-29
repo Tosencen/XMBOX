@@ -382,6 +382,13 @@ public class VodController extends BaseController {
             }
         });
 
+        // 设置返回按钮的单独点击事件
+        findViewById(R.id.tv_back_icon).setOnClickListener(view -> {
+            if (listener != null) {
+                listener.exit();
+            }
+        });
+
         mPlayRetry = findViewById(R.id.play_retry);
         mPlayRetry.setOnClickListener(v -> {
             listener.replay(true);

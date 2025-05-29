@@ -164,6 +164,13 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     @Override
+    public void onLeftClick(com.hjq.bar.TitleBar titleBar) {
+        // 禁用BaseActivity中的自动返回按钮功能
+        // DetailActivity使用自定义的返回按钮
+        android.util.Log.d("DetailActivity", "TitleBar返回按钮被点击，但已禁用自动返回功能");
+    }
+
+    @Override
     public void initVb() {
         super.initVb();
     }
@@ -180,74 +187,28 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         // 调试：检查ViewBinding是否正确
         android.util.Log.d("DetailActivity", "initView 开始");
         android.util.Log.d("DetailActivity", "mBinding: " + (mBinding != null ? "不为null" : "为null"));
-        android.util.Log.d("DetailActivity", "mBinding.ivBack: " + (mBinding.ivBack != null ? "不为null" : "为null"));
+        android.util.Log.d("DetailActivity", "顶部工具栏返回按钮已删除，只保留标题");
 
-        // 创建返回操作的点击监听器
+        // 创建返回操作的点击监听器 - 统一处理返回按钮和标题的点击
         View.OnClickListener backClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                android.util.Log.d("DetailActivity", "返回按钮被点击 - 层级分析");
+                android.util.Log.d("DetailActivity", "返回标题组合模块被点击 - 统一处理返回操作");
                 android.util.Log.d("DetailActivity", "点击的View ID: " + v.getId());
-                android.util.Log.d("DetailActivity", "返回按钮位置层级：");
+                android.util.Log.d("DetailActivity", "无论点击返回按钮还是标题文字，都由组合模块统一处理");
+                android.util.Log.d("DetailActivity", "返回模块位置层级：");
                 android.util.Log.d("DetailActivity", "1. FrameLayout (根容器)");
                 android.util.Log.d("DetailActivity", "   └── LinearLayout (主布局容器)");
                 android.util.Log.d("DetailActivity", "       └── RelativeLayout (toolbar工具栏)");
-                android.util.Log.d("DetailActivity", "           └── ImageView (iv_back返回按钮) ← 当前点击的按钮");
-                android.util.Log.d("DetailActivity", "返回按钮属性：48dp x 48dp，左边距4dp，居中垂直对齐");
+                android.util.Log.d("DetailActivity", "           └── LinearLayout (back_title_module返回标题模块) ← 统一点击处理");
+                android.util.Log.d("DetailActivity", "               ├── ImageView (返回按钮) - 不可单独点击");
+                android.util.Log.d("DetailActivity", "               └── TextView (标题文字) - 不可单独点击");
                 finish();
             }
         };
 
-        // 检查返回按钮是否存在
-        if (mBinding.ivBack != null) {
-            android.util.Log.d("DetailActivity", "设置返回按钮点击事件");
-            android.util.Log.d("DetailActivity", "返回按钮可见性: " + (mBinding.ivBack.getVisibility() == View.VISIBLE ? "可见" : "不可见"));
-            android.util.Log.d("DetailActivity", "返回按钮可点击: " + mBinding.ivBack.isClickable());
-            android.util.Log.d("DetailActivity", "返回按钮可获得焦点: " + mBinding.ivBack.isFocusable());
-
-            // 设置返回按钮点击事件
-            mBinding.ivBack.setOnClickListener(backClickListener);
-
-            // 确保按钮可点击
-            mBinding.ivBack.setClickable(true);
-            mBinding.ivBack.setFocusable(true);
-
-            // 添加触摸事件监听器来调试
-            mBinding.ivBack.setOnTouchListener((v, event) -> {
-                android.util.Log.d("DetailActivity", "返回按钮触摸事件: " + event.getAction());
-                return false; // 返回false让点击事件继续传递
-            });
-
-            // 移除padding扩展，使用原始的点击区域
-            // 注释掉padding扩展，因为可能导致点击问题
-            /*
-            mBinding.ivBack.setPadding(
-                mBinding.ivBack.getPaddingLeft() + 20,
-                mBinding.ivBack.getPaddingTop() + 20,
-                mBinding.ivBack.getPaddingRight() + 100, // 向右扩展更多
-                mBinding.ivBack.getPaddingBottom() + 20
-            );
-            */
-
-            // 检查父容器是否可能拦截触摸事件
-            ViewGroup parent = (ViewGroup) mBinding.ivBack.getParent();
-            if (parent != null) {
-                android.util.Log.d("DetailActivity", "返回按钮父容器: " + parent.getClass().getSimpleName());
-                android.util.Log.d("DetailActivity", "父容器可点击: " + parent.isClickable());
-            }
-
-            android.util.Log.d("DetailActivity", "返回按钮设置完成");
-        } else {
-            android.util.Log.e("DetailActivity", "返回按钮为null，无法设置点击事件");
-        }
-
-        // 设置标题点击返回功能
-        if (mBinding.tvTitle != null) {
-            android.util.Log.d("DetailActivity", "设置标题点击返回功能");
-            mBinding.tvTitle.setOnClickListener(backClickListener);
-        } else {
-            android.util.Log.e("DetailActivity", "标题为null");
-        }
+        // 顶部工具栏现在只有标题，不需要特殊的点击事件处理
+        android.util.Log.d("DetailActivity", "顶部工具栏已简化为仅显示标题");
 
         mBinding.ivPrivateBrowsing.setVisibility(Hawk.get(HawkConfig.PRIVATE_BROWSING, false) ? View.VISIBLE : View.GONE);
         mBinding.ivPrivateBrowsing.setOnClickListener(view -> MD3ToastUtils.showToast("当前为无痕浏览"));
@@ -291,6 +252,9 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         if (detailParent instanceof View) {
             ((View) detailParent).setOnClickListener(showDetailListener);
         }
+
+        // 视频详情页不再有返回按钮，返回功能由播放器顶部控制栏处理
+        android.util.Log.d("DetailActivity", "视频详情页返回按钮已移除，返回功能由播放器处理");
 
         // 设置下载按钮的点击事件
         findViewById(R.id.tvDownload).setOnClickListener(view -> use1DMDownload());
