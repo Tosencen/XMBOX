@@ -1,5 +1,7 @@
 package com.github.tvbox.osc.ui.activity
 
+import android.os.Handler
+import android.os.Looper
 import android.os.Process
 import android.view.MenuItem
 import androidx.fragment.app.Fragment
@@ -14,6 +16,7 @@ import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.ui.fragment.GridFragment
 import com.github.tvbox.osc.ui.fragment.HomeFragment
 import com.github.tvbox.osc.ui.fragment.MyFragment
+import com.github.tvbox.osc.util.AppUpdateManager
 import com.github.tvbox.osc.util.MD3ToastUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -25,6 +28,7 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
     var fragments = listOf(HomeFragment(),MyFragment())
     var useCacheConfig = false
     private var exitTime = 0L
+    private var updateManager: AppUpdateManager? = null
 
     override fun init() {
         // 注册EventBus
@@ -53,6 +57,41 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
                 mBinding.bottomNav.menu.getItem(position).setChecked(true)
             }
         })
+
+        // 初始化更新管理器并自动检查更新
+        initAutoUpdateCheck()
+    }
+
+    /**
+     * 初始化自动更新检查
+     */
+    private fun initAutoUpdateCheck() {
+        try {
+            updateManager = AppUpdateManager(this)
+
+            // 延迟3秒后自动检查更新，避免影响应用启动速度
+            Handler(Looper.getMainLooper()).postDelayed({
+                updateManager?.checkUpdateSilently(object : AppUpdateManager.UpdateCheckCallback {
+                    override fun onUpdateAvailable(newVersion: String) {
+                        // 有新版本可用，自动弹出更新弹窗
+                        android.util.Log.d("MainActivity", "检测到新版本: $newVersion，自动弹出更新弹窗")
+                        updateManager?.checkUpdate(false) // 显示更新弹窗
+                    }
+
+                    override fun onNoUpdateAvailable() {
+                        // 没有新版本，不做任何处理
+                        android.util.Log.d("MainActivity", "当前已是最新版本")
+                    }
+
+                    override fun onCheckFailed() {
+                        // 检查失败，不做任何处理
+                        android.util.Log.d("MainActivity", "自动检查更新失败")
+                    }
+                })
+            }, 3000) // 延迟3秒
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "初始化自动更新检查失败: ${e.message}")
+        }
     }
 
     override fun onBackPressed() {
@@ -117,5 +156,7 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this)
         }
+        // 清理更新管理器
+        updateManager = null
     }
 }

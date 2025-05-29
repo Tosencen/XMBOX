@@ -47,6 +47,12 @@ class AppUpdateManager(private val context: Context) {
     // 是否正在下载
     private var isDownloading = false
 
+    // 上次检查更新的时间
+    private var lastCheckTime = 0L
+
+    // 检查更新的最小间隔（6小时）
+    private val CHECK_INTERVAL = 6 * 60 * 60 * 1000L
+
     // 更新检查回调接口
     interface UpdateCheckCallback {
         fun onUpdateAvailable(newVersion: String)
@@ -416,9 +422,22 @@ class AppUpdateManager(private val context: Context) {
     /**
      * 静默检查更新（不显示对话框）
      * @param callback 更新检查回调
+     * @param forceCheck 是否强制检查（忽略时间间隔限制）
      */
-    fun checkUpdateSilently(callback: UpdateCheckCallback) {
+    fun checkUpdateSilently(callback: UpdateCheckCallback, forceCheck: Boolean = false) {
         try {
+            val currentTime = System.currentTimeMillis()
+
+            // 检查时间间隔，避免频繁检查
+            if (!forceCheck && (currentTime - lastCheckTime) < CHECK_INTERVAL) {
+                Log.d(TAG, "距离上次检查时间过短，跳过本次检查")
+                callback.onNoUpdateAvailable()
+                return
+            }
+
+            // 更新检查时间
+            lastCheckTime = currentTime
+
             // 获取当前版本
             val currentVersion = com.blankj.utilcode.util.AppUtils.getAppVersionName()
             Log.d(TAG, "当前版本: $currentVersion")
@@ -434,8 +453,10 @@ class AppUpdateManager(private val context: Context) {
 
                             // 比较版本号
                             if (isNewerVersion(currentVersion, latestVersion)) {
+                                Log.d(TAG, "发现新版本: $latestVersion")
                                 callback.onUpdateAvailable(latestVersion)
                             } else {
+                                Log.d(TAG, "当前已是最新版本")
                                 callback.onNoUpdateAvailable()
                             }
                         } catch (e: Exception) {

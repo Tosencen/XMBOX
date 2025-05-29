@@ -307,7 +307,7 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
                 public void onCheckFailed() {
                     // 检查失败，不做任何处理
                 }
-            });
+            }, false); // 添加forceCheck参数，设为false表示遵循时间间隔限制
         }
     }
 }
