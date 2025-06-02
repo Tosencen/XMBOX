@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- 更透明的背景层，让模糊效果更明显（夜间模式） -->
+    <!-- 80%透明度背景层，让模糊效果更明显（夜间模式） -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#1A000000" />
+            <solid android:color="#33000000" />
         </shape>
     </item>
 
