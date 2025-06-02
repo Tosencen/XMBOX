@@ -16,6 +16,7 @@ import com.github.tvbox.osc.event.RefreshEvent
 import com.github.tvbox.osc.ui.fragment.GridFragment
 import com.github.tvbox.osc.ui.fragment.HomeFragment
 import com.github.tvbox.osc.ui.fragment.MyFragment
+import com.github.tvbox.osc.ui.widget.BlurView
 import com.github.tvbox.osc.util.HawkConfig
 import com.github.tvbox.osc.util.AppUpdateManager
 import com.github.tvbox.osc.util.MD3ToastUtils
@@ -69,6 +70,9 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
 
         // 初始化更新管理器并自动检查更新
         initAutoUpdateCheck()
+
+        // 初始化磨砂模糊效果
+        initBlurEffect()
     }
 
     /**
@@ -100,6 +104,25 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
             }, 3000) // 延迟3秒
         } catch (e: Exception) {
             android.util.Log.e("MainActivity", "初始化自动更新检查失败: ${e.message}")
+        }
+    }
+
+    /**
+     * 初始化磨砂模糊效果
+     */
+    private fun initBlurEffect() {
+        try {
+            val blurView = findViewById<BlurView>(com.xmbox.app.R.id.blur_container)
+            blurView?.let {
+                // 设置模糊参数
+                it.setBlurRadius(15f) // 模糊半径
+                it.setScaleFactor(0.25f) // 缩放因子，提高性能
+                it.setBlurEnabled(true) // 启用模糊效果
+
+                android.util.Log.d("MainActivity", "磨砂模糊效果已初始化")
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("MainActivity", "磨砂模糊效果初始化失败", e)
         }
     }
 

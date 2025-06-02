@@ -11,6 +11,18 @@
         <item name="itemActiveIndicatorStyle">@style/Widget.App.BottomNavigation.ActiveIndicator</item>
         <item name="itemRippleColor">@android:color/transparent</item>
     </style>
+
+    <!-- 真正的磨砂模糊底部导航栏样式 - 夜间模式 -->
+    <style name="Widget.App.BottomNavigationView.Blur" parent="Widget.Material3.BottomNavigationView">
+        <item name="elevation">0dp</item>
+        <item name="itemIconSize">24dp</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemPaddingTop">16dp</item>
+        <item name="itemPaddingBottom">16dp</item>
+        <item name="android:background">@drawable/bg_bottom_nav_transparent</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.App.BottomNavigation.ActiveIndicator</item>
+        <item name="itemRippleColor">@android:color/transparent</item>
+    </style>
     <!-- Material Design 3 标签栏样式 - 夜间模式 -->
     <style name="Widget.App.TabLayout" parent="Widget.Material3.TabLayout">
         <item name="android:background">@android:color/transparent</item>
