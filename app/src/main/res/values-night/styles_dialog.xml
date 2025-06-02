@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3 弹窗文本样式 - 夜间模式 -->
+    <style name="Widget.App.Dialog.TextView" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textColor">@color/md3_on_surface</item>
+    </style>
+
+    <!-- Material Design 3 弹窗标题样式 - 夜间模式 -->
+    <style name="Widget.App.Dialog.Title" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textColor">@color/md3_on_surface</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

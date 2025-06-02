@@ -1,0 +1,902 @@
+From 2a59a42b77a7c1020877a24ce13dabaa917a0d76 Mon Sep 17 00:00:00 2001
+From: Your Name <your.email@example.com>
+Date: Mon, 19 May 2025 13:54:28 +0800
+Subject: [PATCH] =?UTF-8?q?UI=E4=BC=98=E5=8C=96=EF=BC=9A=E8=B0=83=E6=95=B4?=
+ =?UTF-8?q?=E5=A4=9C=E9=97=B4=E6=A8=A1=E5=BC=8F=E4=B8=8B=E7=9A=84=E9=A2=9C?=
+ =?UTF-8?q?=E8=89=B2=E5=92=8C=E6=A0=B7=E5=BC=8F=EF=BC=8C=E5=8E=BB=E9=99=A4?=
+ =?UTF-8?q?=E9=80=89=E9=9B=86=E5=BC=B9=E7=AA=97=E6=8F=8F=E8=BE=B9=EF=BC=8C?=
+ =?UTF-8?q?=E4=BC=98=E5=8C=96=E8=A7=86=E8=A7=89=E6=95=88=E6=9E=9C?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ CHANGELOG.md                                  |  76 +++++++
+ app/build.gradle                              |   4 +-
+ .../exception/FatalParsingException.java      |   0
+ .../tvbox/osc/subtitle/format/FormatASS.java  |   0
+ .../tvbox/osc/subtitle/format/FormatSCC.java  |   0
+ .../tvbox/osc/subtitle/format/FormatSRT.java  |   0
+ .../tvbox/osc/subtitle/format/FormatSTL.java  |   0
+ .../tvbox/osc/subtitle/format/FormatTTML.java |   0
+ .../subtitle/format/TimedTextFileFormat.java  |   0
+ .../tvbox/osc/subtitle/model/Region.java      |   0
+ .../tvbox/osc/subtitle/model/Style.java       |   0
+ .../tvbox/osc/subtitle/model/Subtitle.java    |   0
+ .../github/tvbox/osc/subtitle/model/Time.java |   0
+ .../osc/subtitle/model/TimedTextObject.java   |   0
+ .../tvbox/osc/ui/dialog/LastViewedDialog.java |   4 +-
+ .../osc/ui/dialog/VersionHistoryDialog.java   | 199 ++++++++++++++++++
+ .../tvbox/osc/ui/fragment/HomeFragment.kt     |   2 +-
+ .../tvbox/osc/ui/fragment/MyFragment.java     |  15 ++
+ .../res/drawable-night/bg_bottom_dialog.xml   |   9 +
+ app/src/main/res/drawable/bg_dialog_dark.xml  |   2 +-
+ .../main/res/drawable/bg_dialog_md3_dark.xml  |   2 +-
+ .../res/drawable/bg_dialog_md3_no_stroke.xml  |   5 +
+ .../main/res/drawable/bg_item_select_md3.xml  |   2 +-
+ .../drawable/bg_item_select_md3_no_ripple.xml |   2 +-
+ .../res/drawable/bg_settings_card_dark.xml    |   2 +-
+ app/src/main/res/drawable/bg_toast_md3.xml    |   2 +-
+ .../drawable/bottom_nav_active_indicator.xml  |   2 +-
+ .../res/layout/dialog_last_viewed_m3_new.xml  |   7 +-
+ .../res/layout/dialog_update_progress.xml     |  22 +-
+ .../res/layout/dialog_version_history.xml     |  36 ++++
+ app/src/main/res/layout/fragment_my.xml       |  48 ++---
+ .../main/res/layout/item_version_history.xml  |  39 ++++
+ app/src/main/res/values-night/colors.xml      |   8 +-
+ app/src/main/res/values-night/md3_colors.xml  |   2 +-
+ .../res/values-night/styles_bottom_nav.xml    |   2 +-
+ app/src/main/res/values/colors.xml            |  14 +-
+ gradlew                                       |   0
+ 37 files changed, 443 insertions(+), 63 deletions(-)
+ create mode 100644 CHANGELOG.md
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/exception/FatalParsingException.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatASS.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSCC.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSRT.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSTL.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatTTML.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/format/TimedTextFileFormat.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/model/Region.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/model/Style.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/model/Subtitle.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/model/Time.java
+ mode change 100755 => 100644 app/src/main/java/com/github/tvbox/osc/subtitle/model/TimedTextObject.java
+ create mode 100644 app/src/main/java/com/github/tvbox/osc/ui/dialog/VersionHistoryDialog.java
+ create mode 100644 app/src/main/res/drawable-night/bg_bottom_dialog.xml
+ create mode 100644 app/src/main/res/drawable/bg_dialog_md3_no_stroke.xml
+ create mode 100644 app/src/main/res/layout/dialog_version_history.xml
+ create mode 100644 app/src/main/res/layout/item_version_history.xml
+ mode change 100755 => 100644 gradlew
+
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+new file mode 100644
+index 0000000..306b31a
+--- /dev/null
++++ b/CHANGELOG.md
+@@ -0,0 +1,76 @@
++# XMBOX 版本更新日志
++
++本文档记录XMBOX应用的所有版本更新内容。
++
++## v2.0.5 (2025-04-26)
++
++### 优化改进
++- 优化了更新弹窗UI，移除了背景描边
++- 调整了更新弹窗中版本号文本的位置
++- 点击"我的"页面的XMBOX标题或版本号可查看版本历史
++
++## v2.0.4 (2025-04-25)
++
++### 新增功能
++- 在"我的"页面添加了版本号显示，位于XMBOX标题下方
++- 添加了应用更新过程中的取消功能，用户可以在下载过程中取消更新
++- 在首页添加了"上次看到"提示功能，显示用户最近观看的内容
++
++### 优化改进
++- 优化了白天模式下"上次看到"提示弹窗的背景色，提高可读性
++- 改进了更新弹窗UI，使其符合Material Design 3规范
++- 优化了应用更新流程，动态显示目标版本号
++
++### 问题修复
++- 修复了部分设备上订阅源无法正确加载的问题
++- 修复了某些情况下播放历史不能正确显示的问题
++- 修复了设置页面中开关按钮在白天模式下的颜色显示问题
++
++## v2.0.3 (2025-03-15)
++
++### 新增功能
++- 添加了对中文域名订阅源的支持
++- 新增了直播源处理功能，支持更多直播源格式
++- 添加了检查更新功能的新版本提醒标识
++
++### 优化改进
++- 优化了视频播放器导航栏，现在会在进入页面后3秒自动隐藏
++- 改进了订阅管理页面的UI设计，悬浮按钮移至右侧
++- 优化了视频播放页面，现在会显示视频标题
++
++### 问题修复
++- 修复了切换订阅源后返回键行为异常的问题
++- 修复了部分设备上缓存大小显示不正确的问题
++- 修复了夜间模式下某些UI元素对比度不足的问题
++
++## v2.0.2 (2025-02-20)
++
++### 新增功能
++- 添加了Material Design 3风格的UI设计
++- 新增了广告过滤功能
++- 添加了IJK播放器缓存功能
++
++### 优化改进
++- 优化了应用启动速度
++- 改进了视频详情页面布局
++- 优化了设置页面的分类和排序
++
++### 问题修复
++- 修复了某些情况下应用崩溃的问题
++- 修复了视频无法全屏播放的bug
++- 修复了历史记录偶尔丢失的问题
++
++## v2.0.1 (2025-01-10)
++
++### 新增功能
++- 首次发布Material Design风格的全新版本
++- 添加了多种订阅源支持
++- 新增了收藏功能
++
++### 优化改进
++- 全新的用户界面设计
++- 改进的视频播放体验
++- 优化的内存使用和性能
++
++### 问题修复
++- 修复了旧版本中的已知问题
+diff --git a/app/build.gradle b/app/build.gradle
+index 339337b..c0c7f85 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -12,8 +12,8 @@ android {
+         applicationId 'com.xmbox.app'
+         minSdkVersion 24
+         targetSdkVersion 33
+-        versionCode 35
+-        versionName '2.0.4'
++        versionCode 36
++        versionName '2.0.5'
+         multiDexEnabled true
+         // 增加下面的配置以支持 Java 8 特性
+         compileOptions {
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/exception/FatalParsingException.java b/app/src/main/java/com/github/tvbox/osc/subtitle/exception/FatalParsingException.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatASS.java b/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatASS.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSCC.java b/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSCC.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSRT.java b/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSRT.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSTL.java b/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatSTL.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatTTML.java b/app/src/main/java/com/github/tvbox/osc/subtitle/format/FormatTTML.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/format/TimedTextFileFormat.java b/app/src/main/java/com/github/tvbox/osc/subtitle/format/TimedTextFileFormat.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/model/Region.java b/app/src/main/java/com/github/tvbox/osc/subtitle/model/Region.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/model/Style.java b/app/src/main/java/com/github/tvbox/osc/subtitle/model/Style.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/model/Subtitle.java b/app/src/main/java/com/github/tvbox/osc/subtitle/model/Subtitle.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/model/Time.java b/app/src/main/java/com/github/tvbox/osc/subtitle/model/Time.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/subtitle/model/TimedTextObject.java b/app/src/main/java/com/github/tvbox/osc/subtitle/model/TimedTextObject.java
+old mode 100755
+new mode 100644
+diff --git a/app/src/main/java/com/github/tvbox/osc/ui/dialog/LastViewedDialog.java b/app/src/main/java/com/github/tvbox/osc/ui/dialog/LastViewedDialog.java
+index a02aa75..e3c2d59 100644
+--- a/app/src/main/java/com/github/tvbox/osc/ui/dialog/LastViewedDialog.java
++++ b/app/src/main/java/com/github/tvbox/osc/ui/dialog/LastViewedDialog.java
+@@ -47,8 +47,10 @@ public class LastViewedDialog extends PositionPopupView {
+         MaterialCardView cardView = rootView.findViewById(R.id.card_view);
+         if (cardView != null) {
+             if (Utils.isDarkTheme()) {
+-                cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.color_dialog_bg_dark));
++                // 夜间模式使用明显更亮的深灰色背景
++                cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.color_232626));
+             } else {
++                // 白天模式使用白色背景，提高可读性
+                 cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.white));
+             }
+         }
+diff --git a/app/src/main/java/com/github/tvbox/osc/ui/dialog/VersionHistoryDialog.java b/app/src/main/java/com/github/tvbox/osc/ui/dialog/VersionHistoryDialog.java
+new file mode 100644
+index 0000000..f3a7dfe
+--- /dev/null
++++ b/app/src/main/java/com/github/tvbox/osc/ui/dialog/VersionHistoryDialog.java
+@@ -0,0 +1,199 @@
++package com.github.tvbox.osc.ui.dialog;
++
++import android.content.Context;
++import android.view.View;
++import android.widget.TextView;
++
++import androidx.annotation.NonNull;
++import androidx.recyclerview.widget.LinearLayoutManager;
++import androidx.recyclerview.widget.RecyclerView;
++
++import com.chad.library.adapter.base.BaseQuickAdapter;
++import com.chad.library.adapter.base.BaseViewHolder;
++import com.github.tvbox.osc.R;
++import com.github.tvbox.osc.util.Utils;
++import com.lxj.xpopup.core.BottomPopupView;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * 版本历史弹窗
++ */
++public class VersionHistoryDialog extends BottomPopupView {
++
++    public VersionHistoryDialog(@NonNull Context context) {
++        super(context);
++    }
++
++    @Override
++    protected int getImplLayoutId() {
++        return R.layout.dialog_version_history;
++    }
++
++    @Override
++    protected void beforeShow() {
++        super.beforeShow();
++        // 在beforeShow中设置背景，确保在显示前应用
++        View rootView = getPopupImplView();
++        if (Utils.isDarkTheme()) {
++            rootView.setBackgroundResource(R.drawable.bg_dialog_dark);
++        } else {
++            rootView.setBackgroundResource(R.drawable.bg_dialog_md3);
++        }
++    }
++
++    @Override
++    protected void onCreate() {
++        super.onCreate();
++        View rootView = getPopupImplView();
++
++        // 设置标题
++        TextView tvTitle = rootView.findViewById(R.id.tv_title);
++        tvTitle.setText("版本更新历史");
++
++        // 设置RecyclerView
++        RecyclerView rvVersions = rootView.findViewById(R.id.rv_versions);
++        rvVersions.setLayoutManager(new LinearLayoutManager(getContext()));
++
++        // 创建数据
++        List<VersionInfo> versionInfoList = getVersionHistory();
++
++        // 设置适配器
++        VersionHistoryAdapter adapter = new VersionHistoryAdapter();
++        rvVersions.setAdapter(adapter);
++        adapter.setNewData(versionInfoList);
++    }
++
++    /**
++     * 获取版本历史数据
++     */
++    private List<VersionInfo> getVersionHistory() {
++        List<VersionInfo> versionInfoList = new ArrayList<>();
++
++        // v2.0.5
++        VersionInfo v205 = new VersionInfo();
++        v205.setVersion("v2.0.5");
++        v205.setDate("2025-04-26");
++        List<String> features205 = new ArrayList<>();
++        features205.add("优化了更新弹窗UI，移除了背景描边");
++        features205.add("调整了更新弹窗中版本号文本的位置");
++        features205.add("点击我的页面的XMBOX标题或版本号可查看版本历史");
++        v205.setFeatures(features205);
++        versionInfoList.add(v205);
++
++        // v2.0.4
++        VersionInfo v204 = new VersionInfo();
++        v204.setVersion("v2.0.4");
++        v204.setDate("2025-04-25");
++        List<String> features204 = new ArrayList<>();
++        features204.add("在我的页面添加了版本号显示，位于XMBOX标题下方");
++        features204.add("添加了应用更新过程中的取消功能，用户可以在下载过程中取消更新");
++        features204.add("在首页添加了上次看到提示功能，显示用户最近观看的内容");
++        features204.add("优化了白天模式下上次看到提示弹窗的背景色，提高可读性");
++        features204.add("改进了更新弹窗UI，使其符合Material Design 3规范");
++        features204.add("优化了应用更新流程，动态显示目标版本号");
++        features204.add("修复了部分设备上订阅源无法正确加载的问题");
++        v204.setFeatures(features204);
++        versionInfoList.add(v204);
++
++        // v2.0.3
++        VersionInfo v203 = new VersionInfo();
++        v203.setVersion("v2.0.3");
++        v203.setDate("2025-03-15");
++        List<String> features203 = new ArrayList<>();
++        features203.add("添加了对中文域名订阅源的支持");
++        features203.add("新增了直播源处理功能，支持更多直播源格式");
++        features203.add("添加了检查更新功能的新版本提醒标识");
++        features203.add("优化了视频播放器导航栏，现在会在进入页面后3秒自动隐藏");
++        features203.add("改进了订阅管理页面的UI设计，悬浮按钮移至右侧");
++        features203.add("修复了切换订阅源后返回键行为异常的问题");
++        v203.setFeatures(features203);
++        versionInfoList.add(v203);
++
++        // v2.0.2
++        VersionInfo v202 = new VersionInfo();
++        v202.setVersion("v2.0.2");
++        v202.setDate("2025-02-20");
++        List<String> features202 = new ArrayList<>();
++        features202.add("添加了Material Design 3风格的UI设计");
++        features202.add("新增了广告过滤功能");
++        features202.add("添加了IJK播放器缓存功能");
++        features202.add("优化了应用启动速度");
++        features202.add("修复了某些情况下应用崩溃的问题");
++        v202.setFeatures(features202);
++        versionInfoList.add(v202);
++
++        // v2.0.1
++        VersionInfo v201 = new VersionInfo();
++        v201.setVersion("v2.0.1");
++        v201.setDate("2025-01-10");
++        List<String> features201 = new ArrayList<>();
++        features201.add("首次发布Material Design风格的全新版本");
++        features201.add("添加了多种订阅源支持");
++        features201.add("新增了收藏功能");
++        features201.add("全新的用户界面设计");
++        v201.setFeatures(features201);
++        versionInfoList.add(v201);
++
++        return versionInfoList;
++    }
++
++    /**
++     * 版本信息类
++     */
++    public static class VersionInfo {
++        private String version;
++        private String date;
++        private List<String> features;
++
++        public String getVersion() {
++            return version;
++        }
++
++        public void setVersion(String version) {
++            this.version = version;
++        }
++
++        public String getDate() {
++            return date;
++        }
++
++        public void setDate(String date) {
++            this.date = date;
++        }
++
++        public List<String> getFeatures() {
++            return features;
++        }
++
++        public void setFeatures(List<String> features) {
++            this.features = features;
++        }
++    }
++
++    /**
++     * 版本历史适配器
++     */
++    private static class VersionHistoryAdapter extends BaseQuickAdapter<VersionInfo, BaseViewHolder> {
++        public VersionHistoryAdapter() {
++            super(R.layout.item_version_history);
++        }
++
++        @Override
++        protected void convert(BaseViewHolder helper, VersionInfo item) {
++            helper.setText(R.id.tv_version, item.getVersion() + " (" + item.getDate() + ")");
++
++            // 设置特性列表
++            TextView tvFeatures = helper.getView(R.id.tv_features);
++            StringBuilder sb = new StringBuilder();
++            for (int i = 0; i < item.getFeatures().size(); i++) {
++                sb.append("• ").append(item.getFeatures().get(i));
++                if (i < item.getFeatures().size() - 1) {
++                    sb.append("\n");
++                }
++            }
++            tvFeatures.setText(sb.toString());
++        }
++    }
++}
+diff --git a/app/src/main/java/com/github/tvbox/osc/ui/fragment/HomeFragment.kt b/app/src/main/java/com/github/tvbox/osc/ui/fragment/HomeFragment.kt
+index d90dfca..3dd4abc 100644
+--- a/app/src/main/java/com/github/tvbox/osc/ui/fragment/HomeFragment.kt
++++ b/app/src/main/java/com/github/tvbox/osc/ui/fragment/HomeFragment.kt
+@@ -482,7 +482,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
+                         .isDestroyOnDismiss(true)
+                         .isCenterHorizontal(true)
+                         .isTouchThrough(false)
+-                        .isDarkTheme(true) // 强制使用深色主题
++                        // 使用系统主题
+                         .offsetY(ScreenUtils.getAppScreenHeight() - 400)
+                         .asCustom(LastViewedDialog(requireContext(), vodInfoList[0]))
+                         .show()
+diff --git a/app/src/main/java/com/github/tvbox/osc/ui/fragment/MyFragment.java b/app/src/main/java/com/github/tvbox/osc/ui/fragment/MyFragment.java
+index 9aa2fae..73f62df 100644
+--- a/app/src/main/java/com/github/tvbox/osc/ui/fragment/MyFragment.java
++++ b/app/src/main/java/com/github/tvbox/osc/ui/fragment/MyFragment.java
+@@ -11,6 +11,7 @@ import com.github.tvbox.osc.ui.activity.SubscriptionActivity;
+ import com.github.tvbox.osc.ui.dialog.AboutDialog;
+ import com.github.tvbox.osc.ui.dialog.ChooseSourceDialog;
+ import com.github.tvbox.osc.ui.dialog.SubsciptionDialog;
++import com.github.tvbox.osc.ui.dialog.VersionHistoryDialog;
+ import com.github.tvbox.osc.util.AppUpdateManager;
+ import com.github.tvbox.osc.util.HawkConfig;
+ import com.github.tvbox.osc.util.MaterialSymbolsLoader;
+@@ -58,6 +59,20 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
+         // 静默检查更新
+         checkUpdateSilently();
+ 
++        // 设置版本号点击事件，显示版本历史
++        View.OnClickListener versionClickListener = v -> {
++            new XPopup.Builder(mActivity)
++                    .asCustom(new VersionHistoryDialog(mActivity))
++                    .show();
++        };
++
++        // 为XMBOX标题和版本号设置点击事件
++        View headerLayout = mBinding.getRoot().findViewById(com.github.tvbox.osc.R.id.header_layout);
++        if (headerLayout != null) {
++            headerLayout.setOnClickListener(versionClickListener);
++        }
++        mBinding.tvVersion.setOnClickListener(versionClickListener);
++
+         // 播放链接功能已移除
+         // 直播功能已移除
+ 
+diff --git a/app/src/main/res/drawable-night/bg_bottom_dialog.xml b/app/src/main/res/drawable-night/bg_bottom_dialog.xml
+new file mode 100644
+index 0000000..81cc59f
+--- /dev/null
++++ b/app/src/main/res/drawable-night/bg_bottom_dialog.xml
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="utf-8"?>
++<shape xmlns:android="http://schemas.android.com/apk/res/android">
++    <corners
++        android:topLeftRadius="20dp"
++        android:topRightRadius="20dp" />
++    <solid android:color="@color/bg_popup" />
++    <!-- 确保没有描边 -->
++    <stroke android:width="0dp" android:color="@android:color/transparent" />
++</shape>
+diff --git a/app/src/main/res/drawable/bg_dialog_dark.xml b/app/src/main/res/drawable/bg_dialog_dark.xml
+index fe66b16..496ba2f 100644
+--- a/app/src/main/res/drawable/bg_dialog_dark.xml
++++ b/app/src/main/res/drawable/bg_dialog_dark.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <shape xmlns:android="http://schemas.android.com/apk/res/android">
+     <corners android:radius="28dp" />
+-    <solid android:color="#232626" /> <!-- 深灰色背景 -->
++    <solid android:color="#3A3F3F" /> <!-- 明显更亮的深灰色背景 -->
+ </shape>
+diff --git a/app/src/main/res/drawable/bg_dialog_md3_dark.xml b/app/src/main/res/drawable/bg_dialog_md3_dark.xml
+index 9057e11..5d91d09 100644
+--- a/app/src/main/res/drawable/bg_dialog_md3_dark.xml
++++ b/app/src/main/res/drawable/bg_dialog_md3_dark.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <shape xmlns:android="http://schemas.android.com/apk/res/android">
+-    <solid android:color="#232626" />
++    <solid android:color="#3A3F3F" />
+     <corners android:radius="16dp" />
+ </shape>
+diff --git a/app/src/main/res/drawable/bg_dialog_md3_no_stroke.xml b/app/src/main/res/drawable/bg_dialog_md3_no_stroke.xml
+new file mode 100644
+index 0000000..e9dfda0
+--- /dev/null
++++ b/app/src/main/res/drawable/bg_dialog_md3_no_stroke.xml
+@@ -0,0 +1,5 @@
++<?xml version="1.0" encoding="utf-8"?>
++<shape xmlns:android="http://schemas.android.com/apk/res/android">
++    <solid android:color="?attr/colorSurface" />
++    <corners android:radius="28dp" />
++</shape>
+diff --git a/app/src/main/res/drawable/bg_item_select_md3.xml b/app/src/main/res/drawable/bg_item_select_md3.xml
+index b791929..4a9eab1 100644
+--- a/app/src/main/res/drawable/bg_item_select_md3.xml
++++ b/app/src/main/res/drawable/bg_item_select_md3.xml
+@@ -4,7 +4,7 @@
+     <item>
+         <shape android:shape="rectangle">
+             <corners android:radius="8dp" />
+-            <solid android:color="#E5F8F8" />
++            <solid android:color="#E6E9E9" />
+         </shape>
+     </item>
+ </ripple>
+diff --git a/app/src/main/res/drawable/bg_item_select_md3_no_ripple.xml b/app/src/main/res/drawable/bg_item_select_md3_no_ripple.xml
+index 9fef535..91666b8 100644
+--- a/app/src/main/res/drawable/bg_item_select_md3_no_ripple.xml
++++ b/app/src/main/res/drawable/bg_item_select_md3_no_ripple.xml
+@@ -2,5 +2,5 @@
+ <shape xmlns:android="http://schemas.android.com/apk/res/android"
+     android:shape="rectangle">
+     <corners android:radius="8dp" />
+-    <solid android:color="#E5F8F8" />
++    <solid android:color="#E6E9E9" />
+ </shape>
+diff --git a/app/src/main/res/drawable/bg_settings_card_dark.xml b/app/src/main/res/drawable/bg_settings_card_dark.xml
+index 7bb93e2..4378ce0 100644
+--- a/app/src/main/res/drawable/bg_settings_card_dark.xml
++++ b/app/src/main/res/drawable/bg_settings_card_dark.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <shape xmlns:android="http://schemas.android.com/apk/res/android"
+     android:shape="rectangle">
+-    <solid android:color="#232626" />
++    <solid android:color="#3A3F3F" />
+     <corners android:radius="12dp" />
+ </shape>
+diff --git a/app/src/main/res/drawable/bg_toast_md3.xml b/app/src/main/res/drawable/bg_toast_md3.xml
+index 9efab79..2ae2533 100644
+--- a/app/src/main/res/drawable/bg_toast_md3.xml
++++ b/app/src/main/res/drawable/bg_toast_md3.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <shape xmlns:android="http://schemas.android.com/apk/res/android"
+     android:shape="rectangle">
+-    <solid android:color="#232626" />
++    <solid android:color="#3A3F3F" />
+     <corners android:radius="16dp" />
+ </shape>
+diff --git a/app/src/main/res/drawable/bottom_nav_active_indicator.xml b/app/src/main/res/drawable/bottom_nav_active_indicator.xml
+index 9efab79..2ae2533 100644
+--- a/app/src/main/res/drawable/bottom_nav_active_indicator.xml
++++ b/app/src/main/res/drawable/bottom_nav_active_indicator.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <shape xmlns:android="http://schemas.android.com/apk/res/android"
+     android:shape="rectangle">
+-    <solid android:color="#232626" />
++    <solid android:color="#3A3F3F" />
+     <corners android:radius="16dp" />
+ </shape>
+diff --git a/app/src/main/res/layout/dialog_last_viewed_m3_new.xml b/app/src/main/res/layout/dialog_last_viewed_m3_new.xml
+index 2000076..c052738 100644
+--- a/app/src/main/res/layout/dialog_last_viewed_m3_new.xml
++++ b/app/src/main/res/layout/dialog_last_viewed_m3_new.xml
+@@ -11,9 +11,8 @@
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         app:cardCornerRadius="16dp"
+-        app:cardElevation="2dp"
+-        style="@style/Widget.Material3.CardView.Elevated"
+-        app:cardBackgroundColor="?attr/colorSurface">
++        app:cardElevation="4dp"
++        style="@style/Widget.Material3.CardView.Elevated">
+ 
+         <LinearLayout
+             android:layout_width="match_parent"
+@@ -29,7 +28,7 @@
+                 android:layout_weight="1"
+                 android:layout_height="wrap_content"
+                 android:textSize="14sp"
+-                android:textColor="@color/md3_on_surface"
++                android:textColor="?attr/colorOnSurface"
+                 tools:text="上次看到: 念无双 第12集"/>
+ 
+             <com.google.android.material.button.MaterialButton
+diff --git a/app/src/main/res/layout/dialog_update_progress.xml b/app/src/main/res/layout/dialog_update_progress.xml
+index b386fbb..c2271fa 100644
+--- a/app/src/main/res/layout/dialog_update_progress.xml
++++ b/app/src/main/res/layout/dialog_update_progress.xml
+@@ -3,7 +3,7 @@
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+-    android:background="@drawable/bg_dialog_md3"
++    android:background="@drawable/bg_dialog_md3_no_stroke"
+     android:orientation="vertical"
+     android:padding="24dp">
+ 
+@@ -45,6 +45,16 @@
+         android:textColor="?attr/colorOnSurfaceVariant"
+         android:textSize="14sp" />
+ 
++    <!-- 版本信息 -->
++    <TextView
++        android:id="@+id/tvVersionInfo"
++        android:layout_width="wrap_content"
++        android:layout_height="wrap_content"
++        android:layout_marginTop="4dp"
++        android:text="正在更新..."
++        android:textColor="?attr/colorOnSurfaceVariant"
++        android:textSize="12sp" />
++
+     <!-- 进度条区域 -->
+     <FrameLayout
+         android:layout_width="match_parent"
+@@ -73,16 +83,6 @@
+         android:textColor="?attr/colorOnSurfaceVariant"
+         android:textSize="14sp" />
+ 
+-    <!-- 版本信息 -->
+-    <TextView
+-        android:id="@+id/tvVersionInfo"
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="16dp"
+-        android:text="正在更新..."
+-        android:textColor="?attr/colorOnSurfaceVariant"
+-        android:textSize="12sp" />
+-
+     <!-- 取消按钮 -->
+     <Button
+         android:id="@+id/btnCancel"
+diff --git a/app/src/main/res/layout/dialog_version_history.xml b/app/src/main/res/layout/dialog_version_history.xml
+new file mode 100644
+index 0000000..2de7d05
+--- /dev/null
++++ b/app/src/main/res/layout/dialog_version_history.xml
+@@ -0,0 +1,36 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:orientation="vertical"
++    android:paddingTop="24dp"
++    android:paddingBottom="24dp">
++
++    <!-- 标题 -->
++    <TextView
++        android:id="@+id/tv_title"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_marginStart="24dp"
++        android:layout_marginEnd="24dp"
++        android:layout_marginBottom="16dp"
++        android:text="版本更新历史"
++        android:textColor="?attr/colorOnSurface"
++        android:textSize="20sp"
++        android:textStyle="bold"
++        android:fontFamily="sans-serif-medium" />
++
++    <!-- 版本列表 -->
++    <androidx.recyclerview.widget.RecyclerView
++        android:id="@+id/rv_versions"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_marginStart="24dp"
++        android:layout_marginEnd="24dp"
++        android:overScrollMode="never"
++        tools:itemCount="4"
++        tools:listitem="@layout/item_version_history" />
++
++</LinearLayout>
+diff --git a/app/src/main/res/layout/fragment_my.xml b/app/src/main/res/layout/fragment_my.xml
+index 5c3dc03..a4c7e38 100644
+--- a/app/src/main/res/layout/fragment_my.xml
++++ b/app/src/main/res/layout/fragment_my.xml
+@@ -12,22 +12,34 @@
+         android:orientation="vertical">
+ 
+         <LinearLayout
++            android:id="@+id/header_layout"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_marginTop="40dp"
+-            android:padding="20dp">
++            android:padding="20dp"
++            android:orientation="vertical"
++            android:foreground="?android:attr/selectableItemBackground">
+ 
+-        <TextView
+-            android:layout_width="wrap_content"
+-            android:layout_height="wrap_content"
+-            android:layout_gravity="bottom"
+-            android:layout_marginLeft="20dp"
+-            android:layout_marginBottom="4dp"
+-            android:text="XMBOX"
+-            android:textColor="?attr/colorOnSurface"
+-            android:textSize="22sp"
+-            android:fontFamily="sans-serif-medium" />
+-    </LinearLayout>
++            <TextView
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:layout_marginLeft="20dp"
++                android:text="XMBOX"
++                android:textColor="?attr/colorOnSurface"
++                android:textSize="22sp"
++                android:fontFamily="sans-serif-medium" />
++
++            <TextView
++                android:id="@+id/tv_version"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:layout_marginLeft="20dp"
++                android:layout_marginTop="4dp"
++                android:textSize="12sp"
++                tools:text="v2.0.4"
++                android:textColor="?attr/colorOnSurfaceVariant"
++                android:fontFamily="sans-serif" />
++        </LinearLayout>
+ 
+     <ScrollView
+         android:layout_width="match_parent"
+@@ -351,18 +363,6 @@
+         </LinearLayout>
+ 
+     </ScrollView>
+-
+-    <TextView
+-        android:id="@+id/tv_version"
+-        android:textSize="11sp"
+-        tools:text="v0.01"
+-        android:paddingBottom="6dp"
+-        android:layout_gravity="center_horizontal"
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
+-        android:textColor="?attr/colorOnSurfaceVariant"
+-        android:fontFamily="sans-serif"
+-        />
+     </LinearLayout>
+ 
+ 
+diff --git a/app/src/main/res/layout/item_version_history.xml b/app/src/main/res/layout/item_version_history.xml
+new file mode 100644
+index 0000000..064d5ad
+--- /dev/null
++++ b/app/src/main/res/layout/item_version_history.xml
+@@ -0,0 +1,39 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:orientation="vertical"
++    android:paddingTop="16dp"
++    android:paddingBottom="16dp">
++
++    <!-- 版本号和日期 -->
++    <TextView
++        android:id="@+id/tv_version"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:textColor="?attr/colorPrimary"
++        android:textSize="16sp"
++        android:textStyle="bold"
++        android:fontFamily="sans-serif-medium"
++        tools:text="v2.0.4 (2025-04-25)" />
++
++    <!-- 版本特性 -->
++    <TextView
++        android:id="@+id/tv_features"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_marginTop="8dp"
++        android:textColor="?attr/colorOnSurface"
++        android:textSize="14sp"
++        android:lineSpacingMultiplier="1.2"
++        tools:text="• 在我的页面添加了版本号显示，位于XMBOX标题下方\n• 添加了应用更新过程中的取消功能，用户可以在下载过程中取消更新\n• 在首页添加了上次看到提示功能，显示用户最近观看的内容" />
++
++    <!-- 分隔线 -->
++    <View
++        android:layout_width="match_parent"
++        android:layout_height="1dp"
++        android:layout_marginTop="16dp"
++        android:background="?attr/colorSurfaceVariant" />
++
++</LinearLayout>
+diff --git a/app/src/main/res/values-night/colors.xml b/app/src/main/res/values-night/colors.xml
+index d867405..2baf58d 100644
+--- a/app/src/main/res/values-night/colors.xml
++++ b/app/src/main/res/values-night/colors.xml
+@@ -45,8 +45,8 @@
+     <!-- 搜索详情页左侧标签背景色 - 主色的低饱和度变体 -->
+     <color name="search_category_bg">#1A1E1E</color>
+ 
+-    <!-- 菜单项背景色 - 夜间模式使用深灰色 -->
+-    <color name="menu_item_bg">#232626</color>
++    <!-- 菜单项背景色 - 夜间模式使用明显更亮的深灰色 -->
++    <color name="menu_item_bg">#3A3F3F</color>
+ 
+     <!-- 波纹效果颜色 - 更暗更柔和的波纹颜色 -->
+     <color name="ripple_color_dark">#33006A6A</color>
+@@ -55,10 +55,10 @@
+     <color name="ripple_color">#3364D8D8</color>
+ 
+     <!-- 详情页线路和选集未选中背景色 - 夜间模式 -->
+-    <color name="item_series_bg_light">#232626</color>
++    <color name="item_series_bg_light">#3A3F3F</color>
+ 
+     <!-- 倒序和全部按钮背景色 - 夜间模式 -->
+-    <color name="sort_all_button_bg_light">#232626</color>
++    <color name="sort_all_button_bg_light">#3A3F3F</color>
+ 
+     <!-- 选中状态的文本颜色 - 夜间模式 -->
+     <color name="selected_text_color_light">#FFFFFF</color>
+diff --git a/app/src/main/res/values-night/md3_colors.xml b/app/src/main/res/values-night/md3_colors.xml
+index 254244f..db2c2b2 100644
+--- a/app/src/main/res/values-night/md3_colors.xml
++++ b/app/src/main/res/values-night/md3_colors.xml
+@@ -4,6 +4,6 @@
+     <color name="md3_surface_container_lowest">#0F1212</color>
+     <color name="md3_surface_container_low">#191C1C</color>
+     <color name="md3_surface_container">#1D2020</color>
+-    <color name="md3_surface_container_high">#232626</color>
++    <color name="md3_surface_container_high">#3A3F3F</color>
+     <color name="md3_surface_container_highest">#292C2C</color>
+ </resources>
+diff --git a/app/src/main/res/values-night/styles_bottom_nav.xml b/app/src/main/res/values-night/styles_bottom_nav.xml
+index df100c2..54a1413 100644
+--- a/app/src/main/res/values-night/styles_bottom_nav.xml
++++ b/app/src/main/res/values-night/styles_bottom_nav.xml
+@@ -2,6 +2,6 @@
+ <resources>
+     <!-- 底部导航栏活动指示器样式 - 夜间模式 -->
+     <style name="Widget.App.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+-        <item name="android:color">#232626</item>
++        <item name="android:color">#3A3F3F</item>
+     </style>
+ </resources>
+diff --git a/app/src/main/res/values/colors.xml b/app/src/main/res/values/colors.xml
+index 5e9086a..3231242 100644
+--- a/app/src/main/res/values/colors.xml
++++ b/app/src/main/res/values/colors.xml
+@@ -107,15 +107,15 @@
+     <!-- 新增颜色 -->
+     <color name="gray_999">#999999</color>
+ 
+-    <!-- 搜索详情页左侧标签背景色 - 主色的低饱和度变体 -->
+-    <color name="search_category_bg">#E5F8F8</color>
++    <!-- 搜索详情页左侧标签背景色 - 浅灰色 -->
++    <color name="search_category_bg">#E6E9E9</color>
+ 
+     <!-- 菜单项背景色 - 日间模式使用浅灰色 -->
+     <color name="menu_item_bg">@color/md3_surface_variant</color>
+ 
+-    <!-- 深色模式背景色 - 深灰色 -->
+-    <color name="color_232626">#232626</color>
+-    <color name="color_dialog_bg_dark">#232626</color>
++    <!-- 深色模式背景色 - 明显更亮的深灰色 -->
++    <color name="color_232626">#3A3F3F</color>
++    <color name="color_dialog_bg_dark">#3A3F3F</color>
+ 
+     <!-- 波纹效果颜色 - 日间模式 -->
+     <color name="ripple_color">#1A006A6A</color>
+@@ -123,8 +123,8 @@
+     <!-- 对话框背景色 -->
+     <color name="dialog_bg">@color/md3_background</color>
+ 
+-    <!-- 底部导航栏活动指示器颜色 - 日间模式使用更淡的颜色 -->
+-    <color name="bottom_nav_indicator_light">#E5F8F8</color>
++    <!-- 底部导航栏活动指示器颜色 - 日间模式使用浅灰色 -->
++    <color name="bottom_nav_indicator_light">#E6E9E9</color>
+ 
+     <!-- 详情页线路和选集未选中背景色 - 日间模式 -->
+     <color name="item_series_bg_light">#E6E9E9</color>
+diff --git a/gradlew b/gradlew
+old mode 100755
+new mode 100644
+-- 
+2.45.1.windows.1
+

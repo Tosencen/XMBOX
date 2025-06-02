@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 禁用状态 -->
+    <item android:color="?attr/colorSurfaceVariant" android:state_enabled="false" />
+    <!-- 选中状态 -->
+    <item android:color="?attr/colorPrimary" android:state_checked="true" />
+    <!-- 未选中状态 -->
+    <item android:color="?attr/colorSurfaceVariant" />
+</selector>

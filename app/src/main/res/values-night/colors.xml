@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3 冷淡系主题色 - 夜间模式 -->
+    <color name="md3_primary">#64D8D8</color>
+    <color name="md3_on_primary">#003737</color>
+    <color name="md3_primary_container">#004F4F</color>
+    <color name="md3_on_primary_container">#83F4F4</color>
+
+    <color name="md3_secondary">#B1CBCB</color>
+    <color name="md3_on_secondary">#1C3434</color>
+    <color name="md3_secondary_container">#334B4B</color>
+    <color name="md3_on_secondary_container">#CDE7E7</color>
+
+    <color name="md3_tertiary">#B5C8E8</color>
+    <color name="md3_on_tertiary">#1C314D</color>
+    <color name="md3_tertiary_container">#334764</color>
+    <color name="md3_on_tertiary_container">#D3E4FF</color>
+
+    <color name="md3_error">#FFB4AB</color>
+    <color name="md3_on_error">#690005</color>
+    <color name="md3_error_container">#93000A</color>
+    <color name="md3_on_error_container">#FFDAD6</color>
+
+    <color name="md3_background">#191C1C</color>
+    <color name="md3_on_background">#E0E3E3</color>
+    <color name="md3_surface">#191C1C</color>
+    <color name="md3_on_surface">#E0E3E3</color>
+    <color name="md3_surface_variant">#3F4949</color>
+    <color name="md3_on_surface_variant">#BFC8C8</color>
+
+    <color name="md3_outline">#899393</color>
+    <color name="md3_outline_variant">#3F4949</color>
+
+    <color name="md3_scrim">#000000</color>
+    <color name="md3_inverse_surface">#E0E3E3</color>
+    <color name="md3_inverse_on_surface">#2D3131</color>
+    <color name="md3_inverse_primary">#006A6A</color>
+
+    <color name="bg_gray">@color/md3_surface_variant</color>
+    <color name="bg_popup">@color/md3_surface</color>
+
+    <color name="text_foreground">@color/md3_on_background</color>
+    <color name="text_sub_foreground">@color/md3_on_surface_variant</color>
+
+    <!-- 搜索详情页左侧标签背景色 - 主色的低饱和度变体 -->
+    <color name="search_category_bg">#1A1E1E</color>
+
+    <!-- 菜单项背景色 - 夜间模式使用明显更亮的深灰色 -->
+    <color name="menu_item_bg">#3A3F3F</color>
+
+    <!-- 波纹效果颜色 - 更暗更柔和的波纹颜色 -->
+    <color name="ripple_color_dark">#33006A6A</color>
+
+    <!-- 波纹效果颜色 - 夜间模式 -->
+    <color name="ripple_color">#3364D8D8</color>
+
+    <!-- 详情页线路和选集未选中背景色 - 夜间模式 -->
+    <color name="item_series_bg_light">#3A3F3F</color>
+
+    <!-- 倒序和全部按钮背景色 - 夜间模式 -->
+    <color name="sort_all_button_bg_light">#3A3F3F</color>
+
+    <!-- 选中状态的文本颜色 - 夜间模式 -->
+    <color name="selected_text_color_light">#FFFFFF</color>
+
+    <!-- 倒序和全部按钮图标颜色 - 夜间模式 -->
+    <color name="sort_all_button_icon_light">#FFFFFF</color>
+</resources>

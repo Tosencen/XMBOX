@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#121212"
+    android:padding="16dp">
+
+    <!-- 亮青色开关 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:background="#1A1A1A">
+        
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchBrightCyan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            style="@style/Widget.App.Switch.BrightCyan"/>
+    </FrameLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="16dp" />
+
+    <!-- 深青色开关 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:background="#1A1A1A">
+        
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchDarkCyan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            style="@style/Widget.App.Switch.Capsule"/>
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="两种颜色风格的开关按钮"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="16dp"
+        android:textSize="16sp"/>
+
+</LinearLayout>

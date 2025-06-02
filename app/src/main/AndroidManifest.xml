@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 在 Android 11 中，应用程序需要声明它们要使用的其他应用程序的包名 -->
+    <queries>
+        <package android:name="idm.internet.download.manager.plus" />
+    </queries>
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <!-- 网络相关权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- 仅在需要DLNA投屏时使用 -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <!-- 存储权限，Android 13+使用READ_MEDIA_* -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" android:minSdkVersion="33" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" android:minSdkVersion="33" />
+
+    <!-- 备份等功能需要的权限 -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+
+    <!-- 安装APK需要的权限 -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- 后台播放音频需要的权限 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application
+        android:name="com.github.tvbox.osc.base.App"
+        android:allowBackup="true"
+        android:configChanges="orientation|keyboardHidden|screenSize"
+        android:hardwareAccelerated="true"
+        android:icon="@drawable/app_icon"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:requestLegacyExternalStorage="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.SplashActivity"
+            android:exported="true"
+            android:theme="@style/SplashTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.SubscriptionActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false" />
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.VideoListActivity"
+            android:configChanges="orientation|screenSize"/>
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.MovieFoldersActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"/>
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.LocalPlayActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false" />
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
+            android:exported="true"/>
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.LiveActivity"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode|screenLayout"/>
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.DetailActivity"
+            android:supportsPictureInPicture="true"
+            android:launchMode="singleTask"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode"/>
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.FastSearchActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            />
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.SearchDetailActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            />
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.SettingActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.HistoryActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.CollectActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+
+
+        <activity
+            android:name="com.github.tvbox.osc.ui.activity.DevToolsActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="工具"/>
+
+        <!-- 改进版DLNA投屏服务 - 暂时禁用以解决构建问题 -->
+        <!-- <service android:name="com.github.tvbox.osc.cast.dlna.DLNAService"
+            android:exported="false"/> -->
+
+        <receiver android:name="com.github.tvbox.osc.receiver.SearchReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.content.movie.search.Action" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.github.tvbox.osc.receiver.CustomWebReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.content.movie.custom.web.Action" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <service
+            android:name="com.github.tvbox.osc.service.PlayService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <!-- autosize设计尺寸 -->
+        <meta-data
+            android:name="design_width_in_dp"
+            android:value="360" />
+        <meta-data
+            android:name="design_height_in_dp"
+            android:value="820" />
+ <!-- immersionbar沉浸状态兰适配华为（huawei）刘海屏 -->
+        <meta-data
+            android:name="android.notch_support"
+            android:value="true" /> <!-- immersionbar沉浸状态兰适配小米（xiaomi）刘海屏 -->
+        <meta-data
+            android:name="notch.config"
+            android:value="portrait|landscape" />
+    </application>
+
+</manifest>

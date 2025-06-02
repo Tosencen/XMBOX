@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="2dp"
+    android:layout_marginHorizontal="4dp"
+    android:background="@drawable/shape_setting_sort_normal"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:minHeight="48dp">
+
+    <TextView
+        android:id="@+id/tvWord"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:padding="@dimen/dp_10"
+        android:singleLine="true"
+        android:textSize="14sp"
+        android:clickable="false"
+        android:focusable="false"
+        android:duplicateParentState="true"
+        android:textColor="@color/text_foreground"/>
+</FrameLayout>

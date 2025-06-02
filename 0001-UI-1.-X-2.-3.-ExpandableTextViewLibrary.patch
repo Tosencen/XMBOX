@@ -1,0 +1,162 @@
+From d285a7bb797ffc932c518647841d5e643bdb22cd Mon Sep 17 00:00:00 2001
+From: XiaoRanLiu3119 <xiaoranliu3119@gmail.com>
+Date: Wed, 23 Apr 2025 10:59:52 +0800
+Subject: [PATCH] =?UTF-8?q?UI=E4=BC=98=E5=8C=96=EF=BC=9A1.=20=E4=BF=AE?=
+ =?UTF-8?q?=E6=94=B9=E6=94=B6=E8=97=8F=E9=A1=B5=E9=9D=A2=E5=8F=B3=E4=B8=8A?=
+ =?UTF-8?q?=E8=A7=92X=E5=9B=BE=E6=A0=87=E4=B8=BA=E5=88=A0=E9=99=A4?=
+ =?UTF-8?q?=E5=9B=BE=E6=A0=87=202.=20=E7=BB=9F=E4=B8=80=E6=89=80=E6=9C=89?=
+ =?UTF-8?q?=E5=BC=B9=E7=AA=97=E6=8C=89=E9=92=AE=E5=AE=BD=E5=BA=A6=203.=20?=
+ =?UTF-8?q?=E4=BF=AE=E5=A4=8D=E6=88=91=E7=9A=84=E9=A1=B5=E9=9D=A2=E9=A1=B6?=
+ =?UTF-8?q?=E9=83=A8=E6=98=BE=E7=A4=BAExpandableTextViewLibrary=E7=9A=84?=
+ =?UTF-8?q?=E9=97=AE=E9=A2=98?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .../main/java/com/github/tvbox/osc/ui/dialog/SubsTipDialog.java  | 9 ++++++++-
+ app/src/main/res/layout/activity_collect.xml                     | 2 +-
+ app/src/main/res/layout/dialog_confirm_m3.xml                    | 1 -
+ app/src/main/res/layout/dialog_input.xml                         | 1 -
+ app/src/main/res/layout/dialog_input_subscription_m3.xml         | 1 -
+ app/src/main/res/layout/dialog_live_api.xml                      | 1 -
+ app/src/main/res/layout/dialog_rename_m3.xml                     | 1 -
+ app/src/main/res/layout/dialog_tip_md3.xml                       | 1 -
+ app/src/main/res/layout/fragment_my.xml                          | 2 +-
+ app/src/main/res/values/strings.xml                              | 4 ++--
+ 10 files changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/app/src/main/java/com/github/tvbox/osc/ui/dialog/SubsTipDialog.java b/app/src/main/java/com/github/tvbox/osc/ui/dialog/SubsTipDialog.java
+index a9b21e2..2da5c06 100644
+--- a/app/src/main/java/com/github/tvbox/osc/ui/dialog/SubsTipDialog.java
++++ b/app/src/main/java/com/github/tvbox/osc/ui/dialog/SubsTipDialog.java
+@@ -37,7 +37,14 @@ public class SubsTipDialog extends BottomPopupView {
+         super.onCreate();
+         View rootView = getPopupImplView();
+ 
+-
++        // 根据当前模式设置对话框背景
++        if (Utils.isDarkTheme()) {
++            // 夜间模式使用深色背景
++            rootView.setBackgroundResource(R.drawable.bg_dialog_md3_dark);
++        } else {
++            // 白天模式使用默认背景
++            rootView.setBackgroundResource(R.drawable.bg_dialog_md3);
++        }
+ 
+         // 设置知道了按钮点击事件
+         rootView.findViewById(R.id.btn_cancel).setOnClickListener(view -> {
+diff --git a/app/src/main/res/layout/activity_collect.xml b/app/src/main/res/layout/activity_collect.xml
+index 85b608c..25f498b 100644
+--- a/app/src/main/res/layout/activity_collect.xml
++++ b/app/src/main/res/layout/activity_collect.xml
+@@ -12,7 +12,7 @@
+         android:layout_height="60dp"
+         app:title="收藏"
+         app:lineVisible="false"
+-        app:rightIcon="@drawable/ic_clear_m3"
++        app:rightIcon="@drawable/ic_delete_trash_m3"
+         android:background="?attr/colorSurface"
+         app:leftIcon="@drawable/ic_arrow_back_m3"
+         app:titleColor="?attr/colorOnSurface"
+diff --git a/app/src/main/res/layout/dialog_confirm_m3.xml b/app/src/main/res/layout/dialog_confirm_m3.xml
+index 4922010..e3a46b0 100644
+--- a/app/src/main/res/layout/dialog_confirm_m3.xml
++++ b/app/src/main/res/layout/dialog_confirm_m3.xml
+@@ -29,7 +29,6 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="24dp"
+         android:layout_marginBottom="16dp"
+-        android:paddingHorizontal="16dp"
+         android:gravity="center">
+ 
+         <com.google.android.material.button.MaterialButton
+diff --git a/app/src/main/res/layout/dialog_input.xml b/app/src/main/res/layout/dialog_input.xml
+index 5a578e7..30edb89 100644
+--- a/app/src/main/res/layout/dialog_input.xml
++++ b/app/src/main/res/layout/dialog_input.xml
+@@ -54,7 +54,6 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="24dp"
+         android:layout_marginBottom="16dp"
+-        android:paddingHorizontal="24dp"
+         android:gravity="center">
+ 
+         <com.google.android.material.button.MaterialButton
+diff --git a/app/src/main/res/layout/dialog_input_subscription_m3.xml b/app/src/main/res/layout/dialog_input_subscription_m3.xml
+index bcf5fd1..85cb56f 100644
+--- a/app/src/main/res/layout/dialog_input_subscription_m3.xml
++++ b/app/src/main/res/layout/dialog_input_subscription_m3.xml
+@@ -91,7 +91,6 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="24dp"
+         android:layout_marginBottom="16dp"
+-        android:paddingHorizontal="8dp"
+         android:gravity="center">
+ 
+         <com.google.android.material.button.MaterialButton
+diff --git a/app/src/main/res/layout/dialog_live_api.xml b/app/src/main/res/layout/dialog_live_api.xml
+index 0687134..62497b7 100644
+--- a/app/src/main/res/layout/dialog_live_api.xml
++++ b/app/src/main/res/layout/dialog_live_api.xml
+@@ -58,7 +58,6 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="24dp"
+         android:layout_marginBottom="16dp"
+-        android:paddingHorizontal="24dp"
+         android:gravity="center">
+ 
+         <com.google.android.material.button.MaterialButton
+diff --git a/app/src/main/res/layout/dialog_rename_m3.xml b/app/src/main/res/layout/dialog_rename_m3.xml
+index 94935c0..0d99ea0 100644
+--- a/app/src/main/res/layout/dialog_rename_m3.xml
++++ b/app/src/main/res/layout/dialog_rename_m3.xml
+@@ -51,7 +51,6 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="24dp"
+         android:layout_marginBottom="16dp"
+-        android:paddingHorizontal="24dp"
+         android:gravity="center">
+ 
+         <com.google.android.material.button.MaterialButton
+diff --git a/app/src/main/res/layout/dialog_tip_md3.xml b/app/src/main/res/layout/dialog_tip_md3.xml
+index 9832967..b1bb083 100644
+--- a/app/src/main/res/layout/dialog_tip_md3.xml
++++ b/app/src/main/res/layout/dialog_tip_md3.xml
+@@ -44,7 +44,6 @@
+         android:layout_height="wrap_content"
+         android:layout_marginTop="24dp"
+         android:layout_marginBottom="16dp"
+-        android:paddingHorizontal="24dp"
+         android:gravity="end">
+ 
+         <com.google.android.material.button.MaterialButton
+diff --git a/app/src/main/res/layout/fragment_my.xml b/app/src/main/res/layout/fragment_my.xml
+index 209ceff..5fc24c9 100644
+--- a/app/src/main/res/layout/fragment_my.xml
++++ b/app/src/main/res/layout/fragment_my.xml
+@@ -19,7 +19,7 @@
+             android:layout_gravity="bottom"
+             android:layout_marginLeft="20dp"
+             android:layout_marginBottom="4dp"
+-            android:text="@string/app_name"
++            android:text="XMBOX"
+             android:textColor="?attr/colorOnSurface"
+             android:textSize="22sp"
+             android:fontFamily="sans-serif-medium" />
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index d4e8514..3319574 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1,6 +1,6 @@
+-<resources>
++<resources xmlns:tools="http://schemas.android.com/tools">
+     <!--  app名称   -->
+-    <string name="app_name">XMBOX</string>
++    <string name="app_name" tools:override="true">XMBOX</string>
+ 
+     <string name="about">基于TVBox开发，代码开源，不收集或上传任何数据。
+         \n软件只提供展示功能，不参与任何订阅源的制作、收集和发布。
+-- 
+2.15.0
+

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3 复选框样式 -->
+    <style name="Widget.App.CheckBox.M3" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:buttonTint">@color/checkbox_tint_m3</item>
+    </style>
+</resources>

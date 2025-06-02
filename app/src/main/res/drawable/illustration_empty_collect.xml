@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="180dp"
+    android:viewportWidth="960"
+    android:viewportHeight="720">
+
+    <!-- 背景元素 -->
+    <path
+        android:fillColor="#1E1E1E"
+        android:pathData="M480,610C650,610 780,550 780,480C780,410 650,350 480,350C310,350 180,410 180,480C180,550 310,610 480,610Z"
+        android:fillAlpha="0.1"/>
+
+    <!-- 文档/收藏夹 -->
+    <path
+        android:fillColor="#AAAAAA"
+        android:pathData="M480,250L580,350H380L480,250Z"
+        android:fillAlpha="0.3"/>
+    <path
+        android:fillColor="#AAAAAA"
+        android:pathData="M380,350H580V500H380V350Z"
+        android:fillAlpha="0.2"/>
+    <path
+        android:fillColor="#CCCCCC"
+        android:pathData="M410,400H550V420H410V400Z"
+        android:fillAlpha="0.4"/>
+    <path
+        android:fillColor="#CCCCCC"
+        android:pathData="M410,440H550V460H410V440Z"
+        android:fillAlpha="0.4"/>
+
+    <!-- 人物 -->
+    <!-- 头部 -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M650,400m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0"/>
+
+    <!-- 身体 -->
+    <path
+        android:fillColor="#9E9E9E"
+        android:pathData="M650,450L650,550Q650,570 630,570L620,570Q600,570 600,550L600,500Q600,480 620,480L680,480Q700,480 700,500L700,550Q700,570 680,570L670,570Q650,570 650,550L650,450Z"
+        android:fillAlpha="0.7"/>
+
+    <!-- 手臂 - 指向文档 -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M620,480L520,420Q510,415 515,405L520,400Q525,390 535,395L635,455Q645,460 635,470L630,475Q620,480 620,480Z"/>
+
+    <!-- 腿部 -->
+    <path
+        android:fillColor="#424242"
+        android:pathData="M630,570L630,640Q630,650 620,650L610,650Q600,650 600,640L600,570L630,570Z"/>
+    <path
+        android:fillColor="#424242"
+        android:pathData="M670,570L670,640Q670,650 660,650L650,650Q640,650 640,640L640,570L670,570Z"/>
+
+    <!-- 思考泡泡 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M700,350m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0"
+        android:fillAlpha="0.3"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M730,320m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0"
+        android:fillAlpha="0.2"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M750,290m-10,0a10,10 0,1 1,20 0a10,10 0,1 1,-20 0"
+        android:fillAlpha="0.1"/>
+
+    <!-- 星星/闪光效果 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M400,300L410,310L400,320L390,310L400,300Z"
+        android:fillAlpha="0.5"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M560,280L570,290L560,300L550,290L560,280Z"
+        android:fillAlpha="0.5"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M480,200L490,210L480,220L470,210L480,200Z"
+        android:fillAlpha="0.5"/>
+
+    <!-- 收藏图标 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M480,380m-25,0a25,25 0,1 1,50 0a25,25 0,1 1,-50 0"
+        android:fillAlpha="0.1"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M480,370L485,380L495,382L488,390L490,400L480,395L470,400L472,390L465,382L475,380L480,370Z"
+        android:fillAlpha="0.5"/>
+</vector>
