@@ -108,21 +108,21 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
     }
 
     /**
-     * 初始化磨砂模糊效果
+     * 初始化磨砂毛玻璃效果 - 类似logo的高级质感
      */
     private fun initBlurEffect() {
         try {
             val blurView = findViewById<BlurView>(com.xmbox.app.R.id.blur_container)
             blurView?.let {
-                // 设置模糊参数
-                it.setBlurRadius(15f) // 模糊半径
-                it.setScaleFactor(0.25f) // 缩放因子，提高性能
+                // 设置磨砂毛玻璃参数 - 参考logo效果
+                it.setBlurRadius(20f) // 增加模糊半径，更强的磨砂效果
+                it.setScaleFactor(0.3f) // 稍微提高缩放因子，保持性能
                 it.setBlurEnabled(true) // 启用模糊效果
 
-                android.util.Log.d("MainActivity", "磨砂模糊效果已初始化")
+                android.util.Log.d("MainActivity", "磨砂毛玻璃效果已初始化 - logo风格")
             }
         } catch (e: Exception) {
-            android.util.Log.w("MainActivity", "磨砂模糊效果初始化失败", e)
+            android.util.Log.w("MainActivity", "磨砂毛玻璃效果初始化失败", e)
         }
     }
 

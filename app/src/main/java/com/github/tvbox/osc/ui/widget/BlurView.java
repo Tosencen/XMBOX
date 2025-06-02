@@ -235,18 +235,23 @@ public class BlurView extends FrameLayout {
     }
 
     private Bitmap applySoftwareBlur(Bitmap original) {
-        // 简单的软件模糊实现（性能较低，但兼容性好）
+        // 高质量软件模糊实现 - 模拟毛玻璃效果
         try {
             int width = original.getWidth();
             int height = original.getHeight();
             int[] pixels = new int[width * height];
             original.getPixels(pixels, 0, width, 0, 0, width, height);
 
-            // 简单的盒式模糊
-            int radius = (int) Math.max(1, blurRadius * scaleFactor);
-            for (int i = 0; i < 3; i++) { // 多次应用提高效果
-                pixels = boxBlur(pixels, width, height, radius);
+            // 增强的高斯模糊，模拟毛玻璃效果
+            int radius = (int) Math.max(2, blurRadius * scaleFactor);
+
+            // 多次应用不同强度的模糊，营造毛玻璃层次感
+            for (int i = 0; i < 2; i++) {
+                pixels = gaussianBlur(pixels, width, height, radius);
             }
+
+            // 添加轻微的噪点，增强毛玻璃质感
+            pixels = addGlassTexture(pixels, width, height);
 
             Bitmap result = Bitmap.createBitmap(width, height, original.getConfig());
             result.setPixels(pixels, 0, width, 0, 0, width, height);
@@ -285,6 +290,101 @@ public class BlurView extends FrameLayout {
                                        ((g / count) << 8) |
                                        (b / count);
             }
+        }
+
+        return result;
+    }
+
+    /**
+     * 高斯模糊算法 - 更好的毛玻璃效果
+     */
+    private int[] gaussianBlur(int[] pixels, int width, int height, int radius) {
+        int[] result = new int[pixels.length];
+
+        // 水平方向模糊
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int r = 0, g = 0, b = 0, a = 0;
+                int count = 0;
+
+                for (int dx = -radius; dx <= radius; dx++) {
+                    int nx = Math.max(0, Math.min(width - 1, x + dx));
+                    int pixel = pixels[y * width + nx];
+
+                    // 高斯权重（简化版）
+                    float weight = 1.0f - Math.abs(dx) / (float)(radius + 1);
+
+                    a += ((pixel >> 24) & 0xFF) * weight;
+                    r += ((pixel >> 16) & 0xFF) * weight;
+                    g += ((pixel >> 8) & 0xFF) * weight;
+                    b += (pixel & 0xFF) * weight;
+                    count += weight;
+                }
+
+                result[y * width + x] = ((int)(a / count) << 24) |
+                                       ((int)(r / count) << 16) |
+                                       ((int)(g / count) << 8) |
+                                       (int)(b / count);
+            }
+        }
+
+        // 垂直方向模糊
+        int[] finalResult = new int[pixels.length];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int r = 0, g = 0, b = 0, a = 0;
+                int count = 0;
+
+                for (int dy = -radius; dy <= radius; dy++) {
+                    int ny = Math.max(0, Math.min(height - 1, y + dy));
+                    int pixel = result[ny * width + x];
+
+                    // 高斯权重（简化版）
+                    float weight = 1.0f - Math.abs(dy) / (float)(radius + 1);
+
+                    a += ((pixel >> 24) & 0xFF) * weight;
+                    r += ((pixel >> 16) & 0xFF) * weight;
+                    g += ((pixel >> 8) & 0xFF) * weight;
+                    b += (pixel & 0xFF) * weight;
+                    count += weight;
+                }
+
+                finalResult[y * width + x] = ((int)(a / count) << 24) |
+                                            ((int)(r / count) << 16) |
+                                            ((int)(g / count) << 8) |
+                                            (int)(b / count);
+            }
+        }
+
+        return finalResult;
+    }
+
+    /**
+     * 添加毛玻璃纹理效果
+     */
+    private int[] addGlassTexture(int[] pixels, int width, int height) {
+        int[] result = new int[pixels.length];
+
+        for (int i = 0; i < pixels.length; i++) {
+            int pixel = pixels[i];
+            int a = (pixel >> 24) & 0xFF;
+            int r = (pixel >> 16) & 0xFF;
+            int g = (pixel >> 8) & 0xFF;
+            int b = pixel & 0xFF;
+
+            // 添加轻微的随机噪点，模拟毛玻璃纹理
+            int x = i % width;
+            int y = i / width;
+
+            // 使用位置生成伪随机噪点
+            int noise = ((x * 7 + y * 13) % 32) - 16; // -16到15的噪点
+
+            // 应用轻微的噪点
+            r = Math.max(0, Math.min(255, r + noise / 8));
+            g = Math.max(0, Math.min(255, g + noise / 8));
+            b = Math.max(0, Math.min(255, b + noise / 8));
+
+            result[i] = (a << 24) | (r << 16) | (g << 8) | b;
         }
 
         return result;
