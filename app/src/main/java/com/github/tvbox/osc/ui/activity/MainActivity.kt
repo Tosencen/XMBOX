@@ -1,5 +1,7 @@
 package com.github.tvbox.osc.ui.activity
 
+import android.content.Intent
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
@@ -20,6 +22,7 @@ import com.github.tvbox.osc.ui.widget.BlurView
 import com.github.tvbox.osc.util.HawkConfig
 import com.github.tvbox.osc.util.AppUpdateManager
 import com.github.tvbox.osc.util.MD3ToastUtils
+import com.github.tvbox.osc.api.ApiConfig
 import com.orhanobut.hawk.Hawk
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -180,10 +183,29 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
                 homeFragment.dataInitOk = false
                 homeFragment.jarInitOk = false
                 homeFragment.onlyConfigChanged = false // 强制完全重新加载
-                // 重新加载数据
-                homeFragment.initData()
+
+                // 重新加载配置和数据
+                reloadConfigAndData(homeFragment)
             }
         }
+    }
+
+    /**
+     * 重新加载配置和数据
+     * 借鉴TVBoxOS-Mobile的简洁策略：直接重启Activity
+     */
+    private fun reloadConfigAndData(homeFragment: HomeFragment) {
+        // 借鉴TVBoxOS-Mobile的做法：直接重启MainActivity
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        val bundle = Bundle()
+        bundle.putBoolean(IntentKey.CACHE_CONFIG_CHANGED, true)
+        intent.putExtras(bundle)
+        startActivity(intent)
+
+        // 禁用Activity切换动画，直接显示新页面
+        overridePendingTransition(0, 0)
+        finish()
     }
 
     override fun onDestroy() {

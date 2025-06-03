@@ -252,11 +252,35 @@ public class App extends MultiDexApplication {
         }
 
         try {
+            // 初始化新的内存泄漏修复管理器
+            com.github.tvbox.osc.util.MemoryLeakFixManager.initialize(App.this);
+            LOG.i("App", "内存泄漏修复管理器初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "内存泄漏修复管理器初始化失败: " + e.getMessage());
+        }
+
+        try {
             // 初始化应用生命周期管理器
             com.github.tvbox.osc.util.AppLifecycleManager.getInstance().init(this);
             LOG.i("App", "应用生命周期管理器初始化成功");
         } catch (Exception e) {
             LOG.e("App", "应用生命周期管理器初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化简化内存管理器（借鉴TVBoxOS-Mobile策略）
+            com.github.tvbox.osc.util.SimpleMemoryManager.getInstance().init(this);
+            LOG.i("App", "简化内存管理器初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "简化内存管理器初始化失败: " + e.getMessage());
+        }
+
+        try {
+            // 初始化内存泄漏启动器（统一管理所有内存泄漏修复组件）
+            com.github.tvbox.osc.util.MemoryLeakBootstrap.initialize(this);
+            LOG.i("App", "内存泄漏启动器初始化成功");
+        } catch (Exception e) {
+            LOG.e("App", "内存泄漏启动器初始化失败: " + e.getMessage());
         }
 
         LOG.i("App", "应用非关键组件初始化完成");
@@ -367,6 +391,22 @@ public class App extends MultiDexApplication {
             LOG.e("App", "内存泄漏检查器清理失败: " + e.getMessage());
         }
 
+        // 清理Activity泄漏检测器
+        try {
+            com.github.tvbox.osc.util.ActivityLeakDetector.cleanup();
+            LOG.i("App", "Activity泄漏检测器清理完成");
+        } catch (Exception e) {
+            LOG.e("App", "Activity泄漏检测器清理失败: " + e.getMessage());
+        }
+
+        // 立即修复所有内存泄漏（包括EventBus和OkGoHelper）
+        try {
+            com.github.tvbox.osc.util.MemoryLeakFixer.fixAllLeaksImmediate();
+            LOG.i("App", "立即内存泄漏修复完成");
+        } catch (Exception e) {
+            LOG.e("App", "立即内存泄漏修复失败: " + e.getMessage());
+        }
+
         // 清理内存泄漏修复器
         try {
             com.github.tvbox.osc.util.MemoryLeakFixer.cleanup();
@@ -375,12 +415,44 @@ public class App extends MultiDexApplication {
             LOG.e("App", "内存泄漏修复器清理失败: " + e.getMessage());
         }
 
+        // 清理LoadSir全局引用
+        try {
+            com.github.tvbox.osc.util.LoadSirLeakFixer.clearGlobalLoadSirReferences();
+            LOG.i("App", "LoadSir全局引用清理完成");
+        } catch (Exception e) {
+            LOG.e("App", "LoadSir全局引用清理失败: " + e.getMessage());
+        }
+
+        // 清理新的内存泄漏修复管理器
+        try {
+            com.github.tvbox.osc.util.MemoryLeakFixManager.performComprehensiveCleanup();
+            LOG.i("App", "内存泄漏修复管理器清理完成");
+        } catch (Exception e) {
+            LOG.e("App", "内存泄漏修复管理器清理失败: " + e.getMessage());
+        }
+
         // 清理应用生命周期管理器
         try {
             com.github.tvbox.osc.util.AppLifecycleManager.getInstance().cleanup();
             LOG.i("App", "应用生命周期管理器清理完成");
         } catch (Exception e) {
             LOG.e("App", "应用生命周期管理器清理失败: " + e.getMessage());
+        }
+
+        // 清理简化内存管理器
+        try {
+            com.github.tvbox.osc.util.SimpleMemoryManager.getInstance().cleanup();
+            LOG.i("App", "简化内存管理器清理完成");
+        } catch (Exception e) {
+            LOG.e("App", "简化内存管理器清理失败: " + e.getMessage());
+        }
+
+        // 清理内存泄漏启动器
+        try {
+            com.github.tvbox.osc.util.MemoryLeakBootstrap.cleanup();
+            LOG.i("App", "内存泄漏启动器清理完成");
+        } catch (Exception e) {
+            LOG.e("App", "内存泄漏启动器清理失败: " + e.getMessage());
         }
 
         // 强制垃圾回收
@@ -406,8 +478,8 @@ public class App extends MultiDexApplication {
         LOG.w("App", "系统内存不足，开始释放资源");
         // 清理内存
         com.github.tvbox.osc.util.MemoryOptimizer.cleanMemory();
-        // 修复内存泄漏
-        com.github.tvbox.osc.util.MemoryLeakFixer.fixAllLeaks();
+        // 立即修复内存泄漏
+        com.github.tvbox.osc.util.MemoryLeakFixer.fixAllLeaksImmediate();
     }
 
     /**

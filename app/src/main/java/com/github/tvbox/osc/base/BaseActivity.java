@@ -76,6 +76,9 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         // 注册Activity到内存泄漏检查器
         com.github.tvbox.osc.util.MemoryLeakChecker.registerActivity(this);
 
+        // 注册Activity到新的泄漏检测器
+        com.github.tvbox.osc.util.ActivityLeakDetector.registerActivity(this);
+
         initStatusBar();
         initTitleBar();
         init();
@@ -270,6 +273,9 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
         // 检查Activity内存泄漏
         com.github.tvbox.osc.util.MemoryLeakChecker.checkActivityLeak(this);
+
+        // 通知新的泄漏检测器Activity已销毁
+        com.github.tvbox.osc.util.ActivityLeakDetector.onActivityDestroyed(this);
 
         // 监控内存使用情况
         com.github.tvbox.osc.util.MemoryLeakPreventer.monitorMemoryUsage("BaseActivity.onDestroy");

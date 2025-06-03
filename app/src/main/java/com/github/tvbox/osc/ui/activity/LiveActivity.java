@@ -318,12 +318,90 @@ public class LiveActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        mHandler.removeCallbacksAndMessages(null);
-        super.onDestroy();
+        // 清理Handler消息和回调
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
+        }
+
+        // 清理CountDownTimer
+        try {
+            if (countDownTimer != null) {
+                countDownTimer.cancel();
+                countDownTimer = null;
+            }
+            if (countDownTimer3 != null) {
+                countDownTimer3.cancel();
+                countDownTimer3 = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 清理弹窗
+        try {
+            if (mSettingRightDialog != null && mSettingRightDialog.isShow()) {
+                mSettingRightDialog.dismiss();
+                mSettingRightDialog = null;
+            }
+            if (mSettingBottomDialog != null && mSettingBottomDialog.isShow()) {
+                mSettingBottomDialog.dismiss();
+                mSettingBottomDialog = null;
+            }
+            if (mAllChannelRightDialog != null && mAllChannelRightDialog.isShow()) {
+                mAllChannelRightDialog.dismiss();
+                mAllChannelRightDialog = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 清理VideoView
         if (mVideoView != null) {
             mVideoView.release();
             mVideoView = null;
         }
+
+        // 清理适配器引用
+        try {
+            if (mChannelGroupView != null) {
+                mChannelGroupView.setAdapter(null);
+            }
+            if (mLiveChannelView != null) {
+                mLiveChannelView.setAdapter(null);
+            }
+            if (mSettingGroupView != null) {
+                mSettingGroupView.setAdapter(null);
+            }
+            if (mSettingItemView != null) {
+                mSettingItemView.setAdapter(null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 清理数据集合
+        try {
+            if (liveChannelGroupList != null) {
+                liveChannelGroupList.clear();
+            }
+            if (liveSettingGroupList != null) {
+                liveSettingGroupList.clear();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 清理其他引用
+        liveChannelGroupAdapter = null;
+        liveChannelItemAdapter = null;
+        liveSettingGroupAdapter = null;
+        liveSettingItemAdapter = null;
+        currentLiveChannelItem = null;
+        mPlayerTitleView = null;
+        channel_Name = null;
+
+        super.onDestroy();
     }
 
     private void showChannelList() {

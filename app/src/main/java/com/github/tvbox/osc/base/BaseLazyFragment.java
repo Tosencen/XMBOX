@@ -225,6 +225,17 @@ public abstract class BaseLazyFragment extends Fragment implements CustomAdapt {
 
     @Override
     public void onDestroyView() {
+        try {
+            // 使用专门的LoadSir内存泄漏修复工具
+            if (mLoadService != null) {
+                com.github.tvbox.osc.util.LoadSirLeakFixer.fixLoadServiceLeak(mLoadService);
+                mLoadService = null;
+            }
+            android.util.Log.d("BaseLazyFragment", "LoadSir引用已清理");
+        } catch (Exception e) {
+            android.util.Log.e("BaseLazyFragment", "清理LoadSir引用失败: " + e.getMessage());
+        }
+
         // 预防内存泄漏
         com.github.tvbox.osc.util.MemoryLeakPreventer.cleanupFragment(this);
 
@@ -234,6 +245,8 @@ public abstract class BaseLazyFragment extends Fragment implements CustomAdapt {
         // 监控内存使用情况
         com.github.tvbox.osc.util.MemoryLeakPreventer.monitorMemoryUsage("BaseLazyFragment.onDestroyView");
     }
+
+
 
     @SuppressWarnings("unchecked")
     public <T extends View> T findViewById(@IdRes int viewId) {
@@ -312,5 +325,17 @@ public abstract class BaseLazyFragment extends Fragment implements CustomAdapt {
         return true;
     }
 
+    @Override
+    public void onDetach() {
+        try {
+            // 清理Context和Activity引用
+            mContext = null;
+            mActivity = null;
+            android.util.Log.d("BaseLazyFragment", "Context和Activity引用已清理");
+        } catch (Exception e) {
+            android.util.Log.e("BaseLazyFragment", "清理引用失败: " + e.getMessage());
+        }
 
+        super.onDetach();
+    }
 }

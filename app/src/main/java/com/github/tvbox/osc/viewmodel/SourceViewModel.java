@@ -668,17 +668,36 @@ public class SourceViewModel extends ViewModel {
             spThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    Spider sp = ApiConfig.get().getCSP(sourceBean);
                     try {
-                        String json = sp.playerContent(playFlag, url, ApiConfig.get().getVipParseFlags());
-                        JSONObject result = new JSONObject(json);
-                        result.put("key", url);
-                        result.put("proKey", progressKey);
-                        result.put("subtKey", subtitleKey);
-                        if (!result.has("flag"))
-                            result.put("flag", playFlag);
-                        playResult.postValue(result);
+                        // 使用增强的播放内容获取助手，借鉴TVBoxOS-Mobile的优秀实现
+                        String json = com.github.tvbox.osc.util.PlayerContentHelper.getPlayerContentWithRetry(
+                            sourceBean, playFlag, url, ApiConfig.get().getVipParseFlags());
+
+                        if (!TextUtils.isEmpty(json)) {
+                            // 清理播放内容
+                            json = com.github.tvbox.osc.util.PlayerContentHelper.cleanPlayerContent(json);
+
+                            JSONObject result = new JSONObject(json);
+                            result.put("key", url);
+                            result.put("proKey", progressKey);
+                            result.put("subtKey", subtitleKey);
+                            if (!result.has("flag"))
+                                result.put("flag", playFlag);
+
+                            // 处理播放URL
+                            if (result.has("url")) {
+                                String playUrl = result.getString("url");
+                                playUrl = com.github.tvbox.osc.util.PlayerContentHelper.processPlayUrl(playUrl, sourceBean.getKey());
+                                result.put("url", playUrl);
+                            }
+
+                            playResult.postValue(result);
+                        } else {
+                            LOG.e("SourceViewModel", "获取播放内容失败，返回空内容");
+                            playResult.postValue(null);
+                        }
                     } catch (Throwable th) {
+                        LOG.e("SourceViewModel", "播放内容处理异常: " + th.getMessage());
                         th.printStackTrace();
                         playResult.postValue(null);
                     }

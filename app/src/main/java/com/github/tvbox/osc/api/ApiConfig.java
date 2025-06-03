@@ -9,6 +9,7 @@ import android.util.Base64;
 import com.github.catvod.crawler.JarLoader;
 import com.github.catvod.crawler.JsLoader;
 import com.github.catvod.crawler.Spider;
+import com.github.catvod.crawler.SpiderNull;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.bean.LiveChannelGroup;
 import com.github.tvbox.osc.bean.IJKCode;
@@ -879,6 +880,10 @@ public class ApiConfig {
         return content.replace("clan://", fix);
     }
 
+    /**
+     * 修复内容中的相对路径问题
+     * 借鉴TVBoxOS-Mobile的实现，增强图片URL处理
+     */
     String fixContentPath(String url, String content) {
         if (content.contains("\"./")) {
             if(!url.startsWith("http") && !url.startsWith("clan://")){
@@ -888,5 +893,41 @@ public class ApiConfig {
             content = content.replace("./", url.substring(0,url.lastIndexOf("/") + 1));
         }
         return content;
+    }
+
+    /**
+     * 增强的Spider获取方法
+     * 借鉴TVBoxOS-Mobile的容错机制
+     */
+    public Spider getCSPWithRetry(SourceBean sourceBean) {
+        try {
+            Spider spider = getCSP(sourceBean);
+            if (spider != null) {
+                return spider;
+            }
+        } catch (Exception e) {
+            LOG.e("ApiConfig", "首次获取Spider失败，尝试重新加载: " + e.getMessage());
+        }
+
+        // 重试机制
+        try {
+            Thread.sleep(100); // 短暂等待
+            return getCSP(sourceBean);
+        } catch (Exception e) {
+            LOG.e("ApiConfig", "重试获取Spider失败: " + e.getMessage());
+            return new SpiderNull();
+        }
+    }
+
+    /**
+     * 检查并替换代理URL
+     * 借鉴TVBoxOS-Mobile的实现
+     */
+    public static String checkReplaceProxy(String urlOri) {
+        if (!TextUtils.isEmpty(urlOri) && urlOri.startsWith("proxy://")) {
+            return urlOri.replace("proxy://", ControlManager.get().getAddress(true) + "proxy?");
+        } else {
+            return urlOri;
+        }
     }
 }

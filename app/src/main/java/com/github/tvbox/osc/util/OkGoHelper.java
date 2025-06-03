@@ -339,6 +339,47 @@ public class OkGoHelper {
         isCleaningUp = true;
 
         try {
+            LOG.i("OkGoHelper", "开始清理OkHttp客户端资源");
+
+            // 清理默认客户端
+            if (defaultClient != null) {
+                try {
+                    // 关闭连接池
+                    defaultClient.connectionPool().evictAll();
+                    // 关闭缓存
+                    if (defaultClient.cache() != null) {
+                        defaultClient.cache().close();
+                    }
+                    // 关闭调度器
+                    defaultClient.dispatcher().executorService().shutdown();
+                    defaultClient = null;
+                    LOG.i("OkGoHelper", "默认客户端已清理");
+                } catch (Exception e) {
+                    LOG.w("OkGoHelper", "清理默认客户端失败: " + e.getMessage());
+                }
+            }
+
+            // 清理无重定向客户端
+            if (noRedirectClient != null) {
+                try {
+                    noRedirectClient.connectionPool().evictAll();
+                    if (noRedirectClient.cache() != null) {
+                        noRedirectClient.cache().close();
+                    }
+                    noRedirectClient.dispatcher().executorService().shutdown();
+                    noRedirectClient = null;
+                    LOG.i("OkGoHelper", "无重定向客户端已清理");
+                } catch (Exception e) {
+                    LOG.w("OkGoHelper", "清理无重定向客户端失败: " + e.getMessage());
+                }
+            }
+
+            LOG.i("OkGoHelper", "OkHttp客户端资源清理完成");
+        } catch (Exception e) {
+            LOG.e("OkGoHelper", "清理OkHttp客户端资源失败: " + e.getMessage());
+        }
+
+        try {
             LOG.i("OkGoHelper", "开始清理OkGoHelper资源");
 
             // 取消所有OkGo请求

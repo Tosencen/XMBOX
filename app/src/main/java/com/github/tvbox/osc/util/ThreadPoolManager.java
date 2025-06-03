@@ -230,6 +230,8 @@ public class ThreadPoolManager {
         return false;
     }
 
+
+
     /**
      * 在主线程执行任务
      */
@@ -253,6 +255,32 @@ public class ThreadPoolManager {
     }
 
     /**
+     * 在IO线程池延迟执行任务
+     * @param runnable 要执行的任务
+     * @param delayMillis 延迟时间（毫秒）
+     * @return 任务ID，可用于取消任务
+     */
+    public static int executeIODelayed(Runnable runnable, long delayMillis) {
+        if (runnable != null) {
+            Runnable delayedTask = () -> {
+                try {
+                    Thread.sleep(delayMillis);
+                    runnable.run();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                    android.util.Log.e("ThreadPoolManager", "延迟任务执行异常: " + e.getMessage());
+                }
+            };
+            Future<?> future = getIOThreadPool().submit(delayedTask);
+            int taskId = future.hashCode();
+            TASK_MAP.put(taskId, future);
+            return taskId;
+        }
+        return -1;
+    }
+
+    /**
      * 获取主线程Handler
      */
     public static Handler getMainHandler() {
@@ -264,6 +292,32 @@ public class ThreadPoolManager {
             }
         }
         return sMainHandler;
+    }
+
+    /**
+     * 清理已完成的任务，释放内存
+     */
+    public static void purgeCompletedTasks() {
+        try {
+            // 清理已完成的任务引用
+            TASK_MAP.entrySet().removeIf(entry -> {
+                Future<?> future = entry.getValue();
+                return future == null || future.isDone() || future.isCancelled();
+            });
+
+            // 清理线程池中已完成的任务
+            if (sIOThreadPool != null && !sIOThreadPool.isShutdown()) {
+                sIOThreadPool.purge();
+            }
+            if (sComputeThreadPool != null && !sComputeThreadPool.isShutdown()) {
+                sComputeThreadPool.purge();
+            }
+            if (sPriorityThreadPool != null && !sPriorityThreadPool.isShutdown()) {
+                sPriorityThreadPool.purge();
+            }
+        } catch (Exception e) {
+            android.util.Log.e("ThreadPoolManager", "清理已完成任务时发生错误: " + e.getMessage());
+        }
     }
 
     /**

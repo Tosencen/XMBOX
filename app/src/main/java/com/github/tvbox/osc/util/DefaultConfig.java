@@ -173,11 +173,45 @@ public class DefaultConfig {
     }
 
     public static String checkReplaceProxy(String urlOri) {
-        // 完全按照TVBoxOS-Mobile的实现方式
-        if (!TextUtils.isEmpty(urlOri) && urlOri.startsWith("proxy://")) {
-            return urlOri.replace("proxy://", ControlManager.get().getAddress(true) + "proxy?");
-        } else {
-            return urlOri;  // 直接返回原始URL，不做任何处理
+        // 添加调试日志
+        android.util.Log.d("DefaultConfig", "checkReplaceProxy输入: " + urlOri);
+
+        if (TextUtils.isEmpty(urlOri)) {
+            return urlOri;
+        }
+
+        // 参考TVBoxOS-Mobile的实现：对于非proxy://协议的URL，直接返回
+        if (!urlOri.startsWith("proxy://")) {
+            android.util.Log.d("DefaultConfig", "非proxy协议，直接返回: " + urlOri);
+            return urlOri;
+        }
+
+        // 处理proxy://协议
+        try {
+            String serverAddress = ControlManager.get().getAddress(true);
+            android.util.Log.d("DefaultConfig", "服务器地址: " + serverAddress);
+
+            // 检查服务器地址是否有效
+            if (serverAddress.contains("0.0.0.0")) {
+                android.util.Log.w("DefaultConfig", "服务器地址无效，跳过proxy处理: " + serverAddress);
+                // 如果服务器地址无效，尝试直接使用原始URL（去掉proxy://前缀）
+                String directUrl = urlOri.substring(8); // 去掉"proxy://"
+                android.util.Log.d("DefaultConfig", "使用直接URL: " + directUrl);
+                return directUrl;
+            }
+
+            String result = urlOri.replace("proxy://", serverAddress + "proxy?");
+            android.util.Log.d("DefaultConfig", "proxy://处理结果: " + result);
+            return result;
+        } catch (Exception e) {
+            android.util.Log.e("DefaultConfig", "处理proxy://时发生错误: " + e.getMessage());
+            // 发生错误时，尝试直接使用原始URL（去掉proxy://前缀）
+            if (urlOri.startsWith("proxy://")) {
+                String directUrl = urlOri.substring(8);
+                android.util.Log.d("DefaultConfig", "错误fallback，使用直接URL: " + directUrl);
+                return directUrl;
+            }
+            return urlOri;
         }
     }
 
@@ -191,7 +225,20 @@ public class DefaultConfig {
             return url;
         }
 
+        android.util.Log.d("DefaultConfig", "processImageUrl输入: " + url);
+
         try {
+            // 处理特殊的图片URL格式，如: "url@Referer=xxx@User-Agent=xxx"
+            if (url.contains("@Referer=") || url.contains("@User-Agent=")) {
+                // 提取@符号前的实际图片URL
+                int atIndex = url.indexOf("@");
+                if (atIndex > 0) {
+                    String cleanUrl = url.substring(0, atIndex);
+                    android.util.Log.d("DefaultConfig", "清理后的图片URL: " + cleanUrl);
+                    url = cleanUrl;
+                }
+            }
+
             // 处理相对协议的URL
             if (url.startsWith("//")) {
                 url = "https:" + url;
@@ -202,6 +249,7 @@ public class DefaultConfig {
                 url = UrlUtil.convertToPunycode(url);
             }
 
+            android.util.Log.d("DefaultConfig", "processImageUrl输出: " + url);
             return url;
         } catch (Exception e) {
             android.util.Log.e("DefaultConfig", "处理图片URL时发生错误: " + e.getMessage());

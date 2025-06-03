@@ -71,6 +71,42 @@ public class VersionHistoryDialog extends BottomPopupView {
     private List<VersionInfo> getVersionHistory() {
         List<VersionInfo> versionInfoList = new ArrayList<>();
 
+        // v2.0.8
+        VersionInfo v208 = new VersionInfo();
+        v208.setVersion("v2.0.8");
+        v208.setDate("2025-01-20");
+        List<String> features208 = new ArrayList<>();
+        features208.add("🎯 修复了切换数据源后仍显示\"上次看到\"弹窗的问题");
+        features208.add("🚀 借鉴TVBoxOS-Mobile策略，优化数据源切换流程");
+        features208.add("✨ 禁用数据源切换时的页面动画，直接显示新内容");
+        features208.add("🧠 全面重构内存管理，添加简化版内存管理器");
+        features208.add("🔧 修复多个内存泄漏问题，提升应用稳定性");
+        features208.add("📱 优化Activity生命周期管理，减少内存占用");
+        features208.add("⚡ 改进应用启动和切换性能");
+        features208.add("🎨 优化UI响应速度和流畅度");
+        features208.add("🔒 增强应用安全性和稳定性");
+        features208.add("📺 改进视频播放体验和稳定性");
+        v208.setFeatures(features208);
+        versionInfoList.add(v208);
+
+        // v2.0.7
+        VersionInfo v207 = new VersionInfo();
+        v207.setVersion("v2.0.7");
+        v207.setDate("2025-01-15");
+        List<String> features207 = new ArrayList<>();
+        features207.add("🛠️ 修复了LiveActivity中的多个内存泄漏问题");
+        features207.add("🔄 优化了订阅源切换后首页数据更新逻辑");
+        features207.add("💾 添加了综合内存管理器，自动检测和修复内存泄漏");
+        features207.add("🎮 改进了播放器相关的内存管理");
+        features207.add("📊 添加了内存使用监控和报告功能");
+        features207.add("🧹 增强了WebView、Handler、BroadcastReceiver的清理机制");
+        features207.add("⚙️ 优化了应用生命周期管理");
+        features207.add("🚀 提升应用整体性能和响应速度");
+        features207.add("🔧 修复了多个潜在的崩溃问题");
+        features207.add("🎯 优化数据源管理和加载机制");
+        v207.setFeatures(features207);
+        versionInfoList.add(v207);
+
         // v2.0.6
         VersionInfo v206 = new VersionInfo();
         v206.setVersion("v2.0.6");

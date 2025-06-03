@@ -86,6 +86,13 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
     private var lastClickTime = 0L
 
     override fun init() {
+        // 注册Fragment到内存泄漏修复管理器
+        try {
+            com.github.tvbox.osc.util.MemoryLeakFixManager.registerFragment(this)
+        } catch (e: Exception) {
+            android.util.Log.w("HomeFragment", "注册Fragment到内存泄漏修复管理器失败: ${e.message}")
+        }
+
         ControlManager.get().startServer()
         mBinding.tvName.setOnClickListener {
             // 防止重复点击
@@ -337,7 +344,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                                     ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                                     jarInitOk = true
                                     ThreadPoolManager.executeMainDelayed({
-                                        if (!onlyConfigChanged) {
+                                        // 只在应用首次启动时显示"上次看到"弹窗，切换数据源时不显示
+                                        if (!onlyConfigChanged && !isDataSourceSwitching()) {
                                             queryHistory()
                                         }
                                         initData()
@@ -374,7 +382,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                                     ThreadPoolManager.getMainHandler().removeCallbacks(timeoutRunnable)
                                     jarInitOk = true
                                     ThreadPoolManager.executeMainDelayed({
-                                        if (!onlyConfigChanged) {
+                                        // 只在应用首次启动时显示"上次看到"弹窗，切换数据源时不显示
+                                        if (!onlyConfigChanged && !isDataSourceSwitching()) {
                                             queryHistory()
                                         }
                                         initData()
@@ -537,12 +546,20 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                 }
 
                 //设置ViewPager2和TabLayout的联动
-                TabLayoutMediator(mBinding.tabLayout, mBinding.mViewPager) { tab, position ->
+                // 先清理之前的TabLayoutMediator
+                tabLayoutMediator?.detach()
+                tabLayoutMediator = TabLayoutMediator(mBinding.tabLayout, mBinding.mViewPager) { tab, position ->
                     tab.text = mSortDataList[position].name
-                }.attach()
+                }
+                tabLayoutMediator?.attach()
 
                 // 减少ViewPager2的预加载数量，默认是2
                 mBinding.mViewPager.offscreenPageLimit = 1
+
+                // 禁用ViewPager2的页面切换动画，直接显示内容
+                mBinding.mViewPager.isUserInputEnabled = true // 保持用户可以滑动
+                // 设置当前页面为第一页，不使用动画
+                mBinding.mViewPager.setCurrentItem(0, false)
             }
         }
     }
@@ -630,42 +647,116 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
         }
     }
 
-    private fun refreshHomeSources() {
-        // 切换数据源时使用配置变更模式
-        onlyConfigChanged = true
-        dataInitOk = false
-        jarInitOk = false
-
-        // 确保订阅源区域可见并更新名称
-        mBinding.nameContainer.visibility = View.VISIBLE
-        val home = ApiConfig.get().homeSourceBean
-        if (home != null && !home.name.isNullOrEmpty()) {
-            mBinding.tvName.text = home.name
-            mBinding.tvName.postDelayed({ mBinding.tvName.isSelected = true }, 2000)
-        } else {
-            mBinding.tvName.text = "请选择订阅源"
+    /**
+     * 检测是否正在切换数据源
+     * 通过检查MainActivity的Intent参数来判断
+     */
+    private fun isDataSourceSwitching(): Boolean {
+        return try {
+            val activity = requireActivity()
+            if (activity is MainActivity) {
+                // 检查是否是通过useCache参数重启的（表示数据源切换）
+                val isSwitching = activity.useCacheConfig
+                android.util.Log.d("HomeFragment", "isDataSourceSwitching: $isSwitching")
+                isSwitching
+            } else {
+                android.util.Log.d("HomeFragment", "isDataSourceSwitching: false (not MainActivity)")
+                false
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("HomeFragment", "isDataSourceSwitching error: ${e.message}")
+            false
         }
-
-        MD3ToastUtils.showToast("正在切换数据源...")
-        initData()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    private fun refreshHomeSources() {
+        // 借鉴TVBoxOS-Mobile的简洁策略：直接重启MainActivity
+        val intent = Intent(requireContext(), MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        val bundle = Bundle()
+        bundle.putBoolean(com.github.tvbox.osc.constant.IntentKey.CACHE_CONFIG_CHANGED, true)
+        intent.putExtras(bundle)
+        startActivity(intent)
 
-        // 清理ViewPager2相关引用，防止内存泄漏
+        // 禁用Activity切换动画，直接显示新页面
+        requireActivity().overridePendingTransition(0, 0)
+        requireActivity().finish()
+    }
+
+    /**
+     * 清理ViewPager数据，为新数据做准备
+     */
+    private fun clearViewPagerData() {
         try {
-            // 清理适配器
-            mBinding.mViewPager.adapter = null
+            // 清理TabLayout
+            mBinding.tabLayout.removeAllTabs()
 
-            // 清理TabLayout和ViewPager2的联动
-            // TabLayoutMediator会自动处理清理，但我们可以手动清理
+            // 清理ViewPager2适配器
+            mBinding.mViewPager.adapter = null
 
             // 清理Fragment列表
             fragments.clear()
 
             // 清理数据列表
             mSortDataList = ArrayList()
+
+            android.util.Log.d("HomeFragment", "ViewPager数据已清理")
+        } catch (e: Exception) {
+            android.util.Log.e("HomeFragment", "清理ViewPager数据失败", e)
+        }
+    }
+
+    // 添加TabLayoutMediator引用以便清理
+    private var tabLayoutMediator: TabLayoutMediator? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // 使用新的内存泄漏修复管理器
+        try {
+            com.github.tvbox.osc.util.MemoryLeakFixManager.unregisterFragment(this)
+            com.github.tvbox.osc.util.MemoryLeakFixManager.fixFragmentLeaks(this)
+        } catch (e: Exception) {
+            android.util.Log.w("HomeFragment", "新内存泄漏修复管理器处理失败: ${e.message}")
+        }
+
+        // 清理ViewPager2相关引用，防止内存泄漏
+        try {
+            // 清理TabLayoutMediator
+            tabLayoutMediator?.detach()
+            tabLayoutMediator = null
+
+            // 清理ViewPager2内部的RecyclerView
+            try {
+                val recyclerView = mBinding.mViewPager.getChildAt(0) as? androidx.recyclerview.widget.RecyclerView
+                recyclerView?.let { rv ->
+                    rv.adapter = null
+                    rv.layoutManager = null
+                    rv.clearOnScrollListeners()
+                    rv.clearOnChildAttachStateChangeListeners()
+                    // 清理RecyclerView的缓存
+                    rv.recycledViewPool.clear()
+                    android.util.Log.d("HomeFragment", "ViewPager2内部RecyclerView已清理")
+                }
+            } catch (e: Exception) {
+                android.util.Log.w("HomeFragment", "清理ViewPager2内部RecyclerView失败: ${e.message}")
+            }
+
+            // 清理ViewPager2适配器
+            mBinding.mViewPager.adapter = null
+
+            // 清理TabLayout
+            mBinding.tabLayout.removeAllTabs()
+            mBinding.tabLayout.clearOnTabSelectedListeners()
+
+            // 清理Fragment列表
+            fragments.clear()
+
+            // 清理数据列表
+            mSortDataList = emptyList()
+
+            // 清理Handler回调
+            ThreadPoolManager.getMainHandler().removeCallbacksAndMessages(null)
 
             android.util.Log.d("HomeFragment", "ViewPager2相关资源清理完成")
         } catch (e: Exception) {
@@ -702,5 +793,61 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        try {
+            // 清理ViewPager2相关引用，防止内存泄漏 - 使用专门的修复工具
+            try {
+                // 使用专门的ViewPager2内存泄漏修复工具
+                com.github.tvbox.osc.util.ViewPager2LeakFixer.comprehensiveFixViewPager2Leaks(
+                    mBinding.mViewPager,
+                    mBinding.tabLayout,
+                    tabLayoutMediator
+                )
+
+                // 清理本地引用
+                tabLayoutMediator = null
+
+                android.util.Log.d("HomeFragment", "ViewPager2相关资源清理完成")
+            } catch (e: Exception) {
+                android.util.Log.e("HomeFragment", "清理ViewPager2资源时发生错误: ${e.message}")
+            }
+
+            // 清理Fragment列表 - 确保Fragment也被正确清理
+            fragments.forEach { fragment ->
+                try {
+                    if (fragment.isAdded) {
+                        childFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("HomeFragment", "清理子Fragment失败: ${e.message}")
+                }
+            }
+            fragments.clear()
+
+            // 清理ViewModel引用
+            sourceViewModel = null
+
+            // 清理对话框引用
+            errorTipDialog?.dismiss()
+            errorTipDialog = null
+
+            // 清理数据列表
+            mSortDataList = emptyList()
+
+            // 清理所有点击监听器
+            mBinding.tvName.setOnClickListener(null)
+            mBinding.search.setOnClickListener(null)
+
+            // 清理Handler回调
+            ThreadPoolManager.getMainHandler().removeCallbacksAndMessages(null)
+
+            android.util.Log.d("HomeFragment", "onDestroyView - 清理完成")
+        } catch (e: Exception) {
+            android.util.Log.e("HomeFragment", "onDestroyView清理失败: ${e.message}")
+        }
+
+        super.onDestroyView()
     }
 }

@@ -308,7 +308,10 @@ public class RemoteServer extends NanoHTTPD {
         } else {
             return String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
         }
-        return "0.0.0.0";
+        // 修复：当无法获取IP时，返回127.0.0.1而不是0.0.0.0
+        // 这样可以避免图片URL变成无效的0.0.0.0地址
+        android.util.Log.w("RemoteServer", "无法获取本地IP地址，使用127.0.0.1作为fallback");
+        return "127.0.0.1";
     }
 
     String fileTime(long time, String fmt) {

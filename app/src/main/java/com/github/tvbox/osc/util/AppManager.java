@@ -47,22 +47,32 @@ public class AppManager {
      * 获取当前Activity（堆栈中最后一个压入的）
      */
     public Activity currentActivity() {
-        Activity activity = activityStack.lastElement();
-        return activity;
+        if (activityStack != null && !activityStack.isEmpty()) {
+            return activityStack.lastElement();
+        }
+        return null;
     }
 
     /**
      * 结束当前Activity（堆栈中最后一个压入的）
      */
     public void finishActivity() {
-        Activity activity = activityStack.lastElement();
-        if (!activity.isFinishing()) {
-            activity.finish();
+        if (activityStack != null && !activityStack.isEmpty()) {
+            Activity activity = activityStack.pop(); // 从栈中移除并获取
+            if (!activity.isFinishing()) {
+                activity.finish();
+            }
         }
     }
 
     public void finishActivity(Activity activity) {
-        activityStack.remove(activity);
+        if (activity != null && activityStack != null) {
+            activityStack.remove(activity);
+            // 确保Activity被正确销毁，避免内存泄漏
+            if (!activity.isFinishing()) {
+                activity.finish();
+            }
+        }
     }
 
 
@@ -70,12 +80,18 @@ public class AppManager {
      * 结束指定类名的Activity
      */
     public void finishActivity(Class<?> cls) {
-        for (Activity activity : activityStack) {
-            if (activity.getClass().equals(cls)) {
-                if (!activity.isFinishing()) {
-                    activity.finish();
+        if (activityStack != null) {
+            // 使用迭代器避免ConcurrentModificationException
+            java.util.Iterator<Activity> iterator = activityStack.iterator();
+            while (iterator.hasNext()) {
+                Activity activity = iterator.next();
+                if (activity.getClass().equals(cls)) {
+                    iterator.remove(); // 从栈中移除
+                    if (!activity.isFinishing()) {
+                        activity.finish(); // 销毁Activity
+                    }
+                    break;
                 }
-                break;
             }
         }
     }

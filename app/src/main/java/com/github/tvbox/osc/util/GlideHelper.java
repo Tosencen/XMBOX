@@ -121,7 +121,8 @@ public class GlideHelper extends AppGlideModule {
         }
 
         // 添加调试日志
-        LOG.d("GlideHelper", "加载图片: " + processedUrl);
+        LOG.d("GlideHelper", "原始URL: " + url);
+        LOG.d("GlideHelper", "处理后URL: " + processedUrl);
 
         RequestOptions options = new RequestOptions()
                 .placeholder(R.drawable.img_loading_placeholder)
@@ -304,73 +305,88 @@ public class GlideHelper extends AppGlideModule {
         }).start();
     }
 
+    // 防止重复清理的标志
+    private static volatile boolean isCleanedUp = false;
+    private static final Object cleanupLock = new Object();
+
     /**
      * 清理Glide相关资源，防止内存泄漏
      * 建议在Application的onTerminate()中调用
      */
     public static void cleanup() {
-        try {
-            // 清理OkHttpClient
-            if (okHttpClient != null) {
-                // 关闭连接池
-                okHttpClient.connectionPool().evictAll();
-                // 强制关闭调度器
-                try {
-                    okHttpClient.dispatcher().executorService().shutdownNow();
-                    if (!okHttpClient.dispatcher().executorService().awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS)) {
-                        LOG.w("GlideHelper", "Glide OkHttpClient调度器未能在2秒内关闭");
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOG.w("GlideHelper", "等待Glide OkHttpClient调度器关闭时被中断");
-                }
-                okHttpClient = null;
+        synchronized (cleanupLock) {
+            if (isCleanedUp) {
+                LOG.d("GlideHelper", "Glide资源已经清理过，跳过重复清理");
+                return;
             }
 
-            // 尝试清理Glide的内部线程池
             try {
-                Context appContext = App.getInstance();
-                if (appContext != null) {
-                    // 清理Glide实例
-                    Glide glide = Glide.get(appContext);
+                LOG.i("GlideHelper", "开始清理Glide资源");
 
-                    // 使用反射清理GlideExecutor
+                // 清理OkHttpClient
+                if (okHttpClient != null) {
                     try {
-                        java.lang.reflect.Field engineField = Glide.class.getDeclaredField("engine");
-                        engineField.setAccessible(true);
-                        Object engine = engineField.get(glide);
+                        // 关闭连接池
+                        okHttpClient.connectionPool().evictAll();
 
-                        if (engine != null) {
-                            // 清理Engine中的线程池
-                            java.lang.reflect.Field sourceExecutorField = engine.getClass().getDeclaredField("sourceExecutor");
-                            sourceExecutorField.setAccessible(true);
-                            Object sourceExecutor = sourceExecutorField.get(engine);
-
-                            if (sourceExecutor != null && sourceExecutor instanceof java.util.concurrent.ExecutorService) {
-                                ((java.util.concurrent.ExecutorService) sourceExecutor).shutdownNow();
-                                LOG.i("GlideHelper", "Glide sourceExecutor已关闭");
-                            }
-
-                            java.lang.reflect.Field diskCacheExecutorField = engine.getClass().getDeclaredField("diskCacheExecutor");
-                            diskCacheExecutorField.setAccessible(true);
-                            Object diskCacheExecutor = diskCacheExecutorField.get(engine);
-
-                            if (diskCacheExecutor != null && diskCacheExecutor instanceof java.util.concurrent.ExecutorService) {
-                                ((java.util.concurrent.ExecutorService) diskCacheExecutor).shutdownNow();
-                                LOG.i("GlideHelper", "Glide diskCacheExecutor已关闭");
+                        // 关闭调度器
+                        if (okHttpClient.dispatcher() != null && okHttpClient.dispatcher().executorService() != null) {
+                            okHttpClient.dispatcher().executorService().shutdownNow();
+                            try {
+                                if (!okHttpClient.dispatcher().executorService().awaitTermination(1, java.util.concurrent.TimeUnit.SECONDS)) {
+                                    LOG.w("GlideHelper", "OkHttpClient调度器未能在1秒内关闭");
+                                }
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                LOG.w("GlideHelper", "等待OkHttpClient调度器关闭时被中断");
                             }
                         }
+
+                        okHttpClient = null;
+                        LOG.i("GlideHelper", "OkHttpClient已清理");
                     } catch (Exception e) {
-                        LOG.w("GlideHelper", "清理Glide内部线程池时发生错误: " + e.getMessage());
+                        LOG.w("GlideHelper", "清理OkHttpClient时发生错误: " + e.getMessage());
                     }
                 }
-            } catch (Exception e) {
-                LOG.w("GlideHelper", "清理Glide实例时发生错误: " + e.getMessage());
-            }
 
-            LOG.i("GlideHelper", "Glide资源清理完成");
-        } catch (Exception e) {
-            LOG.e("GlideHelper", "清理Glide资源时发生错误: " + e.getMessage());
+                // 清理Glide缓存（安全方式）
+                try {
+                    Context appContext = App.getInstance();
+                    if (appContext != null) {
+                        // 清理内存缓存（主线程）
+                        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+                            Glide.get(appContext).clearMemory();
+                            LOG.i("GlideHelper", "Glide内存缓存已清理");
+                        }
+
+                        // 清理磁盘缓存（后台线程）
+                        new Thread(() -> {
+                            try {
+                                Glide.get(appContext).clearDiskCache();
+                                LOG.i("GlideHelper", "Glide磁盘缓存已清理");
+                            } catch (Exception e) {
+                                LOG.w("GlideHelper", "清理Glide磁盘缓存失败: " + e.getMessage());
+                            }
+                        }).start();
+                    }
+                } catch (Exception e) {
+                    LOG.w("GlideHelper", "清理Glide缓存时发生错误: " + e.getMessage());
+                }
+
+                isCleanedUp = true;
+                LOG.i("GlideHelper", "Glide资源清理完成");
+            } catch (Exception e) {
+                LOG.e("GlideHelper", "清理Glide资源时发生错误: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 重置清理状态（仅用于测试）
+     */
+    public static void resetCleanupState() {
+        synchronized (cleanupLock) {
+            isCleanedUp = false;
         }
     }
 

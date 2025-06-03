@@ -48,18 +48,20 @@ public class GridAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
         }
         helper.setText(R.id.tvName, item.name);
         ImageView ivThumb = helper.getView(R.id.ivThumb);
-        // 完全按照TVBoxOS-Mobile的方式：只在这里处理一次URL，然后直接加载
+        // 使用GlideHelper的完整处理流程，包括图片URL清理
         if (!TextUtils.isEmpty(item.pic)) {
             item.pic = item.pic.trim();
 
-            // 只处理一次URL（和TVBoxOS-Mobile一样）
-            String processedUrl = DefaultConfig.checkReplaceProxy(item.pic);
             android.util.Log.d("GridAdapter", "加载首页图片: " + item.name);
             android.util.Log.d("GridAdapter", "原始URL: " + item.pic);
-            android.util.Log.d("GridAdapter", "处理后URL: " + processedUrl);
 
-            // 使用不再处理URL的加载方法
-            GlideHelper.loadImageDirect(ivThumb, processedUrl, 300, 400);
+            // 专门调试ok杰克源的图片问题
+            if (item.name != null && (item.name.contains("ok") || item.name.contains("杰克"))) {
+                com.github.tvbox.osc.util.ImageUrlDebugger.debugImageUrl(item.pic, "ok杰克", item.name);
+            }
+
+            // 使用会完整处理URL的加载方法（包括清理@Referer=等参数）
+            GlideHelper.loadImage(ivThumb, item.pic, 300, 400);
         } else {
             android.util.Log.d("GridAdapter", "首页图片URL为空: " + item.name);
             ivThumb.setImageResource(R.drawable.img_loading_placeholder);
