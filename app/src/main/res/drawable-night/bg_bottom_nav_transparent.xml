@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 80%透明度背景层，让模糊效果更明显（夜间模式） -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#33000000" />
+        </shape>
+    </item>
+
+    <!-- 顶部细线分割 -->
+    <item android:top="0dp" android:height="0.5dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#0DFFFFFF" />
+        </shape>
+    </item>
+</layer-list>

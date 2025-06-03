@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_m3"
+    android:elevation="3dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingHorizontal="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="倍速"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="16dp"/>
+
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+                <LinearLayout
+                    android:id="@+id/container_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/speed0"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.App.Button.Speed"
+                        android:text="x0.5" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/speed1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.App.Button.Speed"
+                        android:text="x1.0" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/speed1a"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.App.Button.Speed"
+                        android:text="x1.25" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/speed2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.App.Button.Speed"
+                        android:text="x1.5" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/speed3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.App.Button.Speed"
+                        android:text="x2.0" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/speed4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.App.Button.Speed"
+                        android:text="x2.5" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/speed5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.App.Button.Speed"
+                        android:text="x3.0" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="10dp"
+                android:text="缩放"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/scale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.App.Button.PlayControl"
+                app:icon="@drawable/ic_change_20"
+                app:iconGravity="end"
+                app:iconPadding="8dp"
+                tools:text="16:9"
+                />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="10dp"
+                android:text="跳过片头/片尾"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:fillViewport="false">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/decrease_start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_skip_previous_m3"
+                        android:background="@drawable/bg_skip_control_button"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/play_time_start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginHorizontal="8dp"
+                        tools:text="片头" />
+                    <ImageView
+                        android:id="@+id/increase_start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_skip_next_m3"
+                        android:background="@drawable/bg_skip_control_button"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        />
+
+                    <ImageView
+                        android:id="@+id/decrease_end"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_skip_previous_m3"
+                        android:background="@drawable/bg_skip_control_button"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:layout_marginStart="10dp"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/play_time_end"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginHorizontal="8dp"
+                        tools:text="片尾" />
+                    <ImageView
+                        android:id="@+id/increase_end"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_skip_next_m3"
+                        android:background="@drawable/bg_skip_control_button"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/start_end_reset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginStart="10dp"
+                        android:text="重置" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="10dp"
+                android:text="播放器"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/player"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button.PlayControl"
+                    android:layout_marginEnd="8dp"
+                    app:icon="@drawable/ic_change_20"
+                    app:iconGravity="end"
+                    app:iconPadding="8dp"
+                    tools:text="EXO" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/decode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button.PlayControl"
+                    android:layout_marginEnd="8dp"
+                    app:icon="@drawable/ic_change_20"
+                    app:iconGravity="end"
+                    app:iconPadding="8dp"
+                    tools:text="硬解" />
+
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="10dp"
+                android:text="其他"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:fillViewport="false"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/landscape_portrait"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginEnd="8dp"
+                        android:text="横竖屏"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginEnd="8dp"
+                        android:text="字幕" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/voice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginEnd="8dp"
+                        android:text="音轨" />
+
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/replay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginEnd="8dp"
+                        android:text="重播" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/refresh"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginEnd="8dp"
+                        android:text="刷新" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/download"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_marginEnd="8dp"
+                        android:text="下载"
+                        android:visibility="gone"
+                        tools:visibility="visible"/>
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 底部按钮区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close"
+            style="@style/Widget.App.Dialog.Button.Cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="关闭" />
+    </LinearLayout>
+</LinearLayout>

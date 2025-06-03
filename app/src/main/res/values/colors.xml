@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3 冷淡系主题色 - 日间模式 -->
+    <color name="md3_primary">#006A6A</color>
+    <color name="md3_on_primary">#FFFFFF</color>
+    <color name="md3_primary_container">#83F4F4</color>
+    <color name="md3_on_primary_container">#002020</color>
+
+    <color name="md3_secondary">#4A6363</color>
+    <color name="md3_on_secondary">#FFFFFF</color>
+    <color name="md3_secondary_container">#CDE7E7</color>
+    <color name="md3_on_secondary_container">#051F1F</color>
+
+    <color name="md3_tertiary">#4B607C</color>
+    <color name="md3_on_tertiary">#FFFFFF</color>
+    <color name="md3_tertiary_container">#D3E4FF</color>
+    <color name="md3_on_tertiary_container">#041C36</color>
+
+    <color name="md3_error">#BA1A1A</color>
+    <color name="md3_on_error">#FFFFFF</color>
+    <color name="md3_error_container">#FFDAD6</color>
+    <color name="md3_on_error_container">#410002</color>
+
+    <color name="md3_background">#FAFDFD</color>
+    <color name="md3_on_background">#191C1C</color>
+    <color name="md3_surface">#FAFDFD</color>
+    <color name="md3_on_surface">#191C1C</color>
+    <color name="md3_surface_variant">#DAE4E4</color>
+    <color name="md3_on_surface_variant">#3F4949</color>
+
+    <color name="md3_outline">#6F7979</color>
+    <color name="md3_outline_variant">#BFC8C8</color>
+
+    <color name="md3_scrim">#000000</color>
+    <color name="md3_inverse_surface">#2D3131</color>
+    <color name="md3_inverse_on_surface">#EFF1F1</color>
+    <color name="md3_inverse_primary">#64D8D8</color>
+
+    <!--应用的主要色调,actionBar默认使用该颜色,Toolbar导航栏的底色-->
+    <color name="colorPrimary">@color/md3_primary</color>
+    <!--CheckBox,RadioButton,SwitchCompat等一般控件的选中效果默认采用该颜色-->
+    <color name="colorAccent">@color/md3_secondary</color>
+    <!--    默认window窗口(activity)背景颜色-->
+    <color name="windowBackground">@color/md3_background</color>
+
+    <color name="bg_gray">@color/md3_surface_variant</color>
+    <color name="gray_darker">#7f7b79</color>
+    <!--    深灰点击透明度-->
+    <color name="gray_darker_press_alpha">#3C808080</color>
+
+    <!--    通用颜色-->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="text_foreground">@color/md3_on_background</color>
+    <color name="text_sub_foreground">@color/md3_on_surface_variant</color>
+    <color name="text_light_foreground">#191C1C</color>
+    <color name="light_gray_color">#e6e6e6</color>
+    <!--    警示黄色-->
+    <color name="warn">@color/md3_tertiary</color>
+    <color name="red">@color/md3_error</color>
+
+    <color name="disable_text">@color/md3_outline</color>
+
+    <!--    带点透明度(e6 90/100不透明)的pop-->
+    <color name="bg_popup">#FFFFFF</color>
+
+    <!--    制定颜色-->
+    <!--    页面背景色,activity.fragment等-->
+    <color name="bg_page">@color/md3_background</color>
+    <!--    不可用灰色颜色-->
+    <color name="disable_gray">@color/md3_outline</color>
+
+    <color name="orange">@color/md3_tertiary</color>
+
+    <color name="color_6200EE">#6200EE</color>
+    <color name="color_3700B3">#3700B3</color>
+    <color name="color_03DAC5">#03DAC5</color>
+    <color name="title_fouse_n">#ffce7900</color>
+    <color name="color_1890FF">@color/md3_primary</color>
+    <color name="color_FFB800">#FF6600</color>
+    <color name="color_00FF0A">#00FF0A</color>
+    <color name="color_CBF46A">#CBF46A</color>
+    <color name="color_FF90CA09">#90CA09</color>
+    <color name="color_BD0CADE2">#BD0CADE2</color>
+    <color name="color_FF0057">#FF0057</color>
+    <color name="color_FF5F00">#FF5F00</color>
+    <color name="color_FFB6C1">#FFB6C1</color>
+    <color name="color_3D3D3D">#3D3D3D</color>
+    <color name="color_32364E">#32364E</color>
+    <color name="color_6632364E">#6632364E</color>
+    <color name="color_CCFFFFFF">#BBFFFFFF</color>
+    <color name="color_0CADE2">#0CADE2</color>
+    <color name="color_6CFFFFFF">#6CFFFFFF</color>
+    <color name="color_66000000">#66000000</color>
+    <color name="color_99000000">#99000000</color>
+    <color name="color_02F8E1">#02F8E1</color>
+    <color name="color_353744">#353744</color>
+    <color name="color_CC353744">#CC353744</color>
+    <color name="color_6C3D3D3D">#6c3d3d3d</color>
+    <color name="color_BBFFFFFF">#bbffffff</color>
+    <color name="color_FFFFFF">#ffffffff</color>
+    <color name="color_33FFFFFF">#33ffffff</color>
+    <color name="color_99FFFFFF">#4D777373</color>
+    <color name="color_59353744">#59353744</color>
+    <color name="color_80FF0057">#66FF0057</color>
+
+    <!-- 新增颜色 -->
+    <color name="gray_999">#999999</color>
+
+    <!-- 搜索详情页左侧标签背景色 - 浅灰色 -->
+    <color name="search_category_bg">#E6E9E9</color>
+
+    <!-- 菜单项背景色 - 日间模式使用浅灰色 -->
+    <color name="menu_item_bg">@color/md3_surface_variant</color>
+
+    <!-- 深色模式背景色 - 明显更亮的深灰色 -->
+    <color name="color_232626">#3A3F3F</color>
+    <color name="color_dialog_bg_dark">#3A3F3F</color>
+
+    <!-- 弹窗内部模块背景色 - 日间模式 -->
+    <color name="color_surface_container_light">@color/md3_surface_container_low</color>
+    <!-- 弹窗内部模块背景色 - 夜间模式 -->
+    <color name="color_surface_container">@color/md3_surface_container</color>
+
+    <!-- 波纹效果颜色 - 日间模式 -->
+    <color name="ripple_color">#1A006A6A</color>
+
+    <!-- 对话框背景色 -->
+    <color name="dialog_bg">@color/md3_background</color>
+
+    <!-- 底部导航栏活动指示器颜色 - 日间模式使用浅灰色 -->
+    <color name="bottom_nav_indicator_light">#E6E9E9</color>
+
+    <!-- 详情页线路和选集未选中背景色 - 日间模式 -->
+    <color name="item_series_bg_light">#E6E9E9</color>
+
+    <!-- 倒序和全部按钮背景色 - 日间模式 -->
+    <color name="sort_all_button_bg_light">#E6E9E9</color>
+
+    <!-- 选中状态的文本颜色 - 日间模式 -->
+    <color name="selected_text_color_light">#FFFFFF</color>
+
+    <!-- 倒序和全部按钮图标颜色 - 日间模式 -->
+    <color name="sort_all_button_icon_light">#191C1C</color>
+
+</resources>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 主背景层 - 磨砂玻璃效果（夜间模式） -->
+    <item>
+        <shape android:shape="rectangle">
+            <!-- 半透明深色背景，模拟磨砂玻璃 -->
+            <solid android:color="#CC1C1C1C" />
+        </shape>
+    </item>
+
+    <!-- 顶部细线分割 -->
+    <item android:top="0dp" android:height="0.5dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#33FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- 磨砂纹理层 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="90"
+                android:startColor="#00FFFFFF"
+                android:centerColor="#0DFFFFFF"
+                android:endColor="#1AFFFFFF" />
+        </shape>
+    </item>
+
+    <!-- 光泽效果层 -->
+    <item android:top="1dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="90"
+                android:startColor="#1AFFFFFF"
+                android:centerColor="#00FFFFFF"
+                android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

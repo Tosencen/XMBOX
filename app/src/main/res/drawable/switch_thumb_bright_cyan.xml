@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 禁用状态 -->
+    <item android:state_enabled="false">
+        <shape android:shape="oval">
+            <solid android:color="?attr/colorSurfaceVariant" />
+            <size android:height="16dp" android:width="16dp" />
+        </shape>
+    </item>
+    <!-- 选中状态 -->
+    <item android:state_checked="true">
+        <shape android:shape="oval">
+            <solid android:color="?attr/colorOnPrimary" />
+            <size android:height="16dp" android:width="16dp" />
+        </shape>
+    </item>
+    <!-- 未选中状态 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="?attr/colorOnSurfaceVariant" />
+            <size android:height="16dp" android:width="16dp" />
+        </shape>
+    </item>
+</selector>

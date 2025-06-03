@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'xyz.doikki.videoplayer'
+    compileSdkVersion 34
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        releaseSimon.initWith(release)
+        releaseSimon {
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    def exoplayerVersion = "2.19.1"
+    implementation "androidx.annotation:annotation:1.7.1"
+    api "com.google.android.exoplayer:exoplayer-core:$exoplayerVersion"
+    api "com.google.android.exoplayer:exoplayer-dash:$exoplayerVersion"
+    api "com.google.android.exoplayer:exoplayer-hls:$exoplayerVersion"
+    api "com.google.android.exoplayer:exoplayer-rtsp:$exoplayerVersion"
+    api "com.google.android.exoplayer:extension-rtmp:$exoplayerVersion"
+    implementation 'com.squareup.okhttp3:okhttp:3.12.13'
+    api 'xyz.doikki.android.dkplayer:dkplayer-ui:3.3.5'
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 修复的Material Design 3 SwitchMaterial样式 -->
+    <style name="Widget.App.SwitchMaterial.M3.Fixed" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <!-- 只自定义track，使其更符合Material Design 3规范 -->
+        <item name="track">@drawable/switch_track_m3_rounded</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <!-- 不设置minWidth和minHeight，让系统自动处理 -->
+        <!-- 不设置thumbOffset，让系统自动处理 -->
+        <!-- 不设置thumbTint，让系统自动处理 -->
+        <!-- 不设置trackTint，使用drawable中定义的颜色 -->
+        <item name="trackTint">@null</item>
+    </style>
+</resources>
