@@ -1,5 +1,5 @@
 # XMBOX
-![Uploading PixPin_2025-06-24_15-16-08.png…]()
+![Uploading 15-16-08.png…]()
 
 XMBOX是一款基于TVBoxOS-Mobile项目改进的安卓视频播放应用，专注于提供更流畅的用户体验和更现代的界面设计。
 
