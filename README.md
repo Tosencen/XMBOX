@@ -1,4 +1,8 @@
 # XMBOX
+![PixPin_2025-06-24_15-10-33](https://github.com/user-attachments/assets/b4460355-e21a-4745-8d45-8413b6f34cf0)
+![PixPin_2025-06-24_15-11-11](https://github.com/user-attachments/assets/90235a96-8d93-47fb-8bbf-8291a6df26f1)
+![Screenshot_20250624_150658](https://github.com/user-attachments/assets/3b6b2881-86db-45ff-9bff-cbf509d8583f)
+
 
 XMBOX是一款基于TVBoxOS-Mobile项目改进的安卓视频播放应用，专注于提供更流畅的用户体验和更现代的界面设计。
 
