@@ -2,7 +2,7 @@
   </h1>
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.1.5-blue.svg)
+![Version](https://img.shields.io/badge/version-3.1.6-blue.svg)
 ![Android](https://img.shields.io/badge/platform-Android-green.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
@@ -139,6 +139,16 @@ XMBOX/
 - **数据库**: Room
 
 ## 📝 更新日志
+
+### v3.1.6 (2025-04-04)
+
+#### 🐛 修复
+* **崩溃修复** - 修复 SettingPlayerActivity 数组越界崩溃问题
+* **弹幕显示** - 修复弹幕默认不显示的问题，现在默认开启
+
+#### ✨ 优化
+* **解码方式** - 优化解码方式切换顺序（软解 → 硬解 → 自动）
+* **长按选择** - 直播页面长按解码按钮可弹出选择对话框
 
 ### v3.1.5 (2025-03-19)
 
