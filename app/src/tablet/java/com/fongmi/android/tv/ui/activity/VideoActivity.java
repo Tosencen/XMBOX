@@ -475,6 +475,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         mBinding.control.next.setOnClickListener(view -> checkNext());
         mBinding.control.prev.setOnClickListener(view -> checkPrev());
         mBinding.control.setting.setOnClickListener(view -> onSetting());
+        mBinding.control.pip.setOnClickListener(view -> enterPiP());
         mBinding.control.title.setOnLongClickListener(view -> onChange());
         mBinding.control.right.back.setOnClickListener(view -> onFull());
         mBinding.control.right.lock.setOnClickListener(view -> onLock());
@@ -904,6 +905,14 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         toggleFullscreen();
     }
 
+    private void enterPiP() {
+        // 手动触发画中画模式（force=true 不依赖后台播放设置）
+        if (mPlayers == null || mPlayers.isEmpty()) return;
+        if (mPlayers.haveTrack(C.TRACK_TYPE_VIDEO) && !mPiP.isInMode(this)) {
+            mPiP.enter(this, mPlayers.getVideoWidth(), mPlayers.getVideoHeight(), getScale(), true);
+        }
+    }
+
     private void onKeep() {
         Keep keep = Keep.find(getHistoryKey());
         Notify.show(keep != null ? R.string.keep_del : R.string.keep_add);
@@ -1182,6 +1191,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         mBinding.control.right.lock.setVisibility(isFullscreen() ? View.VISIBLE : View.GONE);
         mBinding.control.info.setVisibility(mPlayers.isEmpty() ? View.GONE : View.VISIBLE);
         mBinding.control.cast.setVisibility(mPlayers.isEmpty() ? View.GONE : View.VISIBLE);
+        mBinding.control.pip.setVisibility(mPlayers.isEmpty() || PiP.noPiP() ? View.GONE : View.VISIBLE);
         mBinding.control.center.setVisibility(isLock() ? View.GONE : View.VISIBLE);
         mBinding.control.bottom.setVisibility(isLock() ? View.GONE : View.VISIBLE);
         mBinding.control.top.setVisibility(isLock() ? View.GONE : View.VISIBLE);
@@ -1840,10 +1850,9 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     @Override
     public void onDoubleTap() {
-        // 双击中间区域：非全屏时进入全屏
-        if (!isFullscreen()) {
-            App.post(this::enterFullscreen, 250);
-        }
+        // 双击中间区域：播放/暂停切换
+        checkPlay();
+        showControl();
     }
 
     @Override
@@ -1853,6 +1862,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         long newPosition = Math.max(0, mPlayers.getPosition() + seekTime);
         mPlayers.seekTo(newPosition);
         onSeek(seekTime);
+        showControl();
         App.post(() -> mBinding.widget.seek.setVisibility(View.GONE), 800);
     }
 
@@ -1864,6 +1874,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         long newPosition = Math.min(duration > 0 ? duration : Long.MAX_VALUE, mPlayers.getPosition() + seekTime);
         mPlayers.seekTo(newPosition);
         onSeek(seekTime);
+        showControl();
         App.post(() -> mBinding.widget.seek.setVisibility(View.GONE), 800);
     }
 

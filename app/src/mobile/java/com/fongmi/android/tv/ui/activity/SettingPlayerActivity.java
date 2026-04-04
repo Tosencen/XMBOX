@@ -58,7 +58,14 @@ public class SettingPlayerActivity extends BaseActivity implements UaCallback, B
         mBinding.scaleText.setText((scale = ResUtil.getStringArray(R.array.select_scale))[Setting.getScale()]);
         mBinding.renderText.setText((render = ResUtil.getStringArray(R.array.select_render))[Setting.getRender()]);
         mBinding.captionText.setText((caption = ResUtil.getStringArray(R.array.select_caption))[Setting.isCaption() ? 1 : 0]);
-        mBinding.backgroundText.setText((background = ResUtil.getStringArray(R.array.select_background))[Setting.getBackground()]);
+        // 修复数组越界：确保 background 索引在有效范围内
+        background = ResUtil.getStringArray(R.array.select_background);
+        int bgIndex = Setting.getBackground();
+        if (bgIndex < 0 || bgIndex >= background.length) {
+            bgIndex = 0;
+            Setting.putBackground(0);
+        }
+        mBinding.backgroundText.setText(background[bgIndex]);
         mBinding.playerEngineText.setText(getPlayerEngineText());
     }
 
