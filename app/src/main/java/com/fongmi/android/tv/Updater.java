@@ -247,15 +247,13 @@ public class Updater implements Download.Callback {
             return;
         }
         
-        // 使用系统浏览器下载
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            App.get().startActivity(intent);
-        } catch (Exception e) {
-            Notify.show("打开浏览器失败，请手动下载");
-        }
-        dialog.dismiss();
+        // 使用应用内下载
+        Notify.show(R.string.update_downloading);
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setText(R.string.update_cancel);
+        
+        download = Download.create(downloadUrl, getFile(), fallbackApkUrl, this);
+        download.start();
     }
 
     private void dismiss() {
@@ -267,7 +265,12 @@ public class Updater implements Download.Callback {
 
     @Override
     public void progress(int progress) {
-        // 进度更新，由Download类内部处理
+        // 更新按钮文字显示下载进度
+        if (dialog != null && dialog.isShowing()) {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(
+                String.format(Locale.getDefault(), "%d%%", progress)
+            );
+        }
     }
 
     @Override

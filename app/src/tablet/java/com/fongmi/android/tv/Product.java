@@ -12,9 +12,11 @@ public class Product {
     }
 
     public static int getColumn(Context context) {
-        // 平板版本：横屏 4 列，竖屏 3 列
-        // 直接返回固定列数，不受 Setting.getSize() 影响
-        return ResUtil.isLand(context) ? 4 : 3;
+        // 平板版本：根据设置调整列数
+        // size 越大，列数越少，图片越大
+        // size=0(特大): 7/6列, size=1(大): 6/5列, size=2(中): 5/4列, size=3(小): 4/3列, size=4(特小): 3/2列
+        int count = ResUtil.isLand(context) ? 7 : 6;
+        return Math.abs(Setting.getSize() - count);
     }
 
     public static int getColumn(Context context, Style style) {

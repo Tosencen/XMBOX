@@ -170,6 +170,7 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
         mBinding.control.change.setOnClickListener(view -> onChange());
         mBinding.control.player.setOnClickListener(view -> onChoose());
         mBinding.control.decode.setOnClickListener(view -> onDecode());
+        mBinding.control.decode.setOnLongClickListener(view -> onDecodeLong());
         mBinding.control.speed.setOnLongClickListener(view -> onSpeedLong());
         mBinding.video.setOnTouchListener((view, event) -> mKeyDown.onTouchEvent(event));
         mBinding.group.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
@@ -395,6 +396,22 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
     private void onDecode() {
         mPlayers.toggleDecode();
         setDecode();
+    }
+
+    private boolean onDecodeLong() {
+        String[] decodes = ResUtil.getStringArray(R.array.select_decode);
+        int current = Setting.getDecode();
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.player_decode)
+            .setNegativeButton(R.string.dialog_negative, null)
+            .setSingleChoiceItems(decodes, current, (dialog, which) -> {
+                Setting.putDecode(which);
+                mPlayers.init(mBinding.exo);
+                setDecode();
+                dialog.dismiss();
+            })
+            .show();
+        return true;
     }
 
     private void hideUI() {

@@ -258,7 +258,7 @@ public class Setting {
     }
 
     public static boolean isDanmakuLoad() {
-        return Prefers.getBoolean("danmaku_load");
+        return Prefers.getBoolean("danmaku_load", true);
     }
 
     public static void putDanmakuLoad(boolean danmakuLoad) {
@@ -322,11 +322,12 @@ public class Setting {
     }
 
     public static boolean isBackgroundOn() {
-        return getBackground() == 1 || getBackground() == 2;
+        return getBackground() == 1;
     }
 
     public static boolean isBackgroundPiP() {
-        return getBackground() == 2;
+        // 画中画功能已剥离到独立的按钮控制，不再依赖后台播放设置
+        return false;
     }
 
     public static boolean hasCaption() {

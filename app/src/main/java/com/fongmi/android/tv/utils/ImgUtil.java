@@ -48,17 +48,27 @@ public class ImgUtil {
     }
 
     public static void load(String text, String url, ImageView view, ImageView.ScaleType scaleType, boolean rect) {
+        // 预先设置默认图片和缩放类型，避免加载失败时的闪屏
         view.setScaleType(scaleType);
-        if (!TextUtils.isEmpty(url)) Glide.with(App.get()).asBitmap().load(getUrl(url)).placeholder(R.drawable.ic_img_loading).skipMemoryCache(false).dontAnimate().sizeMultiplier(Setting.getThumbnail()).signature(getSignature(url)).listener(getListener(view, scaleType)).into(view);
-        else if (!text.isEmpty()) view.setImageDrawable(getTextDrawable(text.substring(0, 1), rect));
-        else view.setImageResource(R.drawable.ic_img_error);
+        if (TextUtils.isEmpty(url)) {
+            if (!text.isEmpty()) view.setImageDrawable(getTextDrawable(text.substring(0, 1), rect));
+            else view.setImageResource(R.drawable.ic_img_error);
+        } else {
+            // 使用 error 占位图而不是 placeholder，避免加载过程中的闪烁
+            Glide.with(App.get()).asBitmap().load(getUrl(url)).error(R.drawable.ic_img_error).skipMemoryCache(false).dontAnimate().sizeMultiplier(Setting.getThumbnail()).signature(getSignature(url)).listener(getListener(view, scaleType)).into(view);
+        }
     }
 
     public static void loadVod(String text, String url, ImageView view) {
         view.setScaleType(ImageView.ScaleType.CENTER);
-        if (!TextUtils.isEmpty(url)) Glide.with(App.get()).asBitmap().load(getUrl(url)).placeholder(R.drawable.ic_img_loading).listener(getListener(view)).into(view);
-        else if (!text.isEmpty()) view.setImageDrawable(getTextDrawable(text.substring(0, 1), true));
-        else view.setImageResource(R.drawable.ic_img_error);
+        if (!TextUtils.isEmpty(url)) {
+            // 使用 error 占位图而不是 placeholder，避免加载过程中的闪烁
+            Glide.with(App.get()).asBitmap().load(getUrl(url)).error(R.drawable.ic_img_error).listener(getListener(view)).into(view);
+        } else if (!text.isEmpty()) {
+            view.setImageDrawable(getTextDrawable(text.substring(0, 1), true));
+        } else {
+            view.setImageResource(R.drawable.ic_img_error);
+        }
     }
 
     public static void loadLive(String url, ImageView view) {
@@ -99,9 +109,9 @@ public class ImgUtil {
         return new RequestListener<>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
-                view.setImageResource(R.drawable.ic_img_error);
-                view.setScaleType(scaleType);
-                return true;
+                // 加载失败时不手动设置 ScaleType，避免布局重绘导致的闪屏
+                // 让 Glide 使用 error 占位图处理
+                return false;
             }
 
             @Override

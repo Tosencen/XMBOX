@@ -357,10 +357,20 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public void toggleDecode() {
-        // 循环切换：硬解 -> 软解 -> 自动 -> 硬解
-        if (decode == HARD) decode = SOFT;
-        else if (decode == SOFT) decode = AUTO;
-        else decode = HARD;
+        // 循环切换：软解 -> 硬解 -> 自动 -> 软解
+        if (decode == SOFT) decode = HARD;
+        else if (decode == HARD) decode = AUTO;
+        else decode = SOFT;
+        Setting.putDecode(decode);
+        init(view);
+    }
+
+    public void toggleDecodeWithMpv() {
+        // 循环切换：软解 -> 硬解 -> 自动 -> MPV -> 软解
+        if (decode == SOFT) decode = HARD;
+        else if (decode == HARD) decode = AUTO;
+        else if (decode == AUTO) decode = MPV;
+        else decode = SOFT;
         Setting.putDecode(decode);
         init(view);
     }
@@ -525,7 +535,7 @@ public class Players implements Player.Listener, ParseCallback {
         danPlayer.setDanmaku(item);
         if (danmakus == null) danmakus = new ArrayList<>();
         if (!item.isEmpty() && !danmakus.contains(item)) danmakus.add(0, item);
-        for (int i = 0; i < danmakus.size(); i++) danmakus.get(i).setSelected(danmakus.get(i).getUrl().equals(item.getUrl()) && !danmakus.get(i).isSelected());
+        for (int i = 0; i < danmakus.size(); i++) danmakus.get(i).setSelected(danmakus.get(i).getUrl().equals(item.getUrl()));
         // 应用弹幕大小设置
         danPlayer.setTextSize(Setting.getDanmakuSize());
     }

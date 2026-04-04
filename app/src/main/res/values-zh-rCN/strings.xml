@@ -108,6 +108,7 @@
     <string name="player_libass">字幕渲染</string>
     <string name="player_caption">字幕样式</string>
     <string name="player_background">后台播放</string>
+    <string name="player_decode">解码方式</string>
     <string name="player_audio_decode">音频软解</string>
     <string name="player_aac">AAC优化</string>
     <string name="player_danmaku_load">弹幕加载</string>
@@ -154,6 +155,8 @@
     <string name="update_version">发现新版本 <xliff:g name="name">%s</xliff:g></string>
     <string name="update_check">正在检测更新…</string>
     <string name="update_confirm">更新</string>
+    <string name="update_downloading">正在下载更新…</string>
+    <string name="update_cancel">取消</string>
 
     <!-- Crash -->
     <string name="crash_info">应用程序发生意外错误\n给您带来不便，敬请谅解</string>

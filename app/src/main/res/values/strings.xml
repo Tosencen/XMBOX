@@ -109,6 +109,7 @@
     <string name="player_libass">libass</string>
     <string name="player_caption">Caption style</string>
     <string name="player_background">Background play</string>
+    <string name="player_decode">Decode mode</string>
     <string name="player_audio_decode">Audio software decode</string>
     <string name="player_aac">AAC optimization</string>
     <string name="player_danmaku_load">Danmaku load</string>
@@ -165,6 +166,8 @@
     <string name="update_version">New version <xliff:g name="name">%s</xliff:g></string>
     <string name="update_check">Checking for updates…</string>
     <string name="update_confirm">Update</string>
+    <string name="update_downloading">Downloading update…</string>
+    <string name="update_cancel">Cancel</string>
 
     <!-- Hint -->
     <string name="copied">Copied</string>

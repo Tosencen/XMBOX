@@ -278,8 +278,14 @@ public class SiteViewModel extends ViewModel {
                 result.postValue(executor.submit(callable).get(Constant.TIMEOUT_VOD, TimeUnit.MILLISECONDS));
             } catch (Throwable e) {
                 if (e instanceof InterruptedException || Thread.interrupted()) return;
-                if (e.getCause() instanceof ExtractException) result.postValue(Result.error(e.getCause().getMessage()));
-                else result.postValue(Result.empty());
+                // 确保在发生任何异常时都返回结果，避免界面一直显示加载中
+                if (e.getCause() instanceof ExtractException) {
+                    result.postValue(Result.error(e.getCause().getMessage()));
+                } else if (e instanceof java.util.concurrent.TimeoutException) {
+                    result.postValue(Result.error("加载超时，请重试"));
+                } else {
+                    result.postValue(Result.empty());
+                }
                 Logger.e("Error", e);
             }
         });

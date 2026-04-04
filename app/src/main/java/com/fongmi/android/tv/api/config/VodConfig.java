@@ -255,10 +255,23 @@ public class VodConfig {
                 // 继续处理下一个站点
             }
         }
-        for (Site site : sites) {
-            if (site.getKey().equals(config.getHome())) {
-                setHome(site);
+        
+        // 优先使用配置中指定的 home 站点
+        boolean homeSet = false;
+        String configHome = config.getHome();
+        if (!TextUtils.isEmpty(configHome)) {
+            for (Site site : sites) {
+                if (site.getKey().equals(configHome)) {
+                    setHome(site);
+                    homeSet = true;
+                    break;
+                }
             }
+        }
+        
+        // 如果配置的 home 站点无效，使用第一个可用站点
+        if (!homeSet && !sites.isEmpty()) {
+            setHome(sites.get(0));
         }
     }
 

@@ -211,6 +211,7 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
         mBinding.control.action.change.setOnClickListener(view -> onChange());
         mBinding.control.action.player.setOnClickListener(view -> onChoose());
         mBinding.control.action.decode.setOnClickListener(view -> onDecode());
+        mBinding.control.action.decode.setOnLongClickListener(view -> onDecodeLong());
         mBinding.control.action.text.setOnLongClickListener(view -> onTextLong());
         mBinding.control.action.speed.setOnLongClickListener(view -> onSpeedLong());
         mBinding.control.action.getRoot().setOnTouchListener(this::onActionTouch);
@@ -429,6 +430,23 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
         mPlayers.toggleDecode();
         setR1Callback();
         setDecode();
+    }
+
+    private boolean onDecodeLong() {
+        String[] decodes = ResUtil.getStringArray(R.array.select_decode);
+        int current = Setting.getDecode();
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.player_decode)
+            .setNegativeButton(R.string.dialog_negative, null)
+            .setSingleChoiceItems(decodes, current, (dialog, which) -> {
+                Setting.putDecode(which);
+                mPlayers.init(mBinding.exo);
+                setR1Callback();
+                setDecode();
+                dialog.dismiss();
+            })
+            .show();
+        return true;
     }
 
     private void onChoose() {

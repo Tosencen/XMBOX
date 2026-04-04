@@ -3,6 +3,7 @@ package com.fongmi.android.tv.utils;
 import android.net.Uri;
 
 import com.fongmi.android.tv.server.Server;
+import com.github.catvod.Proxy;
 import com.github.catvod.utils.UriUtil;
 import com.google.common.net.HttpHeaders;
 
@@ -40,6 +41,10 @@ public class UrlUtil {
     }
 
     public static String convert(String url) {
+        // 确保 Server 已启动（避免端口为 -1 导致配置失败）
+        if (Proxy.getPort() == -1) {
+            Server.get().start();
+        }
         String scheme = scheme(url);
         String path = null;
         if ("assets".equals(scheme)) path = "/";

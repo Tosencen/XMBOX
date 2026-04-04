@@ -133,10 +133,12 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener im
         if (isEdge(e) || changeScale || e.getPointerCount() > 1) return true;
         if (lock) return true;
         int screenWidth = ResUtil.getScreenWidth(activity);
-        // 双击左侧1/3区域 → 快退10秒，右侧1/3区域 → 快进10秒，中间 → 非全屏时进入全屏
-        if (e.getX() < screenWidth / 3f) {
+        // 双击区域划分：左侧20% → 快退，中间60% → 播放/暂停，右侧20% → 快进
+        float leftBoundary = screenWidth * 0.2f;
+        float rightBoundary = screenWidth * 0.8f;
+        if (e.getX() < leftBoundary) {
             listener.onDoubleTapLeft();
-        } else if (e.getX() > screenWidth * 2 / 3f) {
+        } else if (e.getX() > rightBoundary) {
             listener.onDoubleTapRight();
         } else {
             listener.onDoubleTap();
