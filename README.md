@@ -16,15 +16,16 @@
 
 ## 📥 下载安装
 
-### 最新版本: v3.1.5
+### 最新版本: v3.1.6
 
 | 平台 | ARM64-V8A | ARM V7A |
 |------|-----------|---------|
-| **📱 手机版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.5/mobile-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.5/mobile-armeabi_v7a.apk) |
-| **📱 平板版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.5/tablet-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.5/tablet-armeabi_v7a.apk) |
-| **📺 TV版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.5/leanback-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.5/leanback-armeabi_v7a.apk) |
+| **📱 手机版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/mobile-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/mobile-armeabi_v7a.apk) |
+| **📱 平板版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/tablet-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/tablet-armeabi_v7a.apk) |
+| **📺 TV版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/leanback-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/leanback-armeabi_v7a.apk) |
 
 ### 📁 版本历史
+- **v3.1.6**: [查看v3.1.6版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.6) - 修复崩溃问题、弹幕默认显示、优化解码方式切换、修复平板/TV配置失败问题
 - **v3.1.5**: [查看v3.1.5版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.5) - 新增壁纸功能、修复搜索功能、新增播放器、视频暂停时屏幕亮度调节、新增播放页面视频封面
 - **v3.1.3**: [查看v3.1.3版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.3) - 新增平板版本，优化演员列表和视频封面显示
 - **v3.1.1**: [查看v3.1.1版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.1) - 新增WebDAV同步功能和更新安装器
@@ -145,6 +146,7 @@ XMBOX/
 #### 🐛 修复
 * **崩溃修复** - 修复 SettingPlayerActivity 数组越界崩溃问题
 * **弹幕显示** - 修复弹幕默认不显示的问题，现在默认开启
+* **配置失败** - 修复平板/TV版某些情况下视频源配置失败的问题（Server未启动导致）
 
 #### ✨ 优化
 * **解码方式** - 优化解码方式切换顺序（软解 → 硬解 → 自动）
