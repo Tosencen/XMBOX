@@ -248,9 +248,8 @@ public class Updater implements Download.Callback {
         }
         
         // 使用应用内下载
-        Notify.show(R.string.update_downloading);
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
-        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setText(R.string.update_cancel);
+        binding.desc.setText(R.string.update_downloading);
         
         download = Download.create(downloadUrl, getFile(), fallbackApkUrl, this);
         download.start();
@@ -265,12 +264,11 @@ public class Updater implements Download.Callback {
 
     @Override
     public void progress(int progress) {
-        // 更新按钮文字显示下载进度
-        if (dialog != null && dialog.isShowing()) {
-            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(
-                String.format(Locale.getDefault(), "%d%%", progress)
-            );
-        }
+        App.post(() -> {
+            if (binding != null) {
+                binding.desc.setText(String.format(Locale.getDefault(), "%d%%", progress));
+            }
+        });
     }
 
     @Override
