@@ -84,8 +84,8 @@ public class Updater implements Download.Callback {
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             return;
         }
-        // 异步执行检查
-        new Thread(() -> checkUpdate(activity)).start();
+        // 使用统一的线程池执行异步检查
+        App.execute(() -> checkUpdate(activity));
     }
 
     private boolean need(int code, String name) {

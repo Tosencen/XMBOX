@@ -8,13 +8,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.os.HandlerCompat;
 
-import com.fongmi.android.tv.Setting;
-// import com.fongmi.android.tv.event.EventIndex; // 暂时注释，如果不存在则删除
 import com.fongmi.android.tv.ui.activity.CrashActivity;
 import com.fongmi.android.tv.utils.CacheCleaner;
 import com.fongmi.android.tv.utils.UpdateInstaller;
@@ -26,23 +25,25 @@ import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
 import com.google.gson.Gson;
 
-
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class App extends Application {
 
+    /** 线程池核心参数 */
+    private static final int CORE_POOL_SIZE = 4;
+    private static final int MAX_POOL_SIZE = 8;
+    private static final int QUEUE_CAPACITY = 128;
+
     private final ExecutorService executor;
     private final Handler handler;
-    private static App instance;
-    private Activity activity;
+    private static volatile App instance;
     private final Gson gson;
     private final long time;
     private Hook hook;
@@ -50,17 +51,18 @@ public class App extends Application {
     private final Runnable syncTask;
     private boolean appJustLaunched;
 
+    /** Activity 栈深度计数器，避免多 Activity 场景下错误置空 */
+    private int activityCount;
+    private Activity lastResumedActivity;
+
     public App() {
         instance = this;
-        // 根据CPU核数动态配置线程池，提升性能
-        int cpuCores = Runtime.getRuntime().availableProcessors();
-        int corePoolSize = Math.max(2, cpuCores);
-        int maxPoolSize = corePoolSize * 2;
         executor = new ThreadPoolExecutor(
-            corePoolSize,
-            maxPoolSize,
+            CORE_POOL_SIZE,
+            MAX_POOL_SIZE,
             60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<Runnable>()
+            new LinkedBlockingQueue<Runnable>(QUEUE_CAPACITY),
+            new ThreadPoolExecutor.DiscardPolicy()
         );
         handler = HandlerCompat.createAsync(Looper.getMainLooper());
         time = System.currentTimeMillis();
@@ -70,6 +72,7 @@ public class App extends Application {
         cleanTask = this::checkCacheClean;
         syncTask = this::doAutoSync;
         appJustLaunched = true;
+        activityCount = 0;
     }
 
     public static App get() {
@@ -84,14 +87,14 @@ public class App extends Application {
         return get().time;
     }
 
-    public static Activity activity() {
-        return get().activity;
+public static Activity activity() {
+        return get().lastResumedActivity;
     }
-    
+
     public static boolean isAppJustLaunched() {
         return get().appJustLaunched;
     }
-    
+
     public static void setAppLaunched() {
         get().appJustLaunched = false;
     }
@@ -121,10 +124,6 @@ public class App extends Application {
         this.hook = hook;
     }
 
-    private void setActivity(Activity activity) {
-        this.activity = activity;
-    }
-
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -134,54 +133,65 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        // [StrictMode] 仅 debug 构建开启：抓主线程访问数据库（Room 主线程查询/写入）
+        // 不启用 penaltyDeath，应用不会崩；违规堆栈仅在 logcat(tag=StrictMode) 输出，
+        // 用于后续把主线程 DAO 调用逐个迁移到后台线程。release 构建完全不受影响。
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .penaltyLog()
+                    .build());
+        }
         OkHttp.get().setProxy(Setting.getProxy());
         OkHttp.get().setDoh(Doh.objectFrom(Setting.getDoh()));
-        // EventBus.builder().addIndex(new EventIndex()).installDefaultEventBus(); // 暂时注释，如果EventIndex不存在则删除
-        EventBus.getDefault(); // 使用默认EventBus
+        EventBus.getDefault();
         CaocConfig.Builder.create().backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT).errorActivity(CrashActivity.class).apply();
-        // Ensure default notification channel exists for foreground playback service (TV flavor too)
         Notify.createChannel();
-        
-        // 初始化自动缓存清理
+
         initCacheCleaner();
-        
+
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-                if (activity != activity()) setActivity(activity);
+                activityCount++;
             }
 
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
-                if (activity != activity()) setActivity(activity);
+                // no-op
             }
 
             @Override
             public void onActivityResumed(@NonNull Activity activity) {
-                if (activity != activity()) setActivity(activity);
-                // 应用回到前台时检查缓存
+                lastResumedActivity = activity;
                 checkCacheClean();
-                // 检查是否有待安装的更新文件（用户从设置页面返回后）
                 checkPendingInstall();
-                // 检查局域网自动同步
                 checkAutoSync();
-                // 自动检查更新（如果启用）
                 checkAutoUpdate(activity);
             }
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
-                if (activity == activity()) setActivity(null);
+                if (activity == lastResumedActivity) {
+                    // 不立即置空，等 onActivityStopped 确认
+                }
             }
 
             @Override
             public void onActivityStopped(@NonNull Activity activity) {
-                if (activity == activity()) setActivity(null);
+                activityCount--;
+                if (activityCount < 0) activityCount = 0;
+                if (activity == lastResumedActivity && activityCount == 0) {
+                    lastResumedActivity = null;
+                }
             }
 
             @Override
             public void onActivityDestroyed(@NonNull Activity activity) {
-                if (activity == activity()) setActivity(null);
+                if (activity == lastResumedActivity) {
+                    lastResumedActivity = null;
+                }
             }
 
             @Override

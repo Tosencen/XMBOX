@@ -5,6 +5,22 @@ pluginManagement {
         google()
     }
 }
+
+// 加载本地配置（gradle.properties.local 已在 .gitignore 中，不会提交到仓库）
+def localProps = new File(rootDir, 'gradle.properties.local')
+if (localProps.exists()) {
+    localProps.eachLine { line ->
+        if (!line.startsWith('#') && line.contains('=')) {
+            def parts = line.split('=', 2)
+            def key = parts[0].trim()
+            def value = parts[1].trim()
+            if (key && value) {
+                gradle.ext.set(key, value)
+            }
+        }
+    }
+}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {

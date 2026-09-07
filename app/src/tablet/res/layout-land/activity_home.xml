@@ -1,35 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
     android:fitsSystemWindows="true">
-
-    <!-- 左侧导航栏 -->
-    <com.google.android.material.navigationrail.NavigationRailView
-        android:id="@+id/navigation"
-        style="@style/NavigationRail"
-        android:layout_width="80dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:background="@color/transparent"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        app:elevation="0dp"
-        app:itemIconSize="24dp"
-        app:itemIconTint="@color/nav"
-        app:itemTextColor="@color/nav"
-        app:labelVisibilityMode="unlabeled"
-        app:menuGravity="center"
-        app:itemActiveIndicatorStyle="@style/Indicator"
-        app:menu="@menu/menu_nav" />
 
     <!-- 内容区域 -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/container"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-</LinearLayout>
+    <!-- 半透明遮罩：点击收起菜单 -->
+    <View
+        android:id="@+id/fab_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone" />
+
+    <!-- 弹出菜单（竖排，主按钮上方） -->
+    <LinearLayout
+        android:id="@+id/fab_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="92dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/fab_setting"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="14dp"
+            android:background="@drawable/bg_fab_round"
+            android:elevation="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_nav_setting"
+            android:tint="#222222" />
+
+        <ImageButton
+            android:id="@+id/fab_live"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="14dp"
+            android:background="@drawable/bg_fab_round"
+            android:elevation="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_nav_live"
+            android:tint="#222222" />
+
+        <ImageButton
+            android:id="@+id/fab_vod"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_fab_round"
+            android:elevation="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_nav_vod"
+            android:tint="#222222" />
+    </LinearLayout>
+
+    <!-- 悬浮主按钮 -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/nav_vod"
+        app:srcCompat="@drawable/ic_fab_menu" />
+
+</FrameLayout>

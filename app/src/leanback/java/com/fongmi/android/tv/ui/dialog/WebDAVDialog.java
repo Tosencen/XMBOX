@@ -21,6 +21,7 @@ import com.fongmi.android.tv.databinding.DialogWebdavBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.fongmi.android.tv.utils.WebDAVConfig;
 import com.fongmi.android.tv.utils.WebDAVSyncManager;
 import com.github.catvod.utils.Logger;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -357,7 +358,7 @@ public class WebDAVDialog {
         showStatus("正在测试连接...", true);
         binding.testButton.setEnabled(false);
         App.execute(() -> {
-            WebDAVSyncManager.TestResult result = syncManager.testConnectionWithMessage();
+            WebDAVConfig.TestResult result = syncManager.getConfig().testConnection();
             App.post(() -> {
                 // 检查对话框是否还存在
                 if (binding == null || dialog == null || !dialog.isShowing()) {

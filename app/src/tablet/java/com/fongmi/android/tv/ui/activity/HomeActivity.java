@@ -93,10 +93,12 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
                 liveView.setOnLongClickListener(this::addShortcut);
             }
         }
+        bindFab();
     }
     
     private NavigationBarView getNavigationView() {
-        return findViewById(R.id.navigation);
+        // 平板首页已改用 FAB 悬浮导航，不再使用底部/侧边 NavigationBarView
+        return null;
     }
 
     private void checkAction(Intent intent) {
@@ -124,9 +126,17 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     }
 
     private void initConfig() {
-        WallConfig.get().init();
-        LiveConfig.get().init().load();
-        VodConfig.get().init().load(getCallback());
+        // 把配置的 Room 读取移到后台线程，避免主线程访问数据库
+        App.execute(() -> {
+            Config wall = Config.wall();
+            Config live = Config.live();
+            Config vod = Config.vod();
+            App.post(() -> {
+                WallConfig.get().init(wall);
+                LiveConfig.get().init(live).load();
+                VodConfig.get().init(vod).load(getCallback());
+            });
+        });
     }
 
     private Callback getCallback() {
@@ -168,6 +178,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
             navigation.getMenu().findItem(R.id.setting).setVisible(true);
             navigation.getMenu().findItem(R.id.live).setVisible(LiveConfig.hasUrl() && !Setting.isLiveTabVisible());
         }
+        syncFabLive();
     }
 
     private boolean openLive() {
@@ -202,9 +213,19 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         NavigationBarView navigation = getNavigationView();
         if (navigation == null || navigation.getSelectedItemId() == item.getItemId()) return false;
-        if (item.getItemId() == R.id.setting) return mManager.change(1);
-        if (item.getItemId() == R.id.vod) return mManager.change(0);
-        if (item.getItemId() == R.id.live) {
+        return switchPage(item.getItemId());
+    }
+
+    private boolean switchPage(int id) {
+        if (id == R.id.setting) {
+            mManager.change(1);
+            return true;
+        }
+        if (id == R.id.vod) {
+            mManager.change(0);
+            return true;
+        }
+        if (id == R.id.live) {
             if (LiveConfig.isEmpty()) {
                 Notify.showCenter(R.string.error_no_live);
                 return false;
@@ -233,18 +254,55 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
 
     @Override
     protected void onBackPress() {
-        NavigationBarView navigation = getNavigationView();
-        if (navigation == null) {
-            finish();
-            return;
-        }
-        if (!navigation.getMenu().findItem(R.id.vod).isVisible()) {
-            setNavigation();
-        } else if (mManager.isVisible(1)) {
-            navigation.setSelectedItemId(R.id.vod);
+        if (mManager.isVisible(1)) {
+            mManager.change(0);
         } else if (mManager.canBack(0)) {
             finish();
         }
+    }
+
+    private boolean menuOpen;
+
+    private void bindFab() {
+        mBinding.fabMain.setOnClickListener(v -> toggleFabMenu());
+        mBinding.fabScrim.setOnClickListener(v -> closeFabMenu());
+        View.OnClickListener page = v -> { closeFabMenu(); switchPage(v.getId()); };
+        mBinding.fabVod.setOnClickListener(page);
+        mBinding.fabLive.setOnClickListener(page);
+        mBinding.fabSetting.setOnClickListener(page);
+        syncFabLive();
+    }
+
+    private void syncFabLive() {
+        if (mBinding.fabLive != null) {
+            mBinding.fabLive.setVisibility(LiveConfig.hasUrl() && !Setting.isLiveTabVisible() ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void toggleFabMenu() {
+        if (menuOpen) closeFabMenu();
+        else openFabMenu();
+    }
+
+    private void openFabMenu() {
+        menuOpen = true;
+        mBinding.fabScrim.setVisibility(View.VISIBLE);
+        mBinding.fabMenu.setVisibility(View.VISIBLE);
+        int count = mBinding.fabMenu.getChildCount();
+        for (int i = 0; i < count; i++) {
+            View child = mBinding.fabMenu.getChildAt(i);
+            child.setAlpha(0f);
+            child.setTranslationY(40f);
+            child.animate().alpha(1f).translationY(0f).setDuration(180).setStartDelay((count - 1 - i) * 40L).start();
+        }
+        mBinding.fabMain.setImageResource(R.drawable.ic_fab_close);
+    }
+
+    private void closeFabMenu() {
+        menuOpen = false;
+        mBinding.fabScrim.setVisibility(View.GONE);
+        mBinding.fabMenu.setVisibility(View.GONE);
+        mBinding.fabMain.setImageResource(R.drawable.ic_fab_menu);
     }
 
     @Override

@@ -286,7 +286,7 @@
 
                 </LinearLayout>
                 
-                <!-- 无痕模式 -->
+                <!-- 无痕模式（已禁用）
                 <LinearLayout
                     android:id="@+id/incognito"
                     android:layout_width="match_parent"
@@ -317,6 +317,7 @@
                         android:layout_height="wrap_content" />
 
                 </LinearLayout>
+                -->
                 
                 <!-- 显示直播 -->
                 <LinearLayout

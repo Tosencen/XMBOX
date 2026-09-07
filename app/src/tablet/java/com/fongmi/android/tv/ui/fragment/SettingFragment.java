@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.BuildConfig;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.Setting;
@@ -124,7 +125,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         mBinding.proxyText.setText(getProxy(Setting.getProxy()));
-        mBinding.incognitoSwitch.setChecked(Setting.isIncognito());
+        // mBinding.incognitoSwitch.setChecked(Setting.isIncognito()); // 无痕模式已禁用
         mBinding.liveTabVisibleSwitch.setChecked(Setting.isLiveTabVisible());
         mBinding.historyVisibleSwitch.setChecked(Setting.isHistoryVisible());
         mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[Setting.getSize()]);
@@ -192,7 +193,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         mBinding.liveHistory.setOnClickListener(this::onLiveHistory);
         // mBinding.wallDefault.setOnClickListener(this::setWallDefault); // 壁纸功能已移除
         // mBinding.wallRefresh.setOnClickListener(this::setWallRefresh); // 壁纸功能已移除
-        mBinding.incognitoSwitch.setOnClickListener(this::setIncognito);
+        // mBinding.incognitoSwitch.setOnClickListener(this::setIncognito); // 无痕模式已禁用
         mBinding.liveTabVisibleSwitch.setOnClickListener(this::setLiveTabVisible);
         mBinding.historyVisibleSwitch.setOnClickListener(this::setHistoryVisible);
         mBinding.size.setOnClickListener(this::setSize);
@@ -430,11 +431,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         });
     }
 
-    private void setIncognito(View view) {
-        boolean isChecked = !Setting.isIncognito();
-        Setting.putIncognito(isChecked);
-        // 不需要再次调用 setChecked，因为点击已经触发了状态变化
-    }
+    // 无痕模式已禁用
+    // private void setIncognito(View view) {
+    //     boolean isChecked = !Setting.isIncognito();
+    //     Setting.putIncognito(isChecked);
+    // }
 
     private void setLiveTabVisible(View view) {
         boolean isChecked = !Setting.isLiveTabVisible();
@@ -476,7 +477,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         Notify.progress(getActivity());
         Setting.putDoh(doh.toString());
         mBinding.dohText.setText(doh.getName());
-        VodConfig.load(Config.vod(), getCallback(0));
+        // Config 读数据库移到后台线程，读完后回主线程加载配置
+        App.execute(() -> {
+            Config config = Config.vod();
+            App.post(() -> VodConfig.load(config, getCallback(0)));
+        });
     }
 
     private void onProxy(View view) {
@@ -491,7 +496,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         OkHttp.get().setProxy(proxy);
         Notify.progress(getActivity());
         mBinding.proxyText.setText(getProxy(proxy));
-        VodConfig.load(Config.vod(), getCallback(0));
+        // Config 读数据库移到后台线程，读完后回主线程加载配置
+        App.execute(() -> {
+            Config config = Config.vod();
+            App.post(() -> VodConfig.load(config, getCallback(0)));
+        });
     }
 
     private void onCache(View view) {
@@ -539,9 +548,17 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     }
 
     private void initConfig() {
-        WallConfig.get().init();
-        LiveConfig.get().init().load();
-        VodConfig.get().init().load(getCallback(0));
+        // 把配置的 Room 读取移到后台线程，避免主线程访问数据库
+        App.execute(() -> {
+            Config wall = Config.wall();
+            Config live = Config.live();
+            Config vod = Config.vod();
+            App.post(() -> {
+                WallConfig.get().init(wall);
+                LiveConfig.get().init(live).load();
+                VodConfig.get().init(vod).load(getCallback(0));
+            });
+        });
     }
 
     @Override

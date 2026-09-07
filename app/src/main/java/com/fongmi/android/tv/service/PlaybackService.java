@@ -28,26 +28,35 @@ import com.fongmi.android.tv.player.Players;
 import com.fongmi.android.tv.receiver.ActionReceiver;
 import com.fongmi.android.tv.utils.ImgUtil;
 import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.utils.PermissionUtil;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlaybackService extends Service {
 
-    private Map<String, Bitmap> cache;
+    private Map<String, Bitmap> cache = new ConcurrentHashMap<>();
     private static Players player;
 
     public static void start(Players player) {
-        ContextCompat.startForegroundService(App.get(), new Intent(App.get(), PlaybackService.class));
         PlaybackService.player = player;
+        // 进入播放时统一申请一次通知权限，避免在播放过程中（高频通知更新路径上）反复弹权限请求
+        if (!PermissionUtil.hasNotificationPermission()) {
+            var activity = App.activity();
+            if (activity instanceof androidx.fragment.app.FragmentActivity && !activity.isFinishing()) {
+                PermissionUtil.requestNotification((androidx.fragment.app.FragmentActivity) activity, granted -> { });
+            }
+        }
+        ContextCompat.startForegroundService(App.get(), new Intent(App.get(), PlaybackService.class));
     }
 
     public static void stop() {
+        player = null;
         App.get().stopService(new Intent(App.get(), PlaybackService.class));
     }
 
@@ -88,15 +97,6 @@ public class PlaybackService extends Service {
         return getMetadata() == null ? "" : getMetadata().getString(MediaMetadataCompat.METADATA_KEY_ART_URI);
     }
 
-    private void setLargeIcon(NotificationCompat.Builder builder, Bitmap art) {
-        Bitmap b1 = Bitmap.createScaledBitmap(art, 16, 16, true);
-        Bitmap b2 = Bitmap.createScaledBitmap(b1, 1, 1, true);
-        builder.setColor(b2.getPixel(0, 0));
-        builder.setLargeIcon(art);
-        b2.recycle();
-        b1.recycle();
-    }
-
     private void addAction(NotificationCompat.Builder builder) {
         builder.addAction(buildNotificationAction(R.drawable.ic_notify_prev, androidx.media3.ui.R.string.exo_controls_previous_description, ActionEvent.PREV));
         builder.addAction(getPlayPauseAction());
@@ -105,8 +105,7 @@ public class PlaybackService extends Service {
 
     private Notification buildNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Notify.DEFAULT);
-        builder.setOngoing(false);
-        builder.setColorized(true);
+        builder.setOngoing(true);
         builder.setOnlyAlertOnce(true);
         builder.setContentText(getArtist());
         builder.setContentTitle(getTitle());
@@ -122,7 +121,7 @@ public class PlaybackService extends Service {
 
     private void setArtwork(NotificationCompat.Builder builder) {
         if (cache.containsKey(getArtUri())) {
-            setLargeIcon(builder, cache.get(getArtUri()));
+            builder.setLargeIcon(cache.get(getArtUri()));
         } else if (!getArtUri().isEmpty()) {
             App.execute(() -> glide(builder));
         }
@@ -131,7 +130,7 @@ public class PlaybackService extends Service {
     private void glide(NotificationCompat.Builder builder) {
         try {
             cache.put(getArtUri(), Glide.with(this).asBitmap().skipMemoryCache(true).dontAnimate().load(ImgUtil.getUrl(getArtUri())).submit().get());
-            setLargeIcon(builder, cache.get(getArtUri()));
+            builder.setLargeIcon(cache.get(getArtUri()));
             Notify.show(builder.build());
         } catch (Exception e) {
             Logger.e("Error", e);
@@ -146,7 +145,6 @@ public class PlaybackService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        cache = new HashMap<>();
         EventBus.getDefault().register(this);
     }
 
@@ -166,6 +164,11 @@ public class PlaybackService extends Service {
     @Override
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
+        // 释放封面 Bitmap 缓存，避免内存泄漏
+        for (Bitmap bitmap : cache.values()) {
+            if (bitmap != null && !bitmap.isRecycled()) bitmap.recycle();
+        }
+        cache.clear();
         getManager().cancel(Notify.ID);
         stopForeground(true);
     }

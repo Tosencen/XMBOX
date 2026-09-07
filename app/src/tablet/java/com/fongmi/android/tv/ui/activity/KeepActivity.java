@@ -8,6 +8,7 @@ import android.view.View;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
@@ -25,6 +26,8 @@ import com.airbnb.lottie.LottieAnimationView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
 
 public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickListener {
 
@@ -62,9 +65,15 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     private void getKeep() {
-        mAdapter.addAll(Keep.getVod());
-        mBinding.delete.setVisibility(mAdapter.getItemCount() > 0 ? View.VISIBLE : View.GONE);
-        updateEmptyState();
+        // 收藏读数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            List<Keep> items = Keep.getVod();
+            App.post(() -> {
+                mAdapter.addAll(items);
+                mBinding.delete.setVisibility(mAdapter.getItemCount() > 0 ? View.VISIBLE : View.GONE);
+                updateEmptyState();
+            });
+        });
     }
 
     private void updateEmptyState() {
@@ -86,7 +95,11 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     }
 
     private void onSync(View view) {
-        SyncDialog.create().keep().show(this);
+        // 同步数据（收藏/配置）读取移到后台线程，读完后回主线程弹窗
+        App.execute(() -> {
+            SyncDialog dialog = SyncDialog.create().keep();
+            App.post(() -> dialog.show(this));
+        });
     }
 
     private void onDelete(View view) {
@@ -125,10 +138,15 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
 
     @Override
     public void onItemClick(Keep item) {
-        Config config = Config.find(item.getCid());
-        if (config == null) CollectActivity.start(this, item.getVodName());
-        else if (item.getCid() != VodConfig.getCid()) loadConfig(config, item);
-        else VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+        // Config 读数据库移到后台线程，查完回主线程再跳转
+        App.execute(() -> {
+            Config config = Config.find(item.getCid());
+            App.post(() -> {
+                if (config == null) CollectActivity.start(this, item.getVodName());
+                else if (item.getCid() != VodConfig.getCid()) loadConfig(config, item);
+                else VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+            });
+        });
     }
 
     @Override

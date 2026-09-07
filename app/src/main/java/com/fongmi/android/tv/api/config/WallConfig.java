@@ -51,6 +51,11 @@ public class WallConfig {
         return config(Config.wall());
     }
 
+    /** 与 init() 等价，但使用调用方已读好的 Config，避免在调用线程访问数据库 */
+    public WallConfig init(Config config) {
+        return config(config);
+    }
+
     public WallConfig config(Config config) {
         this.config = config;
         if (config.getUrl() == null) return this;

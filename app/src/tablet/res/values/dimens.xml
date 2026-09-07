@@ -27,4 +27,14 @@
     <!-- 列表项高度 -->
     <dimen name="list_item_height">64dp</dimen>
     <dimen name="list_item_height_large">72dp</dimen>
+
+    <!-- ===== 平板专属排版与封面规范（MD3 大屏） ===== -->
+    <!-- 断点：平板属 medium 600-839dp / expanded >=840dp -->
+    <!-- 正文(caption)>=14sp，标题(title)>=16sp，避免平板上文字过小 -->
+    <dimen name="text_size_caption">14sp</dimen>
+    <dimen name="text_size_title">16sp</dimen>
+    <!-- 网格封面高度：比手机更克制，避免封面过大挤压文字 -->
+    <dimen name="vod_card_height">128dp</dimen>
+    <dimen name="vod_card_height_one">104dp</dimen>
+    <dimen name="vod_image_width_one">80dp</dimen>
 </resources>

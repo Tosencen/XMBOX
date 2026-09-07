@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
@@ -187,47 +188,47 @@ public class ConfigDialog {
                 // 配置加载失败，恢复原始URL
                 if (!TextUtils.isEmpty(originalUrl)) {
                     // 如果有原始URL，恢复原始URL
-                    callback.setConfig(Config.find(originalUrl, type));
+                    // Config 读数据库移到后台线程，读完后回主线程设置
+                    App.execute(() -> {
+                        Config cfg = Config.find(originalUrl, type);
+                        App.post(() -> callback.setConfig(cfg));
+                    });
                 } else {
                     // 如果没有原始URL，设置为空
-                    switch (type) {
-                        case 0:
-                            VodConfig.get().clear().config(Config.vod()).load(new Callback() {
-                                @Override
-                                public void success() {}
-                                
-                                @Override
-                                public void success(String result) {}
-                                
-                                @Override
-                                public void error(String msg) {}
-                            });
-                            break;
-                        case 1:
-                            LiveConfig.get().clear().config(Config.live()).load(new Callback() {
-                                @Override
-                                public void success() {}
-                                
-                                @Override
-                                public void success(String result) {}
-                                
-                                @Override
-                                public void error(String msg) {}
-                            });
-                            break;
-                        case 2:
-                            WallConfig.get().clear().config(Config.wall()).load(new Callback() {
-                                @Override
-                                public void success() {}
-                                
-                                @Override
-                                public void success(String result) {}
-                                
-                                @Override
-                                public void error(String msg) {}
-                            });
-                            break;
-                    }
+                    // Config 读数据库移到后台线程，读完后回主线程恢复默认配置
+                    App.execute(() -> {
+                        Config cfg;
+                        switch (type) {
+                            case 1: cfg = Config.live(); break;
+                            case 2: cfg = Config.wall(); break;
+                            default: cfg = Config.vod(); break;
+                        }
+                        App.post(() -> {
+                            switch (type) {
+                                case 0:
+                                    VodConfig.get().clear().config(cfg).load(new Callback() {
+                                        @Override public void success() {}
+                                        @Override public void success(String result) {}
+                                        @Override public void error(String msg) {}
+                                    });
+                                    break;
+                                case 1:
+                                    LiveConfig.get().clear().config(cfg).load(new Callback() {
+                                        @Override public void success() {}
+                                        @Override public void success(String result) {}
+                                        @Override public void error(String msg) {}
+                                    });
+                                    break;
+                                case 2:
+                                    WallConfig.get().clear().config(cfg).load(new Callback() {
+                                        @Override public void success() {}
+                                        @Override public void success(String result) {}
+                                        @Override public void error(String msg) {}
+                                    });
+                                    break;
+                            }
+                        });
+                    });
                 }
             }
         }, 2000); // 2秒后检查

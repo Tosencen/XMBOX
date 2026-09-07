@@ -9,6 +9,8 @@ tasks.register('clean', Delete) {
 }
 
 project.ext {
+    // 单一版本来源 — 所有模块的版本号统一在此定义
+    // 注意：不要同时在 gradle.properties 中定义同名属性，以免混淆
     gsonVersion = '2.11.0'
     media3Version = '1.4.1'
     okhttpVersion = '4.12.0'

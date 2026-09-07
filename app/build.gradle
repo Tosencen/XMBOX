@@ -11,9 +11,15 @@ android {
     signingConfigs {
         release {
             storeFile file("../keystore/release.jks")
-            storePassword "xmbox123"
-            keyAlias "xmbox"
-            keyPassword "xmbox123"
+            // 从 gradle.properties.local 读取（该文件已加入 .gitignore，不会提交到仓库）
+            def localProps = new Properties()
+            def localFile = rootProject.file('gradle.properties.local')
+            if (localFile.exists()) {
+                localProps.load(localFile.newReader())
+            }
+            storePassword localProps.getProperty("STORE_PASSWORD", System.getenv("STORE_PASSWORD") ?: "")
+            keyAlias localProps.getProperty("KEY_ALIAS", "xmbox")
+            keyPassword localProps.getProperty("KEY_PASSWORD", System.getenv("KEY_PASSWORD") ?: "")
             // 同时启用v1、v2、v3、v4签名以确保最佳兼容性
             enableV1Signing true
             enableV2Signing true
@@ -25,8 +31,7 @@ android {
     defaultConfig {
         applicationId "com.fongmi.android.tv"
         minSdk 24
-        //noinspection ExpiredTargetSdkVersion
-        targetSdk 28
+        targetSdk 33
         versionCode 316
         versionName "3.1.6"
         // GitHub Token (可选，用于提高API请求限制)
@@ -154,9 +159,9 @@ dependencies {
     implementation 'io.antmedia:rtmp-client:3.1.0'
     implementation 'javax.servlet:javax.servlet-api:3.1.0'
     implementation 'org.aomedia.avif.android:avif:1.1.1.14d8e3c4'
-    implementation 'org.eclipse.jetty:jetty-client:8.1.21.v20160908'
-    implementation('org.eclipse.jetty:jetty-server:8.1.21.v20160908') { exclude group: 'org.eclipse.jetty.orbit', module: 'javax.servlet' }
-    implementation('org.eclipse.jetty:jetty-servlet:8.1.21.v20160908') { exclude group: 'org.eclipse.jetty.orbit', module: 'javax.servlet' }
+    implementation 'org.eclipse.jetty:jetty-client:8.1.22.v20160922'
+    implementation('org.eclipse.jetty:jetty-server:8.1.22.v20160922') { exclude group: 'org.eclipse.jetty.orbit', module: 'javax.servlet' }
+    implementation('org.eclipse.jetty:jetty-servlet:8.1.22.v20160922') { exclude group: 'org.eclipse.jetty.orbit', module: 'javax.servlet' }
     implementation 'org.fourthline.cling:cling-core:2.1.1'
     implementation 'org.fourthline.cling:cling-support:2.1.1'
     implementation 'org.greenrobot:eventbus:3.3.1'
@@ -173,9 +178,14 @@ dependencies {
     tabletImplementation 'com.google.android.flexbox:flexbox:3.0.0'
     tabletImplementation('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false }
     annotationProcessor 'androidx.room:room-compiler:2.6.1'
-    // annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.3.1'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.1.5'
     implementation 'io.noties.markwon:core:4.6.2'
     implementation 'com.airbnb.android:lottie:5.2.0'
+    // MPV 播放器 — 如需启用，请从 https://github.com/mpv-android/mpv-android 获取 AAR
+    // 放入 app/libs/ 目录后取消下面注释：
+    // implementation fileTree(dir: "libs", include: ["*.aar"])
+    // 注意：MpvPlayer 类已内置优雅降级，库不存在时自动使用 ExoPlayer
+    // 加密存储 (用于 WebDAV 密码等敏感信息)
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 }

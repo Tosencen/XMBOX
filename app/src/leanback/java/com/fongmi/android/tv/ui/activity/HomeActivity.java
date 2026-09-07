@@ -160,10 +160,19 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     private void initConfig() {
         if (isLoading()) return;
-        WallConfig.get().init();
-        LiveConfig.get().init().load();
-        VodConfig.get().init().load(getCallback());
+        // 立即置位，防止后台读配置期间重复触发（异步后不能等 load 起来再置位）
         setLoading(true);
+        // 把配置的 Room 读取移到后台线程，避免主线程访问数据库
+        App.execute(() -> {
+            Config wall = Config.wall();
+            Config live = Config.live();
+            Config vod = Config.vod();
+            App.post(() -> {
+                WallConfig.get().init(wall);
+                LiveConfig.get().init(live).load();
+                VodConfig.get().init(vod).load(getCallback());
+            });
+        });
     }
 
     private Callback getCallback() {

@@ -252,7 +252,7 @@ public class WebDAVDialog {
 
         // 在后台线程测试连接
         App.execute(() -> {
-            boolean success = syncManager.testConnection();
+            boolean success = syncManager.getConfig().testConnection().success;
             App.post(() -> {
                 // 检查对话框是否还存在
                 if (binding == null || dialog == null || !dialog.isShowing()) {

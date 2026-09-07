@@ -263,7 +263,8 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:nextFocusDown="@id/quality"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"

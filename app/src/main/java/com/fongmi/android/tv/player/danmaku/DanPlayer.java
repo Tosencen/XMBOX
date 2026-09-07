@@ -29,7 +29,7 @@ public class DanPlayer implements DrawHandler.Callback {
 
     public DanPlayer() {
         context = DanmakuContext.create();
-        executor = Executors.newCachedThreadPool();
+        executor = Executors.newFixedThreadPool(4);
         HashMap<Integer, Integer> maxLines = new HashMap<>();
         maxLines.put(BaseDanmaku.TYPE_FIX_TOP, 2);
         maxLines.put(BaseDanmaku.TYPE_SCROLL_RL, 2);

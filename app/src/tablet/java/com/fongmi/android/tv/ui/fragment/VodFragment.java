@@ -170,17 +170,16 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
     // 添加检查上次播放历史并显示弹窗的方法
     private void checkLastWatchDialog() {
         if (App.isAppJustLaunched()) {
-            List<History> histories = History.get();
-            if (!histories.isEmpty()) {
-                App.setAppLaunched();
+            // 历史记录读数据库移到后台线程
+            App.execute(() -> {
+                List<History> histories = History.get();
                 App.post(() -> {
-                    if (getActivity() != null) {
+                    if (!histories.isEmpty() && getActivity() != null) {
                         LastWatchToast.create(getActivity(), histories.get(0)).show();
                     }
+                    App.setAppLaunched();
                 }, 1000);
-            } else {
-                App.setAppLaunched();
-            }
+            });
         }
     }
 
@@ -488,15 +487,19 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
             mBinding.historySection.setVisibility(View.GONE);
             return;
         }
-        
-        List<History> histories = History.get();
-        
-        if (histories == null || histories.isEmpty()) {
-            mBinding.historySection.setVisibility(View.GONE);
-        } else {
-            mBinding.historySection.setVisibility(View.VISIBLE);
-            mHistoryAdapter.setItems(histories);
-        }
+
+        // 历史记录读数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            List<History> histories = History.get();
+            App.post(() -> {
+                if (histories == null || histories.isEmpty()) {
+                    mBinding.historySection.setVisibility(View.GONE);
+                } else {
+                    mBinding.historySection.setVisibility(View.VISIBLE);
+                    mHistoryAdapter.setItems(histories);
+                }
+            });
+        });
     }
 
     private void showProgress() {

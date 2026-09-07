@@ -134,6 +134,22 @@ public class VodConfig {
         return this;
     }
 
+    /** 与 init() 等价，但使用调用方已读好的 Config，避免在调用线程访问数据库 */
+    public VodConfig init(Config config) {
+        this.wall = null;
+        this.home = null;
+        this.parse = null;
+        this.config = config;
+        this.ads = new ArrayList<>();
+        this.doh = new ArrayList<>();
+        this.rules = new ArrayList<>();
+        this.sites = new ArrayList<>();
+        this.flags = new ArrayList<>();
+        this.parses = new ArrayList<>();
+        this.loadLive = false;
+        return this;
+    }
+
     public VodConfig config(Config config) {
         this.config = config;
         return this;

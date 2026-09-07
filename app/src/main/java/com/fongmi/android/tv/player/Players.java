@@ -2,8 +2,6 @@ package com.fongmi.android.tv.player;
 import com.github.catvod.utils.Logger;
 
 import static androidx.media3.common.Player.COMMAND_SET_SPEED_AND_PITCH;
-import static androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON;
-import static androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -19,15 +17,10 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.media3.common.AudioAttributes;
 import androidx.media3.common.C;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
-import androidx.media3.common.Tracks;
-import androidx.media3.common.VideoSize;
-import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.drm.FrameworkMediaDrm;
-import androidx.media3.exoplayer.util.EventLogger;
 import androidx.media3.ui.PlayerView;
 
 import com.fongmi.android.tv.App;
@@ -46,6 +39,9 @@ import com.fongmi.android.tv.event.PlayerEvent;
 import com.fongmi.android.tv.impl.ParseCallback;
 import com.fongmi.android.tv.impl.SessionCallback;
 import com.fongmi.android.tv.player.danmaku.DanPlayer;
+import com.fongmi.android.tv.player.engine.ExoPlayerEngine;
+import com.fongmi.android.tv.player.engine.MpvPlayerEngine;
+import com.fongmi.android.tv.player.engine.PlayerEngine;
 import com.fongmi.android.tv.player.exo.ExoUtil;
 import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.utils.FileUtil;
@@ -55,7 +51,6 @@ import com.fongmi.android.tv.utils.UrlUtil;
 import com.fongmi.android.tv.utils.Util;
 import com.github.catvod.utils.Path;
 import com.google.common.net.HttpHeaders;
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +63,7 @@ import java.util.concurrent.TimeUnit;
 
 import master.flame.danmaku.ui.widget.DanmakuView;
 
-public class Players implements Player.Listener, ParseCallback {
+public class Players implements ParseCallback {
 
     private static final String TAG = Players.class.getSimpleName();
 
@@ -77,18 +72,21 @@ public class Players implements Player.Listener, ParseCallback {
     public static final int AUTO = 2;
     public static final int MPV = 3;
 
+    // 播放器引擎常量
+    public static final int ENGINE_EXO = 0;
+    public static final int ENGINE_MPV = 1;
+
     private final StringBuilder builder;
     private final Formatter formatter;
     private final Runnable runnable;
 
+    private PlayerEngine engine;
     private Map<String, String> headers;
     private MediaSessionCompat session;
     private List<Danmaku> danmakus;
-    private ExoPlayer exoPlayer;
     private DanPlayer danPlayer;
     private ParseJob parseJob;
     private PlayerView view;
-    private VideoSize size;
     private List<Sub> subs;
     private String format;
     private String tag;
@@ -98,6 +96,7 @@ public class Players implements Player.Listener, ParseCallback {
     private Sub sub;
 
     private int decode;
+    private int playerEngine;
     private int retry;
 
     public static Players create(Activity activity) {
@@ -108,6 +107,7 @@ public class Players implements Player.Listener, ParseCallback {
 
     private Players(Activity activity) {
         decode = Setting.getDecode();
+        playerEngine = Setting.getPlayerEngine();
         builder = new StringBuilder();
         runnable = () -> ErrorEvent.timeout(tag);
         formatter = new Formatter(builder, Locale.getDefault());
@@ -124,46 +124,119 @@ public class Players implements Player.Listener, ParseCallback {
 
     public void init(PlayerView view) {
         releasePlayer();
-        setPlayer(view);
-        setMediaItem();
-    }
-
-    private void setPlayer(PlayerView view) {
-        int playerEngine = Setting.getPlayerEngine();
-
-        // 根据播放器引擎选择不同的播放器
-        if (playerEngine == Players.MPV) {
-            // MPV播放器 - 暂时使用ExoPlayer作为后备，等集成MPV后替换
-            initExoPlayer(view, decode);
-        } else {
-            // ExoPlayer播放器 (软解/硬解/自动)
-            initExoPlayer(view, decode);
-        }
-    }
-
-    private void initExoPlayer(PlayerView view, int decodeMode) {
-        int renderMode;
-        if (decodeMode == HARD) {
-            renderMode = EXTENSION_RENDERER_MODE_ON; // 强制硬解
-        } else if (decodeMode == SOFT) {
-            renderMode = EXTENSION_RENDERER_MODE_PREFER; // 强制软解
-        } else {
-            renderMode = androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF; // 自动选择
-        }
-
-        exoPlayer = new ExoPlayer.Builder(App.get())
-            .setLoadControl(ExoUtil.buildLoadControl())
-            .setTrackSelector(ExoUtil.buildTrackSelector())
-            .setRenderersFactory(ExoUtil.buildRenderersFactory(renderMode))
-            .setMediaSourceFactory(ExoUtil.buildMediaSourceFactory())
-            .build();
-        exoPlayer.setAudioAttributes(AudioAttributes.DEFAULT, true);
-        exoPlayer.addAnalyticsListener(new EventLogger());
-        exoPlayer.setHandleAudioBecomingNoisy(true);
-        exoPlayer.setPlayWhenReady(true);
-        exoPlayer.addListener(this);
-        view.setPlayer(exoPlayer);
         this.view = view;
+        playerEngine = Setting.getPlayerEngine();
+        createEngine(view);
+    }
+
+    private void createEngine(PlayerView view) {
+        if (playerEngine == ENGINE_MPV) {
+            initMpvEngine(view);
+        } else {
+            initExoEngine(view);
+        }
+    }
+
+    private void initExoEngine(PlayerView view) {
+        ExoPlayerEngine exoEngine = new ExoPlayerEngine();
+        exoEngine.setListener(createEngineListener());
+        exoEngine.init(view);
+        engine = exoEngine;
+    }
+
+    private void initMpvEngine(PlayerView view) {
+        if (!MpvPlayerEngine.isLibraryAvailable()) {
+            Logger.e("Players: mpv-android library not available, falling back to ExoPlayer");
+            Notify.show("MPV 库未加载，自动切换到 ExoPlayer");
+            Setting.putPlayerEngine(ENGINE_EXO);
+            playerEngine = ENGINE_EXO;
+            initExoEngine(view);
+            return;
+        }
+
+        // PlayerView 内部需要 SurfaceView 用于 MPV 渲染
+        android.view.View surfaceView = view.getVideoSurfaceView();
+        if (surfaceView instanceof android.view.SurfaceView) {
+            MpvPlayerEngine mpvEngine = new MpvPlayerEngine();
+            mpvEngine.setListener(createEngineListener());
+            mpvEngine.init((android.view.SurfaceView) surfaceView);
+            engine = mpvEngine;
+        } else {
+            Logger.e("Players: no SurfaceView in PlayerView, falling back to ExoPlayer");
+            Setting.putPlayerEngine(ENGINE_EXO);
+            playerEngine = ENGINE_EXO;
+            initExoEngine(view);
+        }
+    }
+
+    private PlayerEngine.Listener createEngineListener() {
+        return new PlayerEngine.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                if (danPlayer != null) danPlayer.check(state);
+                PlayerEvent.state(tag, state);
+            }
+
+            @Override
+            public void onPlayerError(int errorCode, String message) {
+                Logger.e(errorCode + "," + url);
+                String friendlyMsg = message != null ? message : "播放错误";
+                Logger.e("Error: " + friendlyMsg);
+
+                if (retried()) {
+                    ErrorEvent.extract(tag, friendlyMsg);
+                } else if (engine instanceof ExoPlayerEngine) {
+                    handleExoError(errorCode, friendlyMsg);
+                } else {
+                    ErrorEvent.extract(tag, friendlyMsg);
+                }
+            }
+
+            @Override
+            public void onVideoSizeChanged(int width, int height) {
+                PlayerEvent.size(tag);
+            }
+
+            @Override
+            public void onTracksChanged() {
+                if (engine instanceof ExoPlayerEngine) {
+                    ExoPlayerEngine exoEngine = (ExoPlayerEngine) engine;
+                    if (exoEngine.getExoPlayer() != null) {
+                        setTrack(Track.find(getKey()));
+                        PlayerEvent.track(tag);
+                    }
+                }
+            }
+
+            @Override
+            public void onPositionChanged(long position, long duration) {
+                // 用于弹幕同步
+                if (danPlayer != null) danPlayer.check(Player.STATE_READY);
+            }
+        };
+    }
+
+    private void handleExoError(int errorCode, String friendlyMsg) {
+        switch (errorCode) {
+            case PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW:
+                seekToDefaultPosition();
+                break;
+            case PlaybackException.ERROR_CODE_DECODER_INIT_FAILED:
+            case PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED:
+            case PlaybackException.ERROR_CODE_DECODING_FAILED:
+                toggleDecode();
+                break;
+            case PlaybackException.ERROR_CODE_IO_UNSPECIFIED:
+            case PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED:
+            case PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED:
+            case PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED:
+            case PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED:
+                setFormat(ExoUtil.getMimeType(errorCode));
+                break;
+            default:
+                ErrorEvent.extract(tag, friendlyMsg);
+                break;
+        }
     }
 
     public void setDanmakuView(DanmakuView view) {
@@ -172,8 +245,16 @@ public class Players implements Player.Listener, ParseCallback {
         danPlayer.setView(view);
     }
 
-    public ExoPlayer get() {
-        return exoPlayer;
+    public ExoPlayerEngine getExoEngine() {
+        return engine instanceof ExoPlayerEngine ? (ExoPlayerEngine) engine : null;
+    }
+
+    public MpvPlayerEngine getMpvEngine() {
+        return engine instanceof MpvPlayerEngine ? (MpvPlayerEngine) engine : null;
+    }
+
+    public boolean isMpvActive() {
+        return engine instanceof MpvPlayerEngine;
     }
 
     public MediaSessionCompat getSession() {
@@ -224,7 +305,7 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public void clearMediaItems() {
-        if (exoPlayer != null) exoPlayer.clearMediaItems();
+        if (engine != null) engine.clearMediaItems();
     }
 
     public void clear() {
@@ -241,27 +322,27 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public int getVideoWidth() {
-        return size == null ? 0 : size.width;
+        return engine == null ? 0 : engine.getVideoWidth();
     }
 
     public int getVideoHeight() {
-        return size == null ? 0 : size.height;
+        return engine == null ? 0 : engine.getVideoHeight();
     }
 
     public float getSpeed() {
-        return exoPlayer == null ? 1.0f : exoPlayer.getPlaybackParameters().speed;
+        return engine == null ? 1.0f : engine.getSpeed();
     }
 
     public long getPosition() {
-        return exoPlayer == null ? C.TIME_UNSET : exoPlayer.getCurrentPosition();
+        return engine == null ? C.TIME_UNSET : engine.getCurrentPosition();
     }
 
     public long getDuration() {
-        return exoPlayer == null ? -1 : exoPlayer.getDuration();
+        return engine == null ? -1 : engine.getDuration();
     }
 
     public long getBuffered() {
-        return exoPlayer == null ? 0 : exoPlayer.getBufferedPosition();
+        return engine == null ? 0 : engine.getBufferedPosition();
     }
 
     public boolean retried() {
@@ -269,7 +350,8 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public boolean haveTrack(int type) {
-        return exoPlayer != null && ExoUtil.haveTrack(exoPlayer.getCurrentTracks(), type);
+        ExoPlayerEngine exoEngine = getExoEngine();
+        return exoEngine != null && exoEngine.haveTrack(type);
     }
 
     public boolean haveDanmaku() {
@@ -278,15 +360,15 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public boolean isPlaying() {
-        return exoPlayer != null && exoPlayer.isPlaying();
+        return engine != null && engine.isPlaying();
     }
 
     public boolean isEnded() {
-        return exoPlayer != null && exoPlayer.getPlaybackState() == Player.STATE_ENDED;
+        return engine != null && engine.isEnded();
     }
 
     public boolean isIdle() {
-        return exoPlayer != null && exoPlayer.getPlaybackState() == Player.STATE_IDLE;
+        return engine != null && engine.isIdle();
     }
 
     public boolean isEmpty() {
@@ -294,15 +376,19 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public boolean isLive() {
-        return getDuration() < TimeUnit.MINUTES.toMillis(1) || exoPlayer.isCurrentMediaItemLive();
+        return getDuration() < TimeUnit.MINUTES.toMillis(1) || (engine instanceof ExoPlayerEngine
+                && getExoEngine() != null && getExoEngine().getExoPlayer() != null
+                && getExoEngine().getExoPlayer().isCurrentMediaItemLive());
     }
 
     public boolean isVod() {
-        return getDuration() > TimeUnit.MINUTES.toMillis(1) && !exoPlayer.isCurrentMediaItemLive();
+        return getDuration() > TimeUnit.MINUTES.toMillis(1) && engine instanceof ExoPlayerEngine
+                && getExoEngine() != null && getExoEngine().getExoPlayer() != null
+                && !getExoEngine().getExoPlayer().isCurrentMediaItemLive();
     }
 
     public boolean isHard() {
-        return decode == HARD;
+        return engine != null && engine.isHard();
     }
 
     public boolean isPortrait() {
@@ -322,12 +408,12 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public String getDecodeText() {
+        if (isMpvActive()) return "MPV";
         return ResUtil.getStringArray(R.array.select_decode)[decode];
     }
 
     public String setSpeed(float speed) {
-        if (exoPlayer == null || !exoPlayer.isCommandAvailable(COMMAND_SET_SPEED_AND_PITCH)) return getSpeedText();
-        exoPlayer.setPlaybackParameters(exoPlayer.getPlaybackParameters().withSpeed(speed));
+        if (engine != null) engine.setSpeed(speed);
         return getSpeedText();
     }
 
@@ -357,6 +443,11 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public void toggleDecode() {
+        // 如果在 MPV 模式下，先切回 ExoPlayer
+        if (isMpvActive()) {
+            playerEngine = ENGINE_EXO;
+            Setting.putPlayerEngine(ENGINE_EXO);
+        }
         // 循环切换：软解 -> 硬解 -> 自动 -> 软解
         if (decode == SOFT) decode = HARD;
         else if (decode == HARD) decode = AUTO;
@@ -365,13 +456,19 @@ public class Players implements Player.Listener, ParseCallback {
         init(view);
     }
 
-    public void toggleDecodeWithMpv() {
-        // 循环切换：软解 -> 硬解 -> 自动 -> MPV -> 软解
-        if (decode == SOFT) decode = HARD;
-        else if (decode == HARD) decode = AUTO;
-        else if (decode == AUTO) decode = MPV;
-        else decode = SOFT;
-        Setting.putDecode(decode);
+    /**
+     * 切换播放器引擎：ExoPlayer ↔ MPV
+     */
+    public void togglePlayerEngine() {
+        if (isMpvActive()) {
+            playerEngine = ENGINE_EXO;
+            Setting.putPlayerEngine(ENGINE_EXO);
+            Notify.show("切换到 ExoPlayer 播放器");
+        } else {
+            playerEngine = ENGINE_MPV;
+            Setting.putPlayerEngine(ENGINE_MPV);
+            Notify.show("切换到 MPV 播放器");
+        }
         init(view);
     }
 
@@ -393,31 +490,31 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public void seekTo(long time) {
-        if (exoPlayer != null) exoPlayer.seekTo(time);
+        if (engine != null) engine.seekTo(time);
         if (danPlayer != null) danPlayer.seekTo(time);
     }
 
     public void seekToDefaultPosition() {
-        if (exoPlayer != null) exoPlayer.seekToDefaultPosition();
+        if (engine != null) engine.seekToDefaultPosition();
         prepare();
     }
 
     public void prepare() {
-        if (exoPlayer != null) exoPlayer.prepare();
+        if (engine != null) engine.prepare();
     }
 
     public void play() {
-        if (exoPlayer != null) exoPlayer.play();
+        if (engine != null) engine.play();
         if (danPlayer != null) danPlayer.play();
     }
 
     public void pause() {
-        if (exoPlayer != null) exoPlayer.pause();
+        if (engine != null) engine.pause();
         if (danPlayer != null) danPlayer.pause();
     }
 
     public void stop() {
-        if (exoPlayer != null) exoPlayer.stop();
+        if (engine != null) engine.stop();
         if (danPlayer != null) danPlayer.stop();
         stopParse();
     }
@@ -432,10 +529,12 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     private void releasePlayer() {
-        if (exoPlayer != null) exoPlayer.release();
+        if (engine != null) {
+            engine.release();
+            engine = null;
+        }
         if (danPlayer != null) danPlayer.release();
         if (view != null) view.setPlayer(null);
-        exoPlayer = null;
     }
 
     private void removeTimeoutCheck() {
@@ -518,8 +617,18 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     private void setMediaItem(Map<String, String> headers, String url, String format, Drm drm, List<Sub> subs, List<Danmaku> danmakus, long timeout) {
-        if (exoPlayer != null) exoPlayer.setMediaItem(ExoUtil.getMediaItem(this.headers = checkUa(headers), UrlUtil.uri(this.url = url), this.format = format, this.drm = drm, checkSub(this.subs = subs), decode));
-        if (danPlayer != null) setDanmaku(this.danmakus = danmakus);
+        this.url = url;
+        this.format = format;
+        this.drm = drm;
+        this.subs = subs;
+        this.headers = checkUa(headers);
+        this.danmakus = danmakus;
+
+        if (engine != null) {
+            engine.load(url, this.headers, format, drm, checkSub(subs), decode);
+        }
+
+        if (danPlayer != null) setDanmaku(danmakus);
         App.post(runnable, timeout);
         PlayerEvent.prepare(tag);
         session.setActive(true);
@@ -545,19 +654,20 @@ public class Players implements Player.Listener, ParseCallback {
     }
 
     public void resetTrack() {
-        if (exoPlayer != null) ExoUtil.resetTrack(exoPlayer);
+        ExoPlayerEngine exoEngine = getExoEngine();
+        if (exoEngine != null) exoEngine.resetTrack();
     }
 
     public void setTrack(List<Track> tracks) {
-        for (Track track : tracks) setTrack(track);
+        if (isMpvActive()) return; // MPV 暂不支持轨道切换
+        ExoPlayerEngine exoEngine = getExoEngine();
+        if (exoEngine == null) return;
+        for (Track track : tracks) exoEngine.setTrack(track);
     }
 
     private void setTrack(Track item) {
-        if (item.isSelected()) {
-            ExoUtil.selectTrack(exoPlayer, item.getGroup(), item.getTrack());
-        } else {
-            ExoUtil.deselectTrack(exoPlayer, item.getGroup(), item.getTrack());
-        }
+        ExoPlayerEngine exoEngine = getExoEngine();
+        if (exoEngine != null) exoEngine.setTrack(item);
     }
 
     private void setPlaybackState(int state) {
@@ -653,73 +763,5 @@ public class Players implements Player.Listener, ParseCallback {
     @Override
     public void onParseError() {
         ErrorEvent.parse(tag);
-    }
-
-    @Override
-    public void onEvents(@NonNull Player player, @NonNull Player.Events events) {
-        if (!events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_MEDIA_METADATA_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_PARAMETERS_CHANGED, Player.EVENT_PLAYER_ERROR)) return;
-        switch (player.getPlaybackState()) {
-            case Player.STATE_IDLE:
-                setPlaybackState(events.contains(Player.EVENT_PLAYER_ERROR) ? PlaybackStateCompat.STATE_ERROR : PlaybackStateCompat.STATE_NONE);
-                break;
-            case Player.STATE_READY:
-                setPlaybackState(player.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED);
-                break;
-            case Player.STATE_BUFFERING:
-                setPlaybackState(PlaybackStateCompat.STATE_BUFFERING);
-                break;
-            case Player.STATE_ENDED:
-                setPlaybackState(PlaybackStateCompat.STATE_STOPPED);
-                break;
-        }
-    }
-
-    @Override
-    public void onPlaybackStateChanged(int state) {
-        if (danPlayer != null) danPlayer.check(state);
-        PlayerEvent.state(tag, state);
-    }
-
-    @Override
-    public void onVideoSizeChanged(@NonNull VideoSize videoSize) {
-        this.size = videoSize;
-        PlayerEvent.size(tag);
-    }
-
-    @Override
-    public void onTracksChanged(@NonNull Tracks tracks) {
-        if (tracks.isEmpty()) return;
-        setTrack(Track.find(getKey()));
-        PlayerEvent.track(tag);
-    }
-
-    @Override
-    public void onPlayerError(@NonNull PlaybackException error) {
-        Logger.e(error.errorCode + "," + url);
-        // 使用友好的错误提示
-        String friendlyMsg = new com.fongmi.android.tv.player.exo.ErrorMsgProvider().get(error);
-        Logger.e("Error: " + friendlyMsg);
-        
-        if (retried()) ErrorEvent.extract(tag, friendlyMsg);
-        else switch (error.errorCode) {
-            case PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW:
-                seekToDefaultPosition();
-                break;
-            case PlaybackException.ERROR_CODE_DECODER_INIT_FAILED:
-            case PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED:
-            case PlaybackException.ERROR_CODE_DECODING_FAILED:
-                toggleDecode();
-                break;
-            case PlaybackException.ERROR_CODE_IO_UNSPECIFIED:
-            case PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED:
-            case PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED:
-            case PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED:
-            case PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED:
-                setFormat(ExoUtil.getMimeType(error.errorCode));
-                break;
-            default:
-                ErrorEvent.extract(tag, friendlyMsg);
-                break;
-        }
     }
 }

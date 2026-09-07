@@ -8,6 +8,7 @@ import android.view.View;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.History;
@@ -21,6 +22,8 @@ import com.airbnb.lottie.LottieAnimationView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
 
 public class HistoryActivity extends BaseActivity implements HistoryAdapter.OnClickListener {
 
@@ -58,9 +61,15 @@ public class HistoryActivity extends BaseActivity implements HistoryAdapter.OnCl
     }
 
     private void getHistory() {
-        mAdapter.addAll(History.getAll()); // 显示所有视频源的观看记录
-        mBinding.delete.setVisibility(mAdapter.getItemCount() > 0 ? View.VISIBLE : View.GONE);
-        updateEmptyState();
+        // 历史记录读数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            List<History> items = History.getAll(); // 显示所有视频源的观看记录
+            App.post(() -> {
+                mAdapter.addAll(items);
+                mBinding.delete.setVisibility(mAdapter.getItemCount() > 0 ? View.VISIBLE : View.GONE);
+                updateEmptyState();
+            });
+        });
     }
 
     private void updateEmptyState() {
@@ -82,7 +91,11 @@ public class HistoryActivity extends BaseActivity implements HistoryAdapter.OnCl
     }
 
     private void onSync(View view) {
-        SyncDialog.create().history().show(this);
+        // 同步数据（历史/配置）读取移到后台线程，读完后回主线程弹窗
+        App.execute(() -> {
+            SyncDialog dialog = SyncDialog.create().history();
+            App.post(() -> dialog.show(this));
+        });
     }
 
     private void onDelete(View view) {

@@ -30,6 +30,9 @@ public class Notify {
     private AlertDialog mDialog;
     private Toast mToast;
     private Handler mHandler;
+    // 防止同一轻提示在短时间内重复显示（例如播放时同一提示连弹两遍）
+    private String mLastToastText;
+    private long mLastToastTime;
 
     private static class Loader {
         static volatile Notify INSTANCE = new Notify();
@@ -50,7 +53,11 @@ public class Notify {
     }
 
     public static void show(Notification notification) {
-        if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(App.get(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return;
+        // 通知权限的的申请统一放在 PlaybackService.start() 中处理，
+        // 这里只做静默判断，未授权时不弹窗、不显示通知，避免播放过程中反复弹权限请求。
+        if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(App.get(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         NotificationManagerCompat.from(App.get()).notify(ID, notification);
     }
 
@@ -89,40 +96,46 @@ public class Notify {
         mDialog.show();
     }
 
-    private void makeText(String message) {
-        if (mToast != null) mToast.cancel();
+    private boolean shouldSkip(String message) {
+        if (TextUtils.isEmpty(message)) return true;
+        long now = System.currentTimeMillis();
+        // 相同文本在 1 秒内重复调用时只显示一次，避免轻提示连弹两遍
+        if (message.equals(mLastToastText) && now - mLastToastTime < 1000) return true;
+        mLastToastText = message;
+        mLastToastTime = now;
+        return false;
+    }
+
+    private synchronized void showToast(String message, boolean center) {
+        if (mToast == null) {
+            mToast = new Toast(App.get());
+            mToast.setView(LayoutInflater.from(App.get()).inflate(R.layout.view_toast, null));
+            mToast.setDuration(Toast.LENGTH_SHORT);
+        }
+        // 复用同一个 Toast 实例并更新文案/位置，避免 cancel 与 show 之间的异步竞态
+        // 导致旧 Toast 未被真正取消又弹出，造成“连弹两遍”的观感。
+        TextView view = mToast.getView().findViewById(R.id.message);
+        if (view != null) view.setText(message);
+        int offsetY = center ? 0 : (int) (60 * App.get().getResources().getDisplayMetrics().density);
+        mToast.setGravity(center ? Gravity.CENTER : Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, offsetY);
         if (mHandler == null) mHandler = new Handler(Looper.getMainLooper());
-        if (TextUtils.isEmpty(message)) return;
-        mToast = new Toast(App.get());
-        TextView view = (TextView) LayoutInflater.from(App.get()).inflate(R.layout.view_toast, null);
-        view.setText(message);
-        mToast.setView(view);
-        mToast.setDuration(Toast.LENGTH_SHORT);
-        mToast.show();
-        
-        // 1秒后取消Toast
         mHandler.removeCallbacksAndMessages(null);
+        // 延迟一帧再显示，确保上一次的 cancel 已生效，彻底消除连弹
+        mHandler.post(() -> {
+            if (mToast != null) mToast.show();
+        });
         mHandler.postDelayed(() -> {
             if (mToast != null) mToast.cancel();
-        }, 1000); // 1000毫秒 = 1秒
+        }, 1000);
+    }
+
+    private void makeText(String message) {
+        if (shouldSkip(message)) return;
+        showToast(message, false);
     }
 
     private void makeTextCenter(String message) {
-        if (mToast != null) mToast.cancel();
-        if (mHandler == null) mHandler = new Handler(Looper.getMainLooper());
-        if (TextUtils.isEmpty(message)) return;
-        mToast = new Toast(App.get());
-        TextView view = (TextView) LayoutInflater.from(App.get()).inflate(R.layout.view_toast, null);
-        view.setText(message);
-        mToast.setView(view);
-        mToast.setDuration(Toast.LENGTH_SHORT);
-        mToast.setGravity(Gravity.CENTER, 0, 0);
-        mToast.show();
-        
-        // 1秒后取消Toast
-        mHandler.removeCallbacksAndMessages(null);
-        mHandler.postDelayed(() -> {
-            if (mToast != null) mToast.cancel();
-        }, 1000); // 1000毫秒 = 1秒
+        if (shouldSkip(message)) return;
+        showToast(message, true);
     }
 }

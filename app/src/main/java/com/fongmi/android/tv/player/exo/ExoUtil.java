@@ -74,7 +74,12 @@ public class ExoUtil {
     }
 
     public static CaptionStyleCompat getCaptionStyle() {
-        return Setting.isCaption() ? CaptionStyleCompat.createFromCaptionStyle(((CaptioningManager) App.get().getSystemService(Context.CAPTIONING_SERVICE)).getUserStyle()) : new CaptionStyleCompat(Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT, CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null);
+        if (Setting.isCaption()) {
+            CaptionStyleCompat s = CaptionStyleCompat.createFromCaptionStyle(((CaptioningManager) App.get().getSystemService(Context.CAPTIONING_SERVICE)).getUserStyle());
+            // 保留系统字幕的文字颜色与描边，但去掉默认黑色背景底
+            return new CaptionStyleCompat(s.foregroundColor, Color.TRANSPARENT, Color.TRANSPARENT, s.edgeType, s.edgeColor, s.typeface);
+        }
+        return new CaptionStyleCompat(Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT, CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW, 0x80000000, null);
     }
 
     public static boolean haveTrack(Tracks tracks, int type) {
@@ -100,10 +105,12 @@ public class ExoUtil {
     }
 
     public static void setSubtitleView(PlayerView exo) {
-        exo.getSubtitleView().setStyle(getCaptionStyle());
         exo.getSubtitleView().setApplyEmbeddedFontSizes(false);
-        exo.getSubtitleView().setApplyEmbeddedStyles(!Setting.isCaption());
+        exo.getSubtitleView().setApplyEmbeddedStyles(false);
+        exo.getSubtitleView().setStyle(getCaptionStyle());
+        exo.getSubtitleView().setBackgroundColor(Color.TRANSPARENT);
         if (Setting.getSubtitleTextSize() != 0) exo.getSubtitleView().setFractionalTextSize(Setting.getSubtitleTextSize());
+        CueMerger.attach(exo);
     }
 
     public static String getMimeType(String path) {

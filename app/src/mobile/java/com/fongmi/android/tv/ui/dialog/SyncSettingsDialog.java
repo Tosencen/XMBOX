@@ -205,36 +205,44 @@ public class SyncSettingsDialog extends BaseDialog implements DeviceAdapter.OnCl
 
     @Override
     public void onItemClick(Device item) {
-        // 构建同步数据
-        body.add("device", Device.get().toString());
-        body.add("config", Config.vod().toString());
-        body.add("targets", App.gson().toJson(History.get()));
+        // 先在主线程取 UI 状态
+        String mode = binding.mode.getTag().toString();
+        // 同步数据（设备/配置/历史）读取移到后台线程，避免主线程访问数据库
+        App.execute(() -> {
+            FormBody.Builder builder = new FormBody.Builder();
+            builder.add("device", Device.get().toString());
+            builder.add("config", Config.vod().toString());
+            builder.add("targets", App.gson().toJson(History.get()));
 
-        // 发送同步请求
-        String url = String.format(Locale.getDefault(), 
-            "%s/action?do=sync&mode=%s&type=history", 
-            item.getIp(), binding.mode.getTag().toString());
-        
-        OkHttp.newCall(client, url, body.build()).enqueue(getCallback());
+            // 发送同步请求
+            String url = String.format(Locale.getDefault(),
+                "%s/action?do=sync&mode=%s&type=history",
+                item.getIp(), mode);
+
+            OkHttp.newCall(client, url, builder.build()).enqueue(getCallback());
+        });
     }
 
     @Override
     public boolean onLongClick(Device item) {
         String modeStr = binding.mode.getTag().toString();
         if (modeStr.equals("0")) return false;
-        if (modeStr.equals("2")) History.delete(VodConfig.getCid());
-        
-        // 构建同步数据
-        body.add("device", Device.get().toString());
-        body.add("config", Config.vod().toString());
-        body.add("targets", App.gson().toJson(History.get()));
-        
-        // 发送强制同步请求
-        String url = String.format(Locale.getDefault(), 
-            "%s/action?do=sync&mode=%s&type=history&force=true", 
-            item.getIp(), binding.mode.getTag().toString());
-        
-        OkHttp.newCall(client, url, body.build()).enqueue(getCallback());
+        // 清空历史与构建同步数据都移到后台线程（含数据库读写）
+        App.execute(() -> {
+            if (modeStr.equals("2")) History.delete(VodConfig.getCid());
+
+            FormBody.Builder builder = new FormBody.Builder();
+            builder.add("device", Device.get().toString());
+            builder.add("config", Config.vod().toString());
+            builder.add("targets", App.gson().toJson(History.get()));
+
+            // 发送强制同步请求
+            String url = String.format(Locale.getDefault(),
+                "%s/action?do=sync&mode=%s&type=history&force=true",
+                item.getIp(), modeStr);
+
+            OkHttp.newCall(client, url, builder.build()).enqueue(getCallback());
+        });
         return true;
     }
 

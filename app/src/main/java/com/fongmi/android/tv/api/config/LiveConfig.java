@@ -96,6 +96,15 @@ public class LiveConfig {
         return config(Config.live());
     }
 
+    /** 与 init() 等价，但使用调用方已读好的 Config，避免在调用线程访问数据库 */
+    public LiveConfig init(Config config) {
+        this.home = null;
+        this.ads = new ArrayList<>();
+        this.rules = new ArrayList<>();
+        this.lives = new ArrayList<>();
+        return config(config);
+    }
+
     public LiveConfig config(Config config) {
         this.config = config;
         if (config.getUrl() == null) return this;
@@ -191,6 +200,7 @@ public class LiveConfig {
         for (JsonElement element : Json.safeListElement(object, "lives")) {
             Live live = Live.objectFrom(element);
             if (lives.contains(live)) continue;
+            if (TextUtils.isEmpty(live.getName())) continue;
             live.setApi(UrlUtil.convert(live.getApi()));
             live.setExt(UrlUtil.convert(live.getExt()));
             live.setJar(parseJar(live, spider));
@@ -323,6 +333,6 @@ public class LiveConfig {
         config.home(home.getName()).update();
         for (Live item : getLives()) item.setActivated(home);
         if (App.activity() != null && App.activity() instanceof LiveActivity) return;
-        if (check) if (home.isBoot() || Setting.isBootLive()) App.post(this::bootLive);
+        if (check && !home.isEmpty()) if (home.isBoot() || Setting.isBootLive()) App.post(this::bootLive);
     }
 }

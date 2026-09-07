@@ -106,7 +106,9 @@ public final class TrackDialog extends BaseDialog implements TrackAdapter.OnClic
     }
 
     private void addTrack(List<Track> items) {
-        List<Tracks.Group> groups = player.get().getCurrentTracks().getGroups();
+        com.fongmi.android.tv.player.engine.ExoPlayerEngine exoEngine = player.getExoEngine();
+        if (exoEngine == null || exoEngine.getExoPlayer() == null) return;
+        List<Tracks.Group> groups = exoEngine.getExoPlayer().getCurrentTracks().getGroups();
         for (int i = 0; i < groups.size(); i++) {
             Tracks.Group trackGroup = groups.get(i);
             if (trackGroup.getType() != type) continue;

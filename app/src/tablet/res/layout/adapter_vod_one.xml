@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
+    android:layout_height="@dimen/vod_card_height_one"
     android:layout_margin="8dp"
     android:background="@drawable/shape_vod_list"
     android:foreground="@drawable/shape_vod">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/image"
-        android:layout_width="90dp"
+        android:layout_width="@dimen/vod_image_width_one"
         android:layout_height="match_parent"
         android:background="@color/black_10"
         android:scaleType="center"
@@ -26,7 +26,7 @@
         android:maxWidth="90dp"
         android:singleLine="true"
         android:textColor="@color/white"
-        android:textSize="12sp"
+        android:textSize="@dimen/text_size_caption"
         android:visibility="gone"
         tools:text="泥巴"
         tools:visibility="visible" />
@@ -46,7 +46,7 @@
             android:ellipsize="end"
             android:maxLines="3"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_title"
             tools:text="蜘蛛人" />
 
         <TextView
@@ -56,7 +56,7 @@
             android:layout_marginTop="4dp"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_caption"
             tools:text="1080p" />
 
     </LinearLayout>

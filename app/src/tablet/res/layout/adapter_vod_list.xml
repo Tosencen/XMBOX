@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_title"
             tools:text="蜘蛛人" />
 
         <TextView
@@ -42,7 +42,7 @@
             android:layout_marginTop="2dp"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_caption"
             tools:text="1080p" />
 
     </LinearLayout>
