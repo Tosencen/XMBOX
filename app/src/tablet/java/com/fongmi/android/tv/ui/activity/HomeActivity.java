@@ -81,7 +81,6 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
         initFragment(savedInstanceState);
         Server.get().start();
         initConfig();
-        setNavigation();
     }
 
     @Override
@@ -136,6 +135,8 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
                 WallConfig.get().init(wall);
                 LiveConfig.get().init(live).load();
                 VodConfig.get().init(vod).load(getCallback());
+                // 配置加载完成后再刷新导航（LiveConfig.hasUrl 此时已用内存中的 config，不触发主线程读库）
+                setNavigation();
             });
         });
     }
@@ -164,11 +165,15 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     }
 
     private void loadLive(String url) {
-        LiveConfig.load(Config.find(url, 1), new Callback() {
-            @Override
-            public void success() {
-                openLive();
-            }
+        // Config 读数据库移到后台线程，读完后回主线程加载直播配置
+        App.execute(() -> {
+            Config config = Config.find(url, 1);
+            App.post(() -> LiveConfig.load(config, new Callback() {
+                @Override
+                public void success() {
+                    openLive();
+                }
+            }));
         });
     }
 

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.History;
@@ -62,7 +63,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         mItems.clear();
         setDelete(false);
         notifyDataSetChanged();
-        History.delete(VodConfig.getCid());
+        App.execute(() -> History.delete(VodConfig.getCid()));
     }
 
     public void remove(History item) {

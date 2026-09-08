@@ -46,7 +46,8 @@ public class HistoryDialog implements ConfigAdapter.OnClickListener {
     private void setRecyclerView() {
         binding.recycler.setItemAnimator(null);
         binding.recycler.setHasFixedSize(false);
-        binding.recycler.setAdapter(adapter.addAll(type));
+        binding.recycler.setAdapter(adapter);
+        adapter.addAll(type);
         binding.recycler.addItemDecoration(new SpaceItemDecoration(1, 16));
     }
 

@@ -29,6 +29,7 @@ import com.fongmi.android.tv.Setting;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.bean.CastVideo;
 import com.fongmi.android.tv.bean.Channel;
+import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Epg;
 import com.fongmi.android.tv.bean.EpgData;
 import com.fongmi.android.tv.bean.Group;
@@ -266,7 +267,11 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
 
     private void checkLive() {
         if (isEmpty()) {
-            LiveConfig.get().init().load(getCallback());
+            // Config 读数据库移到后台线程，读完后回主线程初始化并加载
+            App.execute(() -> {
+                Config config = Config.live();
+                App.post(() -> LiveConfig.get().init(config).load(getCallback()));
+            });
         } else {
             getLive();
         }
@@ -644,13 +649,13 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
         Keep keep = new Keep();
         keep.setKey(item.getName());
         keep.setType(1);
-        keep.save();
+        App.execute(keep::save);
     }
 
     private void delKeep(Channel item) {
         if (mGroup.isKeep()) mChannelAdapter.remove(item);
         getKeep().getChannel().remove(item);
-        Keep.delete(item.getName());
+        App.execute(() -> Keep.delete(item.getName()));
     }
 
     private void setInfo() {
@@ -850,7 +855,7 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     }
 
     private void onError(ErrorEvent event) {
-        Track.delete(mPlayers.getUrl());
+        App.execute(() -> Track.delete(mPlayers.getUrl()));
         showError(event.getMsg());
         mPlayers.resetTrack();
         mPlayers.reset();

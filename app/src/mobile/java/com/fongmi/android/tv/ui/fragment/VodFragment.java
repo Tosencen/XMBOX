@@ -532,7 +532,9 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
     }
 
     private void setLogo() {
-        Glide.with(App.get()).load(UrlUtil.convert(VodConfig.get().getConfig().getLogo())).circleCrop().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).error(R.drawable.ic_logo).listener(getListener()).into(mBinding.logo);
+        Config config = VodConfig.get().getConfig();
+        if (config == null) return;
+        Glide.with(App.get()).load(UrlUtil.convert(config.getLogo())).circleCrop().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).error(R.drawable.ic_logo).listener(getListener()).into(mBinding.logo);
     }
 
     private RequestListener<Drawable> getListener() {

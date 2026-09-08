@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Config;
@@ -32,17 +33,19 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
         void onDeleteClick(Config item);
     }
 
-    public ConfigAdapter addAll(int type) {
-        mItems = new ArrayList<>();
-        List<Config> configs = Config.getAll(type);
-        Config currentConfig = type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig();
-        
-        for (Config config : configs) {
-            if (config.equals(currentConfig) || config.isEmpty()) continue;
-            mItems.add(config);
-        }
-        
-        return this;
+    public void addAll(int type) {
+        App.execute(() -> {
+            List<Config> configs = Config.getAll(type);
+            Config currentConfig = type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig();
+            App.post(() -> {
+                mItems = new ArrayList<>();
+                for (Config config : configs) {
+                    if (config.equals(currentConfig) || config.isEmpty()) continue;
+                    mItems.add(config);
+                }
+                notifyDataSetChanged();
+            });
+        });
     }
 
     public void addItem(Config item) {
@@ -54,7 +57,7 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
 
     public int remove(Config item) {
         int position = mItems.indexOf(item);
-        item.delete();
+        App.execute(item::delete);
         mItems.remove(item);
         notifyItemRemoved(position);
         return getItemCount();

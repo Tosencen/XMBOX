@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.databinding.DialogReceiveBinding;
@@ -76,8 +77,10 @@ public class ReceiveDialog extends BaseDialog {
     }
 
     private void onReceiveCast() {
-        if (VodConfig.get().getConfig().equals(event.getConfig())) {
-            VideoActivity.cast(getActivity(), event.getHistory().update(VodConfig.getCid()));
+        if (VodConfig.get().getConfig() != null && VodConfig.get().getConfig().equals(event.getConfig())) {
+            History history = event.getHistory();
+            App.execute(() -> history.update(VodConfig.getCid()));
+            VideoActivity.cast(getActivity(), history);
             dismiss();
         } else {
             showProgress();

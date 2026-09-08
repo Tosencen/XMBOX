@@ -203,11 +203,15 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void loadLive(String url) {
-        LiveConfig.load(Config.find(url, 1), new Callback() {
-            @Override
-            public void success() {
-                LiveActivity.start(getActivity());
-            }
+        // Config 读数据库移到后台线程，读完后回主线程加载直播配置
+        App.execute(() -> {
+            Config config = Config.find(url, 1);
+            App.post(() -> LiveConfig.load(config, new Callback() {
+                @Override
+                public void success() {
+                    LiveActivity.start(getActivity());
+                }
+            }));
         });
     }
 
@@ -254,34 +258,31 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void getHistory(boolean renew) {
-        // 获取所有视频源的观看记录（最近60天）
-        List<History> items = History.getAll();
-        com.github.catvod.utils.Logger.d("HomeActivity: 获取观看记录，共 " + items.size() + " 条");
-        
-        // 对比一下数据库中所有记录
-        List<com.fongmi.android.tv.bean.History> allInDb = com.fongmi.android.tv.db.AppDatabase.get().getHistoryDao().findAllRecent(0);
-        com.github.catvod.utils.Logger.d("HomeActivity: 数据库总记录数: " + allInDb.size() + " 条（包含所有时间）");
-        
-        if (items.size() < allInDb.size()) {
-            com.github.catvod.utils.Logger.w("HomeActivity: 有 " + (allInDb.size() - items.size()) + " 条记录因为时间过滤被隐藏");
-        }
-        
-        for (History h : items) {
-            com.github.catvod.utils.Logger.d("HomeActivity: 记录 - " + h.getVodName() + 
-                                            " (cid=" + h.getCid() + 
-                                            ", createTime=" + h.getCreateTime() + ")");
-        }
-        
-        int historyIndex = getHistoryIndex();
-        int recommendIndex = getRecommendIndex();
-        boolean exist = recommendIndex - historyIndex == 2;
-        if (renew) mHistoryAdapter = new ArrayObjectAdapter(mPresenter = new HistoryPresenter(this));
-        if ((items.isEmpty() && exist) || (renew && exist)) mAdapter.removeItems(historyIndex, 1);
-        if ((!items.isEmpty() && !exist) || (renew && exist)) mAdapter.add(historyIndex, new ListRow(mHistoryAdapter));
-        mHistoryAdapter.setItems(items, null);
-        
-        // 显示上次播放弹窗
-        checkLastWatchDialog(items);
+        // 获取所有视频源的观看记录（最近60天）移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            List<History> items = History.getAll();
+            List<com.fongmi.android.tv.bean.History> allInDb = com.fongmi.android.tv.db.AppDatabase.get().getHistoryDao().findAllRecent(0);
+            App.post(() -> {
+                com.github.catvod.utils.Logger.d("HomeActivity: 获取观看记录，共 " + items.size() + " 条");
+                if (items.size() < allInDb.size()) {
+                    com.github.catvod.utils.Logger.w("HomeActivity: 有 " + (allInDb.size() - items.size()) + " 条记录因为时间过滤被隐藏");
+                }
+                for (History h : items) {
+                    com.github.catvod.utils.Logger.d("HomeActivity: 记录 - " + h.getVodName() +
+                            " (cid=" + h.getCid() +
+                            ", createTime=" + h.getCreateTime() + ")");
+                }
+                int historyIndex = getHistoryIndex();
+                int recommendIndex = getRecommendIndex();
+                boolean exist = recommendIndex - historyIndex == 2;
+                if (renew) mHistoryAdapter = new ArrayObjectAdapter(mPresenter = new HistoryPresenter(this));
+                if ((items.isEmpty() && exist) || (renew && exist)) mAdapter.removeItems(historyIndex, 1);
+                if ((!items.isEmpty() && !exist) || (renew && exist)) mAdapter.add(historyIndex, new ListRow(mHistoryAdapter));
+                mHistoryAdapter.setItems(items, null);
+                // 显示上次播放弹窗
+                checkLastWatchDialog(items);
+            });
+        });
     }
     
     private void checkLastWatchDialog(List<History> items) {
@@ -298,7 +299,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     private void clearHistory() {
         mAdapter.removeItems(getHistoryIndex(), 1);
-        History.delete(VodConfig.getCid());
+        App.execute(() -> History.delete(VodConfig.getCid()));
         mPresenter.setDelete(false);
         mHistoryAdapter.clear();
     }
@@ -322,7 +323,9 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void setLogo() {
-        Glide.with(App.get()).load(UrlUtil.convert(VodConfig.get().getConfig().getLogo())).circleCrop().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).listener(getListener()).into(mBinding.logo);
+        Config config = VodConfig.get().getConfig();
+        if (config == null) return;
+        Glide.with(App.get()).load(UrlUtil.convert(config.getLogo())).circleCrop().override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).listener(getListener()).into(mBinding.logo);
     }
 
     private RequestListener<Drawable> getListener() {
@@ -383,7 +386,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCastEvent(CastEvent event) {
-        if (VodConfig.get().getConfig().equals(event.getConfig())) {
+        if (VodConfig.get().getConfig() != null && VodConfig.get().getConfig().equals(event.getConfig())) {
             VideoActivity.cast(this, event.getHistory().update(VodConfig.getCid()));
         } else {
             VodConfig.load(event.getConfig(), getCallback(event));
@@ -454,7 +457,8 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void onItemDelete(History item) {
-        mHistoryAdapter.remove(item.delete());
+        App.execute(item::delete);
+        mHistoryAdapter.remove(item);
         if (mHistoryAdapter.size() > 0) return;
         mAdapter.removeItems(getHistoryIndex(), 1);
         mPresenter.setDelete(false);

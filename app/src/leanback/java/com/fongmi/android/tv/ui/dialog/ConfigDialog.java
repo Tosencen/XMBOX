@@ -15,6 +15,7 @@ import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.api.config.WallConfig;
 import com.fongmi.android.tv.bean.Config;
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.databinding.DialogConfigBinding;
 import com.fongmi.android.tv.event.ServerEvent;
 import com.fongmi.android.tv.impl.ConfigCallback;
@@ -142,11 +143,21 @@ public class ConfigDialog implements DialogInterface.OnDismissListener {
     private void onPositive(View view) {
         String name = binding.name.getText().toString().trim();
         String text = binding.text.getText().toString().trim();
-        if (edit) Config.find(url, type).url(text).update();
-        if (text.isEmpty()) Config.delete(url, type);
-        if (name.isEmpty()) callback.setConfig(Config.find(text, type));
-        else callback.setConfig(Config.find(text, name, type));
-        dialog.dismiss();
+        // URL 为空时删除配置（数据库写操作移到后台线程）
+        if (text.isEmpty()) {
+            App.execute(() -> Config.delete(url, type));
+            dialog.dismiss();
+            return;
+        }
+        // Config 读/写数据库移到后台线程，读完后回主线程设置配置
+        App.execute(() -> {
+            if (edit) Config.find(url, type).url(text).update();
+            Config config = name.isEmpty() ? Config.find(text, type) : Config.find(text, name, type);
+            App.post(() -> {
+                callback.setConfig(config);
+                dialog.dismiss();
+            });
+        });
     }
 
     private void onNegative(View view) {

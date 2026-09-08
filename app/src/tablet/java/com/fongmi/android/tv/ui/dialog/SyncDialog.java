@@ -116,8 +116,14 @@ public class SyncDialog extends BaseDialog implements DeviceAdapter.OnClickListe
     }
 
     private void getDevice() {
-        adapter.addAll(Device.getAll());
-        if (adapter.getItemCount() == 0) App.post(this::onRefresh, 1000);
+        // 设备列表读数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            List<Device> devices = Device.getAll();
+            App.post(() -> {
+                adapter.addAll(devices);
+                if (adapter.getItemCount() == 0) App.post(this::onRefresh, 1000);
+            });
+        });
     }
 
     private void setMode() {
@@ -165,8 +171,8 @@ public class SyncDialog extends BaseDialog implements DeviceAdapter.OnClickListe
     public boolean onLongClick(Device item) {
         String mode = binding.mode.getTag().toString();
         if (mode.equals("0")) return false;
-        if (mode.equals("2") && type.equals("keep")) Keep.deleteAll();
-        if (mode.equals("2") && type.equals("history")) History.delete(VodConfig.getCid());
+        if (mode.equals("2") && type.equals("keep")) App.execute(Keep::deleteAll);
+        if (mode.equals("2") && type.equals("history")) App.execute(() -> History.delete(VodConfig.getCid()));
         OkHttp.newCall(client, String.format(Locale.getDefault(), "%s/action?do=sync&mode=%s&type=%s&force=true", item.getIp(), binding.mode.getTag().toString(), type), body.build()).enqueue(getCallback());
         return true;
     }

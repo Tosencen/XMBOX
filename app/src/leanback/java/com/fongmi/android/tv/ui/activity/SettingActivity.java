@@ -459,6 +459,10 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE) return;
-        setConfig(Config.find("file:/" + FileChooser.getPathFromUri(this, data.getData()).replace(Path.rootPath(), ""), type));
+        String filePath = "file:/" + FileChooser.getPathFromUri(this, data.getData()).replace(Path.rootPath(), "");
+        App.execute(() -> {
+            Config config = Config.find(filePath, type);
+            App.post(() -> setConfig(config));
+        });
     }
 }

@@ -134,7 +134,7 @@ public class Action implements Process {
     public void syncHistory(Map<String, String> params, boolean force) {
         Config config = Config.find(Config.objectFrom(params.get("config")));
         List<History> targets = History.arrayFrom(params.get("targets"));
-        if (VodConfig.get().getConfig().equals(config)) {
+        if (config != null && VodConfig.get().getConfig() != null && VodConfig.get().getConfig().equals(config)) {
             if (force) History.delete(config.getId());
             History.sync(targets);
             // 发送同步成功事件

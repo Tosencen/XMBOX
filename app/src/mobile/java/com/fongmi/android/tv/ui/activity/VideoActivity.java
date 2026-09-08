@@ -637,7 +637,6 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         setPoster(item.getVodPic(getPic()));  // 加载详情页海报
         App.removeCallbacks(mR4);
         checkHistory(item);
-        checkFlag(item);
         checkKeepImg();
     }
     
@@ -906,12 +905,17 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void onKeep() {
-        Keep keep = Keep.find(getHistoryKey());
-        Notify.show(keep != null ? R.string.keep_del : R.string.keep_add);
-        if (keep != null) keep.delete();
-        else createKeep();
-        RefreshEvent.keep();
-        checkKeepImg();
+        // 收藏读写数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            Keep keep = Keep.find(getHistoryKey());
+            if (keep != null) keep.delete();
+            else createKeep();
+            App.post(() -> {
+                Notify.show(keep != null ? R.string.keep_del : R.string.keep_add);
+                RefreshEvent.keep();
+                checkKeepImg();
+            });
+        });
     }
 
     private void checkPlay() {
@@ -1266,8 +1270,15 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void checkHistory(Vod item) {
-        mHistory = History.find(getHistoryKey());
-        mHistory = mHistory == null ? createHistory(item) : mHistory;
+        // 历史记录读数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            History history = History.find(getHistoryKey());
+            App.post(() -> onHistoryLoaded(item, history));
+        });
+    }
+
+    private void onHistoryLoaded(Vod item, History history) {
+        mHistory = history == null ? createHistory(item) : history;
         if (!TextUtils.isEmpty(getMark())) mHistory.setVodRemarks(getMark());
         // if (Setting.isIncognito() && mHistory.getKey().equals(getHistoryKey())) mHistory.delete();
         mBinding.control.action.opening.setText(mHistory.getOpening() <= 0 ? getString(R.string.play_op) : mPlayers.stringToTime(mHistory.getOpening()));
@@ -1275,6 +1286,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         mBinding.control.action.speed.setText(mPlayers.setSpeed(mHistory.getSpeed()));
         mHistory.setVodPic(item.getVodPic());
         setScale(getScale());
+        checkFlag(item);
     }
 
     private History createHistory(Vod item) {
@@ -1306,7 +1318,11 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void checkKeepImg() {
-        mBinding.control.keep.setImageResource(Keep.find(getHistoryKey()) == null ? R.drawable.ic_control_keep_off : R.drawable.ic_control_keep_on);
+        // 收藏状态读数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            boolean kept = Keep.find(getHistoryKey()) != null;
+            App.post(() -> mBinding.control.keep.setImageResource(kept ? R.drawable.ic_control_keep_on : R.drawable.ic_control_keep_off));
+        });
     }
 
     private void checkLockImg() {
@@ -1453,7 +1469,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     private void onError(ErrorEvent event) {
         mBinding.swipeLayout.setEnabled(true);
-        Track.delete(mPlayers.getUrl());
+        App.execute(() -> Track.delete(mPlayers.getUrl()));
         showError(event.getMsg());
         mClock.setCallback(null);
         mPlayers.resetTrack();

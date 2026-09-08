@@ -151,7 +151,8 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
 
     @Override
     public void onItemDelete(Keep item) {
-        mAdapter.remove(item.delete());
+        App.execute(item::delete);
+        mAdapter.remove(item);
         if (mAdapter.getItemCount() > 0) return;
         mBinding.delete.setVisibility(View.GONE);
         mAdapter.setDelete(false);

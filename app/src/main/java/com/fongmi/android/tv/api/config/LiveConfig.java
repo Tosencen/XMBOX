@@ -1,4 +1,6 @@
 package com.fongmi.android.tv.api.config;
+import android.os.Looper;
+
 import com.github.catvod.utils.Logger;
 
 import android.net.Uri;
@@ -57,11 +59,13 @@ public class LiveConfig {
     }
 
     public static String getUrl() {
-        return get().getConfig().getUrl();
+        Config c = get().getConfig();
+        return c == null ? "" : c.getUrl();
     }
 
     public static String getDesc() {
-        return get().getConfig().getDesc();
+        Config c = get().getConfig();
+        return c == null ? "" : c.getDesc();
     }
 
     public static String getResp() {
@@ -311,7 +315,9 @@ public class LiveConfig {
     }
 
     public Config getConfig() {
-        return config == null ? Config.live() : config;
+        if (config != null) return config;
+        if (Looper.getMainLooper().getThread() == Thread.currentThread()) return null;
+        return Config.live();
     }
 
     public Live getHome() {

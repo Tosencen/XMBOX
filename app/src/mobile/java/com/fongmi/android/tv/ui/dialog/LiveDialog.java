@@ -7,6 +7,7 @@ import android.view.WindowManager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.bean.Live;
 import com.fongmi.android.tv.databinding.DialogLiveBinding;
@@ -85,29 +86,37 @@ public class LiveDialog implements LiveAdapter.OnClickListener {
 
     @Override
     public void onBootClick(int position, Live item) {
-        item.boot(!item.isBoot()).save();
+        item.boot(!item.isBoot());
+        App.execute(item::save);
         adapter.notifyItemChanged(position);
     }
 
     @Override
     public void onPassClick(int position, Live item) {
-        item.pass(!item.isPass()).save();
+        item.pass(!item.isPass());
+        App.execute(item::save);
         adapter.notifyItemChanged(position);
     }
 
     @Override
     public boolean onBootLongClick(Live item) {
         boolean result = !item.isBoot();
-        for (Live live : LiveConfig.get().getLives()) live.boot(result).save();
+        for (Live live : LiveConfig.get().getLives()) live.boot(result);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        App.execute(() -> {
+            for (Live live : LiveConfig.get().getLives()) live.save();
+        });
         return true;
     }
 
     @Override
     public boolean onPassLongClick(Live item) {
         boolean result = !item.isPass();
-        for (Live live : LiveConfig.get().getLives()) live.pass(result).save();
+        for (Live live : LiveConfig.get().getLives()) live.pass(result);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        App.execute(() -> {
+            for (Live live : LiveConfig.get().getLives()) live.save();
+        });
         return true;
     }
 }

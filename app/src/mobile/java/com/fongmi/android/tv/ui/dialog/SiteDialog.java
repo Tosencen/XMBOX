@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.databinding.DialogSiteBinding;
@@ -89,22 +90,27 @@ public class SiteDialog implements SiteAdapter.OnClickListener {
 
     @Override
     public void onSearchClick(int position, Site item) {
-        item.setSearchable(!item.isSearchable()).save();
+        item.setSearchable(!item.isSearchable());
+        App.execute(item::save);
         adapter.notifyItemChanged(position);
         callback.onChanged();
     }
 
     @Override
     public void onChangeClick(int position, Site item) {
-        item.setChangeable(!item.isChangeable()).save();
+        item.setChangeable(!item.isChangeable());
+        App.execute(item::save);
         adapter.notifyItemChanged(position);
     }
 
     @Override
     public boolean onSearchLongClick(Site item) {
         boolean result = !item.isSearchable();
-        for (Site site : adapter.getItems()) site.setSearchable(result).save();
+        for (Site site : adapter.getItems()) site.setSearchable(result);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        App.execute(() -> {
+            for (Site site : adapter.getItems()) site.save();
+        });
         callback.onChanged();
         return true;
     }
@@ -112,8 +118,11 @@ public class SiteDialog implements SiteAdapter.OnClickListener {
     @Override
     public boolean onChangeLongClick(Site item) {
         boolean result = !item.isChangeable();
-        for (Site site : adapter.getItems()) site.setChangeable(result).save();
+        for (Site site : adapter.getItems()) site.setChangeable(result);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        App.execute(() -> {
+            for (Site site : adapter.getItems()) site.save();
+        });
         return true;
     }
 }

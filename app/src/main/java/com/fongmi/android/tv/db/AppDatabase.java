@@ -97,16 +97,16 @@ public abstract class AppDatabase extends RoomDatabase {
         if (items.size() > 7) for (int i = 7; i < items.size(); i++) Path.clear(items.get(i));
     }
 
-private static AppDatabase create(Context context) {
+    private static AppDatabase create(Context context) {
         // 在构建数据库前先备份，避免迁移失败时丢失数据
-        backupDatabase(context);
+        // 备份是文件拷贝（可能耗时数秒），移出调用线程（含主线程），避免启动卡顿
+        App.execute(() -> backupDatabase(context));
 
         return Room.databaseBuilder(context, AppDatabase.class, NAME)
                 .addMigrations(Migrations.MIGRATION_30_31)
                 .addMigrations(Migrations.MIGRATION_31_32)
                 .addMigrations(Migrations.MIGRATION_32_33)
                 .addMigrations(Migrations.MIGRATION_33_34)
-                .allowMainThreadQueries()
                 .fallbackToDestructiveMigration()
                 .build();
     }

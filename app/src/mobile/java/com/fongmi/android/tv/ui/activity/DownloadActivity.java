@@ -10,6 +10,7 @@ import android.view.View;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Download;
 import com.fongmi.android.tv.databinding.ActivityDownloadBinding;
@@ -114,7 +115,7 @@ public class DownloadActivity extends BaseActivity implements DownloadAdapter.On
                     startService(intent);
 
                     // 删除记录
-                    item.delete();
+                    App.execute(item::delete);
                     mAdapter.remove(item);
                     updateEmptyState();
                 })

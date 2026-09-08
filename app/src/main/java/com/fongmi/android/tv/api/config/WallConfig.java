@@ -1,4 +1,6 @@
 package com.fongmi.android.tv.api.config;
+import android.os.Looper;
+
 import com.github.catvod.utils.Logger;
 
 import android.graphics.Bitmap;
@@ -36,11 +38,13 @@ public class WallConfig {
     }
 
     public static String getUrl() {
-        return get().getConfig().getUrl();
+        Config c = get().getConfig();
+        return c == null ? "" : c.getUrl();
     }
 
     public static String getDesc() {
-        return get().getConfig().getDesc();
+        Config c = get().getConfig();
+        return c == null ? "" : c.getDesc();
     }
 
     public static void load(Config config, Callback callback) {
@@ -69,7 +73,9 @@ public class WallConfig {
     }
 
     public Config getConfig() {
-        return config == null ? Config.wall() : config;
+        if (config != null) return config;
+        if (Looper.getMainLooper().getThread() == Thread.currentThread()) return null;
+        return Config.wall();
     }
 
     public void load(Callback callback) {

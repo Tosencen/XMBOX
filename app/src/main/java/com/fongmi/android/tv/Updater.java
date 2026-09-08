@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -206,6 +207,14 @@ public class Updater implements Download.Callback {
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(this::confirm);
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(this::cancel);
         binding.desc.setText(desc);
+        int maxHeight = (int) (activity.getResources().getDisplayMetrics().heightPixels * 0.5f);
+        binding.getRoot().post(() -> {
+            if (binding.getRoot().getHeight() > maxHeight) {
+                ViewGroup.LayoutParams params = binding.getRoot().getLayoutParams();
+                params.height = maxHeight;
+                binding.getRoot().setLayoutParams(params);
+            }
+        });
     }
 
     private void showVersionInfo(Activity activity) {

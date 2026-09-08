@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Config;
@@ -29,16 +30,21 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
         void onDeleteClick(Config item);
     }
 
-    public ConfigAdapter addAll(int type) {
-        mItems = Config.getAll(type);
-        mItems.remove(type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig());
-        return this;
+    public void addAll(int type) {
+        App.execute(() -> {
+            List<Config> configs = Config.getAll(type);
+            App.post(() -> {
+                mItems = configs;
+                mItems.remove(type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig());
+                notifyDataSetChanged();
+            });
+        });
     }
 
     public int remove(Config item) {
         int position = mItems.indexOf(item);
         if (position == -1) return -1;
-        item.delete();
+        App.execute(item::delete);
         mItems.remove(position);
         notifyItemRemoved(position);
         return getItemCount();

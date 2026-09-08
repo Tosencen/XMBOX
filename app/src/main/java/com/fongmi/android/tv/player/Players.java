@@ -202,8 +202,14 @@ public class Players implements ParseCallback {
                 if (engine instanceof ExoPlayerEngine) {
                     ExoPlayerEngine exoEngine = (ExoPlayerEngine) engine;
                     if (exoEngine.getExoPlayer() != null) {
-                        setTrack(Track.find(getKey()));
-                        PlayerEvent.track(tag);
+                        String key = getKey();
+                        App.execute(() -> {
+                            List<Track> tracks = Track.find(key);
+                            App.post(() -> {
+                                setTrack(tracks);
+                                PlayerEvent.track(tag);
+                            });
+                        });
                     }
                 }
             }

@@ -100,8 +100,14 @@ public class SyncSettingsDialog extends BaseDialog implements DeviceAdapter.OnCl
     }
 
     private void getDevice() {
-        adapter.addAll(Device.getAll());
-        if (adapter.getItemCount() == 0) App.post(this::onRefresh, 1000);
+        // 设备列表读数据库移到后台线程，避免主线程访问 Room
+        App.execute(() -> {
+            List<Device> devices = Device.getAll();
+            App.post(() -> {
+                adapter.addAll(devices);
+                if (adapter.getItemCount() == 0) App.post(this::onRefresh, 1000);
+            });
+        });
     }
 
     private void setMode() {

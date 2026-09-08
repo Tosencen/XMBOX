@@ -76,7 +76,7 @@ public class ReceiveDialog extends BaseDialog {
     }
 
     private void onReceiveCast() {
-        if (VodConfig.get().getConfig().equals(event.getConfig())) {
+        if (VodConfig.get().getConfig() != null && VodConfig.get().getConfig().equals(event.getConfig())) {
             VideoActivity.cast(getActivity(), event.getHistory().update(VodConfig.getCid()));
             dismiss();
         } else {

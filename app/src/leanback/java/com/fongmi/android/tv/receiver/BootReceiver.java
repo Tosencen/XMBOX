@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.api.config.LiveConfig;
+import com.fongmi.android.tv.bean.Config;
 
 public class BootReceiver extends BroadcastReceiver {
 
@@ -42,7 +43,11 @@ public class BootReceiver extends BroadcastReceiver {
         }
 
         private void doJob() {
-            LiveConfig.get().init().load();
+            // Config 读数据库移到后台线程，读完后回主线程初始化并加载
+            App.execute(() -> {
+                Config config = Config.live();
+                App.post(() -> LiveConfig.get().init(config).load());
+            });
             ((ConnectivityManager) App.get().getSystemService(Context.CONNECTIVITY_SERVICE)).unregisterNetworkCallback(this);
         }
     }

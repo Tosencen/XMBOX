@@ -52,7 +52,7 @@ import okhttp3.Response;
 
 public class CastDialog extends BaseDialog implements DeviceAdapter.OnClickListener, ScanTask.Listener, OnDeviceRegistryListener, OnDeviceControlListener, ServiceActionCallback<Unit>, okhttp3.Callback {
 
-    private final FormBody.Builder body;
+    private String historyStr;
     private final OkHttpClient client;
     private final ScanTask scanTask;
 
@@ -69,9 +69,6 @@ public class CastDialog extends BaseDialog implements DeviceAdapter.OnClickListe
 
     public CastDialog() {
         scanTask = new ScanTask(this);
-        body = new FormBody.Builder();
-        body.add("device", Device.get().toString());
-        body.add("config", Config.vod().toString());
         client = OkHttp.client(Constant.TIMEOUT_SYNC);
     }
 
@@ -81,7 +78,7 @@ public class CastDialog extends BaseDialog implements DeviceAdapter.OnClickListe
         if (fd.startsWith("/")) fd = Server.get().getAddress() + "/file" + fd.replace(Path.rootPath(), "");
         if (fd.startsWith("file")) fd = Server.get().getAddress() + "/" + fd.replace(Path.rootPath(), "").replace("://", "");
         if (fd.contains("127.0.0.1")) fd = fd.replace("127.0.0.1", Util.getIp());
-        body.add("history", history.toString().replace(id, fd));
+        historyStr = history.toString().replace(id, fd);
         return this;
     }
 
@@ -127,7 +124,10 @@ public class CastDialog extends BaseDialog implements DeviceAdapter.OnClickListe
     }
 
     private void getDevice() {
-        if (fm) adapter.addAll(Device.getAll());
+        if (fm) App.execute(() -> {
+            java.util.List<Device> devices = Device.getAll();
+            App.post(() -> adapter.addAll(devices));
+        });
         adapter.addAll(DLNADevice.get().getAll());
     }
 
@@ -206,8 +206,18 @@ public class CastDialog extends BaseDialog implements DeviceAdapter.OnClickListe
 
     @Override
     public void onItemClick(Device item) {
-        if (item.isDLNA()) control = DLNACastManager.INSTANCE.connectDevice(DLNADevice.get().find(item), this);
-        else OkHttp.newCall(client, item.getIp().concat("/action?do=cast"), body.build()).enqueue(this);
+        if (item.isDLNA()) {
+            control = DLNACastManager.INSTANCE.connectDevice(DLNADevice.get().find(item), this);
+        } else {
+            // device/config 读数据库移到后台线程，避免主线程访问 Room
+            App.execute(() -> {
+                FormBody.Builder builder = new FormBody.Builder();
+                builder.add("device", Device.get().toString());
+                builder.add("config", Config.vod().toString());
+                if (historyStr != null) builder.add("history", historyStr);
+                OkHttp.newCall(client, item.getIp().concat("/action?do=cast"), builder.build()).enqueue(this);
+            });
+        }
     }
 
     @Override
