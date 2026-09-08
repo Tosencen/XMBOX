@@ -2,7 +2,7 @@
   </h1>
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.1.6-blue.svg)
+![Version](https://img.shields.io/badge/version-3.1.7-blue.svg)
 ![Android](https://img.shields.io/badge/platform-Android-green.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
@@ -16,7 +16,7 @@
 
 ## 📥 下载安装
 
-### 最新版本: v3.1.6
+### 最新版本: v3.1.7
 
 | 平台 | ARM64-V8A | ARM V7A |
 |------|-----------|---------|
