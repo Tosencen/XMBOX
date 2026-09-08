@@ -988,15 +988,24 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
     }
 
     private void checkHistory(Vod item) {
-        // 历史记录读数据库移到后台线程，避免主线程访问 Room
         App.execute(() -> {
-            History history = History.find(getHistoryKey());
-            App.post(() -> onHistoryLoaded(item, history));
+            History found = History.find(getHistoryKey());
+            final History h;
+            if (found != null) {
+                h = found;
+            } else {
+                h = new History();
+                h.setKey(getHistoryKey());
+                h.setCid(VodConfig.getCid());
+                h.setVodName(item.getVodName());
+                h.findEpisode(item.getVodFlags());
+            }
+            App.post(() -> onHistoryLoaded(item, h));
         });
     }
 
     private void onHistoryLoaded(Vod item, History history) {
-        mHistory = history == null ? createHistory(item) : history;
+        mHistory = history;
         if (!TextUtils.isEmpty(getMark())) mHistory.setVodRemarks(getMark());
         // if (Setting.isIncognito() && mHistory.getKey().equals(getHistoryKey())) mHistory.delete();
         mBinding.control.opening.setText(mHistory.getOpening() <= 0 ? getString(R.string.play_op) : mPlayers.stringToTime(mHistory.getOpening()));
@@ -1005,15 +1014,6 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
         mHistory.setVodPic(item.getVodPic());
         setScale(getScale());
         checkFlag(item);
-    }
-
-    private History createHistory(Vod item) {
-        History history = new History();
-        history.setKey(getHistoryKey());
-        history.setCid(VodConfig.getCid());
-        history.setVodName(item.getVodName());
-        history.findEpisode(item.getVodFlags());
-        return history;
     }
 
     private void updateHistory(Episode item, boolean replay) {
