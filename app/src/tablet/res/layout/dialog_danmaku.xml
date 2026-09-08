@@ -20,13 +20,14 @@
             android:layout_weight="1"
             android:text="@string/danmaku_select"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/choose"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="12dp"
             android:src="@drawable/ic_action_choose" />
 
     </LinearLayout>

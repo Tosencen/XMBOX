@@ -32,6 +32,7 @@ import com.fongmi.android.tv.player.Source;
 import com.fongmi.android.tv.receiver.ShortcutReceiver;
 import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.FragmentStateManager;
 import com.fongmi.android.tv.ui.fragment.SettingFragment;
 import com.fongmi.android.tv.ui.fragment.VodFragment;
@@ -217,22 +218,30 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     }
 
     private boolean switchPage(int id) {
-        if (id == R.id.setting) {
-            mManager.change(1);
-            return true;
-        }
-        if (id == R.id.vod) {
-            mManager.change(0);
-            return true;
-        }
-        if (id == R.id.live) {
+        int position = -1;
+        if (id == R.id.setting) position = 1;
+        else if (id == R.id.vod) position = 0;
+        else if (id == R.id.live) {
             if (LiveConfig.isEmpty()) {
                 Notify.showCenter(R.string.error_no_live);
                 return false;
             }
             return openLive();
         }
-        return false;
+        if (position < 0) return false;
+        // 如果当前已经是目标页面，强制刷新
+        if (mManager.isVisible(position)) {
+            BaseFragment fragment = mManager.getFragment(position);
+            if (fragment != null && fragment.getView() != null) {
+                fragment.getView().post(() -> {
+                    fragment.getView().requestLayout();
+                    fragment.onHiddenChanged(false);
+                });
+            }
+            return true;
+        }
+        mManager.change(position);
+        return true;
     }
 
     @Override
@@ -266,7 +275,13 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
     private void bindFab() {
         mBinding.fabMain.setOnClickListener(v -> toggleFabMenu());
         mBinding.fabScrim.setOnClickListener(v -> closeFabMenu());
-        View.OnClickListener page = v -> { closeFabMenu(); switchPage(v.getId()); };
+        View.OnClickListener page = v -> {
+            closeFabMenu();
+            int id = v.getId();
+            if (id == R.id.fab_vod) switchPage(R.id.vod);
+            else if (id == R.id.fab_live) switchPage(R.id.live);
+            else if (id == R.id.fab_setting) switchPage(R.id.setting);
+        };
         mBinding.fabVod.setOnClickListener(page);
         mBinding.fabLive.setOnClickListener(page);
         mBinding.fabSetting.setOnClickListener(page);

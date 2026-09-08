@@ -16,7 +16,7 @@
         android:layout_marginBottom="16dp"
         android:text="请输入您在WebDAV服务提供商（如坚果云）注册的账号和密码（坚果云的密码为应用密码而非登录密码）"
         android:textColor="@color/white"
-        android:textSize="12sp"
+        android:textSize="20sp"
         android:alpha="0.7"
         android:lineSpacingMultiplier="1.2" />
 
@@ -34,7 +34,7 @@
             android:layout_marginEnd="16dp"
             android:text="服务提供商"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/providerText"
@@ -43,7 +43,7 @@
             android:gravity="end"
             android:text="坚果云"
             android:textColor="@color/white"
-            android:textSize="16sp"
+            android:textSize="20sp"
             android:background="?attr/selectableItemBackground"
             android:padding="12dp"
             android:clickable="true"
@@ -127,7 +127,7 @@
             android:layout_weight="1"
             android:text="自动同步"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <com.fongmi.android.tv.ui.custom.CustomSwitch
             android:id="@+id/autoSyncSwitch"
@@ -152,7 +152,7 @@
             android:layout_weight="1"
             android:text="同步间隔（分钟）"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/syncIntervalText"
@@ -160,7 +160,7 @@
             android:layout_height="wrap_content"
             android:text="30"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
     </LinearLayout>
 
@@ -199,7 +199,7 @@
         android:gravity="center"
         android:text=""
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="20sp"
         android:visibility="gone" />
 
 </LinearLayout>

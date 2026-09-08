@@ -29,7 +29,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="20sp"
             tools:text="@string/error_play_url" />
 
     </LinearLayout>
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="20sp"
             android:visibility="gone"
             tools:text="120KB/s"
             tools:visibility="visible" />
@@ -82,7 +82,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             tools:text="00:00:00" />
 
     </LinearLayout>

@@ -20,7 +20,7 @@
             android:layout_weight="1"
             android:text="@string/control_speed"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/speedValue"
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:text="1.0x"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
     </LinearLayout>
@@ -55,7 +55,7 @@
         android:layout_marginBottom="8dp"
         android:text="@string/parse"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:visibility="gone"
         tools:visibility="visible" />
 
@@ -77,7 +77,7 @@
         android:layout_marginBottom="8dp"
         android:text="@string/control_scale"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp" />
+        android:textSize="20sp" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -98,7 +98,7 @@
                 android:background="@drawable/selector_dialog_button_bg"
                 android:tag="0"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="預設" />
 
             <TextView
@@ -109,7 +109,7 @@
                 android:background="@drawable/selector_dialog_button_bg"
                 android:tag="1"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="16:9" />
 
             <TextView
@@ -120,7 +120,7 @@
                 android:background="@drawable/selector_dialog_button_bg"
                 android:tag="2"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="4:3" />
 
             <TextView
@@ -131,7 +131,7 @@
                 android:background="@drawable/selector_dialog_button_bg"
                 android:tag="3"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="填充" />
 
             <TextView
@@ -141,7 +141,7 @@
                 android:background="@drawable/selector_dialog_button_bg"
                 android:tag="4"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="裁剪" />
 
         </LinearLayout>
@@ -154,7 +154,7 @@
         android:layout_marginBottom="8dp"
         android:text="@string/play"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp" />
+        android:textSize="20sp" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -174,7 +174,7 @@
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/selector_dialog_button_bg"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="EXO" />
 
             <TextView
@@ -184,7 +184,7 @@
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/selector_dialog_button_bg"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="硬解" />
 
             <TextView
@@ -194,7 +194,7 @@
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/selector_dialog_button_bg"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="片頭" />
 
             <TextView
@@ -204,7 +204,7 @@
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/selector_dialog_button_bg"
                 android:textColor="@color/dialog_button_text"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="片尾" />
 
         </LinearLayout>
@@ -218,7 +218,7 @@
         android:layout_marginBottom="8dp"
         android:text="@string/control_track"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:visibility="gone"
         tools:visibility="visible" />
 
@@ -236,7 +236,7 @@
             android:tag="3"
             android:text="@string/play_track_text"
             android:textColor="@color/dialog_button_text"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -249,7 +249,7 @@
             android:tag="1"
             android:text="@string/play_track_audio"
             android:textColor="@color/dialog_button_text"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -261,7 +261,7 @@
             android:tag="2"
             android:text="@string/play_track_video"
             android:textColor="@color/dialog_button_text"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -275,7 +275,7 @@
         android:layout_marginBottom="8dp"
         android:text="@string/control_other"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp" />
+        android:textSize="20sp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -290,7 +290,7 @@
             android:background="@drawable/selector_dialog_button_bg"
             android:text="@string/danmaku"
             android:textColor="@color/dialog_button_text"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -302,7 +302,7 @@
             android:background="@drawable/selector_dialog_button_bg"
             android:text="@string/play_loop"
             android:textColor="@color/dialog_button_text"
-            android:textSize="14sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/timer"
@@ -311,7 +311,7 @@
             android:background="@drawable/selector_dialog_button_bg"
             android:text="@string/play_timer"
             android:textColor="@color/dialog_button_text"
-            android:textSize="14sp" />
+            android:textSize="20sp" />
 
     </LinearLayout>
 </LinearLayout>

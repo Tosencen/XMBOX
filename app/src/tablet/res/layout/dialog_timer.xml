@@ -12,7 +12,7 @@
         android:layout_marginTop="16dp"
         android:text="@string/play_timer"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp" />
+        android:textSize="20sp" />
 
     <LinearLayout
         android:id="@+id/list"
@@ -36,7 +36,7 @@
             android:tag="5"
             android:text="@string/timer_5"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:gravity="center" />
 
         <TextView
@@ -49,7 +49,7 @@
             android:tag="15"
             android:text="@string/timer_15"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:gravity="center" />
 
         <TextView
@@ -62,7 +62,7 @@
             android:tag="30"
             android:text="@string/timer_30"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:gravity="center" />
 
         <TextView
@@ -75,7 +75,7 @@
             android:tag="60"
             android:text="@string/timer_60"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:gravity="center" />
 
         <TextView
@@ -88,7 +88,7 @@
             android:tag="120"
             android:text="@string/timer_120"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:gravity="center" />
 
         <TextView
@@ -101,7 +101,7 @@
             android:tag="180"
             android:text="@string/timer_180"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:gravity="center" />
 
     </LinearLayout>
@@ -142,7 +142,7 @@
             android:singleLine="true"
             android:text="@string/timer_delay"
             android:textColor="@color/black"
-            android:textSize="14sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/reset"
@@ -160,7 +160,7 @@
             android:singleLine="true"
             android:text="@string/timer_cancel"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp" />
+            android:textSize="20sp" />
 
     </LinearLayout>
 </LinearLayout>

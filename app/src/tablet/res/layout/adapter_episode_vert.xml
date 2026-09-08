@@ -8,5 +8,5 @@
     android:background="@drawable/selector_episode_bg"
     android:ellipsize="marquee"
     android:textColor="@color/episode_text"
-    android:textSize="14sp"
+    android:textSize="20sp"
     tools:text="20" />

@@ -24,8 +24,8 @@
 
             <ImageView
                 android:id="@+id/back"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginEnd="16dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_back" />
@@ -82,7 +82,7 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/player_render"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/renderText"
@@ -90,7 +90,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="end"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
                         tools:text="Surface" />
 
                 </LinearLayout>
@@ -117,7 +117,7 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/player_scale"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/scaleText"
@@ -125,7 +125,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="end"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
                         tools:text="預設" />
 
                 </LinearLayout>
@@ -152,7 +152,7 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/player_caption"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/captionText"
@@ -162,7 +162,7 @@
                         android:gravity="end"
                         android:singleLine="true"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
                         tools:text="預設" />
 
                 </LinearLayout>
@@ -189,7 +189,7 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/player_buffer"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/bufferText"
@@ -198,7 +198,7 @@
                         android:layout_weight="1"
                         android:gravity="end"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
                         tools:text="1" />
 
                     <TextView
@@ -207,7 +207,7 @@
                         android:layout_marginStart="4dp"
                         android:text="@string/times"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                 </LinearLayout>
                 
@@ -233,7 +233,7 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/player_speed"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/speedText"
@@ -242,7 +242,7 @@
                         android:layout_weight="1"
                         android:gravity="end"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
                         tools:text="1" />
 
                     <TextView
@@ -251,7 +251,7 @@
                         android:layout_marginStart="4dp"
                         android:text="@string/times"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                 </LinearLayout>
                 
@@ -277,7 +277,7 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/player_background"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/backgroundText"
@@ -285,7 +285,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="end"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
                         tools:text="畫中畫" />
 
                 </LinearLayout>
@@ -312,7 +312,7 @@
                         android:layout_marginEnd="16dp"
                         android:text="@string/player_ua"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:id="@+id/uaText"
@@ -322,7 +322,7 @@
                         android:gravity="end"
                         android:singleLine="true"
                         android:textColor="@color/white"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
                         tools:text="okhttp/4.11.0" />
 
                 </LinearLayout>
@@ -352,7 +352,7 @@
                         android:layout_weight="1"
                         android:text="@string/player_tunnel"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <com.fongmi.android.tv.ui.custom.CustomSwitch
                         android:id="@+id/tunnelSwitch"
@@ -384,7 +384,7 @@
                         android:layout_weight="1"
                         android:text="@string/player_audio_decode"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <com.fongmi.android.tv.ui.custom.CustomSwitch
                         android:id="@+id/audioDecodeSwitch"
@@ -416,7 +416,7 @@
                         android:layout_weight="1"
                         android:text="@string/player_aac"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <com.fongmi.android.tv.ui.custom.CustomSwitch
                         android:id="@+id/aacSwitch"
@@ -448,7 +448,7 @@
                         android:layout_weight="1"
                         android:text="@string/player_danmaku_load"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="20sp" />
 
                     <com.fongmi.android.tv.ui.custom.CustomSwitch
                         android:id="@+id/danmakuLoadSwitch"

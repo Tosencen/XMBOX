@@ -9,8 +9,8 @@
     android:ellipsize="marquee"
     android:focusable="true"
     android:gravity="center"
-    android:padding="8dp"
+    android:padding="12dp"
     android:singleLine="true"
     android:textColor="@color/episode_text"
-    android:textSize="14sp"
+    android:textSize="20sp"
     tools:text="20" />

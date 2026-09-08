@@ -29,7 +29,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="20sp"
             tools:text="@string/error_play_url" />
 
     </LinearLayout>
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="20sp"
             android:visibility="gone"
             tools:text="120KB/s"
             tools:visibility="visible" />
@@ -82,7 +82,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             tools:text="00:00:00" />
 
     </LinearLayout>
@@ -171,7 +171,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             tools:text="005" />
 
         <ImageView
@@ -190,7 +190,7 @@
             android:maxEms="48"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             tools:text="民視" />
 
         <TextView
@@ -201,7 +201,7 @@
             android:layout_weight="1"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             tools:text="正在播放：食神" />
 
         <TextView
@@ -209,7 +209,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             tools:text="來源 1" />
 
     </LinearLayout>
@@ -235,7 +235,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="20sp"
             tools:text="005" />
 
         <TextView
@@ -244,7 +244,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="20sp"
             tools:text="民視" />
 
     </LinearLayout>

@@ -28,52 +28,56 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="92dp"
+        android:layout_marginBottom="170dp"
         android:orientation="vertical"
         android:visibility="gone">
 
         <ImageButton
             android:id="@+id/fab_setting"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="66dp"
+            android:layout_height="66dp"
             android:layout_marginBottom="14dp"
             android:background="@drawable/bg_fab_round"
             android:elevation="4dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_nav_setting"
-            android:tint="#222222" />
+            android:tint="@color/black" />
 
         <ImageButton
             android:id="@+id/fab_live"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="66dp"
+            android:layout_height="66dp"
             android:layout_marginBottom="14dp"
             android:background="@drawable/bg_fab_round"
             android:elevation="4dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_nav_live"
-            android:tint="#222222" />
+            android:tint="@color/black" />
 
         <ImageButton
             android:id="@+id/fab_vod"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="66dp"
+            android:layout_height="66dp"
             android:background="@drawable/bg_fab_round"
             android:elevation="4dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_nav_vod"
-            android:tint="#222222" />
+            android:tint="@color/black" />
     </LinearLayout>
 
     <!-- 悬浮主按钮 -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <ImageButton
         android:id="@+id/fab_main"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="66dp"
+        android:layout_height="66dp"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="90dp"
+        android:background="@drawable/bg_fab_round"
+        android:elevation="6dp"
         android:contentDescription="@string/nav_vod"
-        app:srcCompat="@drawable/ic_fab_menu" />
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_fab_menu"
+        android:tint="@color/black" />
 
 </FrameLayout>

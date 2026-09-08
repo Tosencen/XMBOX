@@ -29,7 +29,7 @@
                 android:ellipsize="marquee"
                 android:singleLine="true"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="20sp"
                 tools:text="慶餘年第一季：第一集" />
 
             <TextView
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textSize="20sp"
                 tools:text="1920 x 1080" />
 
         </LinearLayout>
@@ -55,7 +55,7 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 tools:text="21:30" />
 
             <ImageView
@@ -76,7 +76,7 @@
                 android:layout_gravity="center_vertical"
                 android:paddingEnd="8dp"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 android:visibility="gone"
                 tools:text="85%"
                 tools:visibility="visible" />
@@ -86,7 +86,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_control_cast" />
 
             <ImageView
@@ -94,7 +94,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_control_info" />
 
             <ImageView
@@ -102,7 +102,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_control_keep_off" />
 
             <ImageView
@@ -110,7 +110,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_control_setting" />
 
             <ImageView
@@ -118,7 +118,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_control_pip"
                 android:visibility="gone" />
 
@@ -143,8 +143,8 @@
 
             <ImageView
                 android:id="@+id/prev"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/exo_icon_previous" />
 
@@ -159,8 +159,8 @@
 
             <ImageView
                 android:id="@+id/play"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/exo_icon_play" />
 
@@ -176,8 +176,8 @@
 
             <ImageView
                 android:id="@+id/next"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/exo_icon_next" />
 
@@ -198,7 +198,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
+            android:padding="12dp"
             android:src="@drawable/ic_control_danmaku_on" />
 
     </LinearLayout>

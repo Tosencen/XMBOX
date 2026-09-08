@@ -7,5 +7,5 @@
     android:background="@drawable/selector_flag_bg"
     android:gravity="center"
     android:textColor="@color/flag_text"
-    android:textSize="14sp"
+    android:textSize="20sp"
     tools:text="泥巴" />

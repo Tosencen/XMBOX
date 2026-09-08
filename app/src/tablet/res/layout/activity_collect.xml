@@ -30,19 +30,19 @@
             android:textColor="@color/white"
             android:textColorHint="@color/white"
             android:textCursorDrawable="@drawable/shape_cursor"
-            android:textSize="20sp" />
+            android:textSize="40sp" />
 
         <ImageView
             android:id="@+id/site"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:src="@drawable/ic_action_site" />
 
         <ImageView
             android:id="@+id/view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:src="@drawable/ic_action_list"
             android:visibility="gone"
@@ -71,7 +71,7 @@
                 android:layout_marginBottom="16dp"
                 android:text="@string/search_record"
                 android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:textSize="36sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recordRecycler"
@@ -97,7 +97,7 @@
                 android:layout_marginBottom="16dp"
                 android:text="@string/search_hot"
                 android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:textSize="36sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/wordRecycler"

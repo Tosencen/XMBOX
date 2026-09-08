@@ -629,6 +629,14 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden && mBinding.pager.getAdapter() != null) {
+            mBinding.pager.getAdapter().notifyDataSetChanged();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         App.removeCallbacks(mRunnable);

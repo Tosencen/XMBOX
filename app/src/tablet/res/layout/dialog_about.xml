@@ -19,7 +19,7 @@
         android:layout_marginTop="24dp"
         android:text="开发说明"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <TextView
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:text="本项目仅用于学习Android开发，代码改自FongMi/TV项目。"
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="20sp"
         android:layout_marginTop="8dp" />
 
     <TextView
@@ -36,7 +36,7 @@
         android:layout_marginTop="24dp"
         android:text="免责声明"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <TextView
@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:text="1.本项目仅供学习交流使用，不得用于商业用途\n2.项目中的内容均来自网络，如有侵权请联系删除\n3.使用本项目产生的一切后果由使用者自行承担"
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="20sp"
         android:layout_marginTop="8dp" />
 
     <Button
@@ -55,7 +55,7 @@
         android:background="@drawable/shape_about_button"
         android:text="我的GitHub"
         android:textColor="@color/black"
-        android:textSize="14sp"
+        android:textSize="20sp"
         android:padding="12dp"/>
 
 </LinearLayout> 
