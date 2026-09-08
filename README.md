@@ -24,14 +24,6 @@
 | **📱 平板版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/tablet-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/tablet-armeabi_v7a.apk) |
 | **📺 TV版** | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/leanback-arm64_v8a.apk) | [下载](https://github.com/Tosencen/XMBOX/releases/download/v3.1.6/leanback-armeabi_v7a.apk) |
 
-### 📁 版本历史
-- **v3.1.6**: [查看v3.1.6版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.6) - 修复崩溃问题、弹幕默认显示、优化解码方式切换、修复平板/TV配置失败问题
-- **v3.1.5**: [查看v3.1.5版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.5) - 新增壁纸功能、修复搜索功能、新增播放器、视频暂停时屏幕亮度调节、新增播放页面视频封面
-- **v3.1.3**: [查看v3.1.3版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.3) - 新增平板版本，优化演员列表和视频封面显示
-- **v3.1.1**: [查看v3.1.1版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.1) - 新增WebDAV同步功能和更新安装器
-- **v3.1.0**: [查看v3.1.0版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.1.0) - 定时器优化和画中画修复版本
-- **v3.0.9**: [查看v3.0.9版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.0.9) - 新增直播开关控制和UI交互优化
-- **v3.0.8**: [查看v3.0.8版本](https://github.com/Tosencen/XMBOX/releases/tag/v3.0.8) - UI交互体验全面优化
 
 ### 📦 下载说明
 - **最新版本**: 根目录的 `mobile.json` 和 `leanback.json` 包含最新版本信息
