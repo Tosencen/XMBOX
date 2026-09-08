@@ -23,13 +23,21 @@ public abstract class FragmentStateManager {
     public boolean change(int position) {
         FragmentTransaction ft = fm.beginTransaction();
         Fragment fragment = fm.findFragmentByTag(getTag(position));
-        if (fragment == null) ft.add(container.getId(), fragment = getItem(position), getTag(position));
-        else ft.show(fragment);
+        if (fragment == null) {
+            fragment = getItem(position);
+            ft.add(container.getId(), fragment, getTag(position));
+        }
+        // 用 replace 确保 ViewPager 正确刷新
         Fragment current = fm.getPrimaryNavigationFragment();
-        if (current != null) ft.hide(current);
+        if (current != null && current != fragment) {
+            ft.hide(current);
+        }
+        ft.show(fragment);
         ft.setPrimaryNavigationFragment(fragment);
         ft.setReorderingAllowed(true);
         ft.commitNowAllowingStateLoss();
+        // 切换后强制刷新容器布局
+        container.post(() -> container.requestLayout());
         return true;
     }
 

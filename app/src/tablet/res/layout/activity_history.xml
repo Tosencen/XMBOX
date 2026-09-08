@@ -15,8 +15,8 @@
 
         <ImageView
             android:id="@+id/back"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/shape_action_background"
             android:src="@drawable/ic_back" />
@@ -32,16 +32,16 @@
 
         <ImageView
             android:id="@+id/sync"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:background="@drawable/shape_action_background"
             android:src="@drawable/ic_action_sync" />
 
         <ImageView
             android:id="@+id/delete"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:background="@drawable/shape_action_background"
             android:src="@drawable/ic_action_delete"

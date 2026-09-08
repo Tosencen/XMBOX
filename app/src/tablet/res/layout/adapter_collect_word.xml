@@ -9,5 +9,5 @@
     android:ellipsize="marquee"
     android:singleLine="true"
     android:textColor="@color/white"
-    android:textSize="14sp"
+    android:textSize="20sp"
     tools:text="推薦" />

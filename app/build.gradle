@@ -32,8 +32,8 @@ android {
         applicationId "com.fongmi.android.tv"
         minSdk 24
         targetSdk 33
-        versionCode 316
-        versionName "3.1.6"
+        versionCode 317
+        versionName "3.1.7"
         // GitHub Token (可选，用于提高API请求限制)
         def githubToken = project.findProperty("GITHUB_TOKEN") ?: ""
         buildConfigField "String", "GITHUB_TOKEN", "\"${githubToken}\""

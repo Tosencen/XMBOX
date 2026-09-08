@@ -9,5 +9,5 @@
     android:background="@drawable/selector_item_round"
     android:gravity="center"
     android:textColor="@color/type_text_color"
-    android:textSize="14sp"
+    android:textSize="21sp"
     tools:text="電影" />

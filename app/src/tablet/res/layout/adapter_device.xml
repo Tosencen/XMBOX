@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="14sp"
+            android:textSize="20sp"
             tools:text="Google Chrome Cast" />
 
         <TextView
@@ -36,7 +36,7 @@
             android:layout_marginTop="2dp"
             android:singleLine="true"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="12sp"
+            android:textSize="20sp"
             tools:text="127.0.0.1" />
 
     </LinearLayout>

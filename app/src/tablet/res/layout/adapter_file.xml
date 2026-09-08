@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="20sp"
         tools:text="Download" />
 
 </LinearLayout>

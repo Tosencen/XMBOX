@@ -20,6 +20,6 @@
         android:background="@color/zxing_transparent"
         android:text="@string/device_scan"
         android:textColor="@color/zxing_status_text"
-        android:textSize="16sp" />
+        android:textSize="20sp" />
 
 </merge>

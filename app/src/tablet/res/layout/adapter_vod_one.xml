@@ -36,7 +36,7 @@
         android:layout_height="match_parent"
         android:layout_toEndOf="@+id/image"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="12dp">
 
         <TextView
             android:id="@+id/name"

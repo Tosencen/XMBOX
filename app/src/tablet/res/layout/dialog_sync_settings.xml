@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:text="1. 点击下方扫描二维码绑定设备按钮"
             android:textColor="@color/black"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:lineSpacingExtra="2dp" />
 
         <TextView
@@ -44,7 +44,7 @@
             android:layout_marginTop="4dp"
             android:text="2. 用手机扫描TV版显示的二维码完成绑定"
             android:textColor="@color/black"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:lineSpacingExtra="2dp" />
 
     </LinearLayout>
@@ -73,7 +73,7 @@
             android:layout_height="32dp"
             android:layout_marginEnd="12dp"
             android:background="@drawable/shape_action_background"
-            android:padding="6dp"
+            android:padding="12dp"
             android:src="@drawable/ic_sync_two"
             android:tint="@color/white" />
 
@@ -83,7 +83,7 @@
             android:layout_weight="1"
             android:text="同步模式"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/modeText"
@@ -91,7 +91,7 @@
             android:layout_height="wrap_content"
             android:text="双向同步"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:alpha="0.7" />
 
     </LinearLayout>
@@ -118,7 +118,7 @@
             android:layout_height="wrap_content"
             android:text="扫描二维码绑定设备"
             android:textColor="@color/black"
-            android:textSize="16sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
     </LinearLayout>
@@ -137,14 +137,14 @@
             android:layout_weight="1"
             android:text="可用设备"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/refresh"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:background="@drawable/shape_action_background"
-            android:padding="4dp"
+            android:padding="12dp"
             android:src="@drawable/ic_action_refresh"
             android:tint="@color/white" />
 
@@ -189,7 +189,7 @@
             android:layout_weight="1"
             android:text="自动同步"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <com.fongmi.android.tv.ui.custom.CustomSwitch
             android:id="@+id/autoSyncSwitch"
@@ -219,7 +219,7 @@
             android:layout_weight="1"
             android:text="同步间隔"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/syncIntervalText"
@@ -227,7 +227,7 @@
             android:layout_height="wrap_content"
             android:text="30分钟"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:alpha="0.7" />
 
     </LinearLayout>

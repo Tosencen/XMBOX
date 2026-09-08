@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:text="@string/restore_select"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
 
     </LinearLayout>
 

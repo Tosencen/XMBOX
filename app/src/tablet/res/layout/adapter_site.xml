@@ -15,13 +15,13 @@
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textColor="@color/control"
-        android:textSize="14sp"
+        android:textSize="20sp"
         tools:text="泥巴" />
 
     <ImageView
         android:id="@+id/search"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginStart="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="fitCenter"
@@ -29,8 +29,8 @@
 
     <ImageView
         android:id="@+id/change"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginStart="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="fitCenter"

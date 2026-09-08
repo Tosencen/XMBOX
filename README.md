@@ -236,3 +236,11 @@ XMBOX软件许可协议：
 Made with ❤️ by XMBOX Team
 
 </div>
+
+<div align="center">
+
+### 随喜
+
+<img src="docs/wechat_donate_qr.jpg" width="150" />
+
+</div>
