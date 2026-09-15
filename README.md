@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
 
-一个操作方便、界面简洁的Android播放器盒子，需自行添源，支持TV和手机双平台。
+一个操作方便、界面简洁的Android播放器盒子，需自行添源，支持TV和手机双平台。群聊https://t.me/+rJJC79iMuOo3OTRl
 
 [下载APK](#-下载安装) • [功能特性](#-功能特性) • [构建指南](#-构建指南) • [API文档](#-api文档)
 <img width="1920" height="864" alt="Group 15" src="https://github.com/user-attachments/assets/e69741bd-a21d-417e-ad85-e747032f6daf" />
