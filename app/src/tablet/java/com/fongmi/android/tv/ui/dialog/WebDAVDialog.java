@@ -60,13 +60,12 @@ public class WebDAVDialog {
     }
 
     private void initDialog() {
-        dialog = new MaterialAlertDialogBuilder(binding.getRoot().getContext())
+        dialog = new MaterialAlertDialogBuilder(fragment.getActivity())
             .setTitle("WebDAV 配置")
             .setView(binding.getRoot())
             .setPositiveButton("保存", this::onPositive)
             .setNegativeButton("取消", this::onNegative)
             .create();
-        dialog.getWindow().setDimAmount(0);
         dialog.show();
     }
 
