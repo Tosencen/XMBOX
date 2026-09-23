@@ -69,6 +69,11 @@ public class EpisodeGridDialog extends BaseDialog {
     private void setSpanCount() {
         int total = 0;
         int row = ResUtil.isLand(getActivity()) ? 5 : 10;
+        if (episodes == null || episodes.isEmpty()) {
+            spanCount = 5;
+            itemCount = spanCount * row;
+            return;
+        }
         for (Episode item : episodes) total += item.getName().length();
         int offset = (int) Math.ceil((double) total / episodes.size());
         if (offset >= 12) spanCount = 1;
@@ -79,6 +84,7 @@ public class EpisodeGridDialog extends BaseDialog {
     }
 
     private void setTitles() {
+        if (episodes == null || episodes.isEmpty()) return;
         if (reverse) for (int i = episodes.size(); i > 0; i -= itemCount) titles.add(i + " - " + Math.max(i - itemCount - 1, 1));
         else for (int i = 0; i < episodes.size(); i += itemCount) titles.add((i + 1) + " - " + Math.min(i + itemCount, episodes.size()));
     }

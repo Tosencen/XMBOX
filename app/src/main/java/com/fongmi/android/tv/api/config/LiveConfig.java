@@ -240,7 +240,13 @@ public class LiveConfig {
     }
 
     public void setKeep(Channel channel) {
-        if (home != null && !channel.getGroup().isHidden()) home.keep(channel).save();
+        if (home != null && !channel.getGroup().isHidden()) {
+            try {
+                App.execute(() -> home.keep(channel).save());
+            } catch (Exception e) {
+                Logger.e("Error", e);
+            }
+        }
     }
 
     public void setKeep(List<Group> items) {
@@ -279,6 +285,7 @@ public class LiveConfig {
     }
 
     public boolean needSync(String url) {
+        if (config == null) return false;
         return sync || TextUtils.isEmpty(config.getUrl()) || url.equals(config.getUrl());
     }
 
@@ -336,7 +343,11 @@ public class LiveConfig {
     private void setHome(Live home, boolean check) {
         this.home = home;
         this.home.setActivated(true);
-        config.home(home.getName()).update();
+        try {
+            if (config != null) App.execute(() -> config.home(home.getName()).update());
+        } catch (Exception e) {
+            Logger.e("Error", e);
+        }
         for (Live item : getLives()) item.setActivated(home);
         if (App.activity() != null && App.activity() instanceof LiveActivity) return;
         if (check && !home.isEmpty()) if (home.isBoot() || Setting.isBootLive()) App.post(this::bootLive);

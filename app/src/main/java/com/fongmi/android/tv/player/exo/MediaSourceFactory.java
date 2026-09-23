@@ -69,7 +69,8 @@ public class MediaSourceFactory implements MediaSource.Factory {
     private MediaItem setHeader(MediaItem mediaItem) {
         Map<String, String> headers = new HashMap<>();
         for (String key : mediaItem.requestMetadata.extras.keySet()) headers.put(key, mediaItem.requestMetadata.extras.get(key).toString());
-        getHttpDataSourceFactory().setDefaultRequestProperties(headers);
+        HttpDataSource.Factory factory = getHttpDataSourceFactory();
+        factory.setDefaultRequestProperties(headers);
         return mediaItem;
     }
 
@@ -77,7 +78,13 @@ public class MediaSourceFactory implements MediaSource.Factory {
         ConcatenatingMediaSource2.Builder builder = new ConcatenatingMediaSource2.Builder();
         for (String split : mediaItem.mediaId.split("\\*\\*\\*")) {
             String[] info = split.split("\\|\\|\\|");
-            if (info.length >= 2) builder.add(defaultMediaSourceFactory.createMediaSource(mediaItem.buildUpon().setUri(Uri.parse(info[0])).build()), Long.parseLong(info[1]));
+            if (info.length >= 2) {
+                try {
+                    builder.add(defaultMediaSourceFactory.createMediaSource(mediaItem.buildUpon().setUri(Uri.parse(info[0])).build()), Long.parseLong(info[1]));
+                } catch (NumberFormatException e) {
+                    builder.add(defaultMediaSourceFactory.createMediaSource(mediaItem.buildUpon().setUri(Uri.parse(info[0])).build()));
+                }
+            }
         }
         return builder.build();
     }

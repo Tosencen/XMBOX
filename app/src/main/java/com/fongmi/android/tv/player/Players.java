@@ -539,7 +539,10 @@ public class Players implements ParseCallback {
             engine.release();
             engine = null;
         }
-        if (danPlayer != null) danPlayer.release();
+        if (danPlayer != null) {
+            danPlayer.release();
+            danPlayer = null;
+        }
         if (view != null) view.setPlayer(null);
     }
 

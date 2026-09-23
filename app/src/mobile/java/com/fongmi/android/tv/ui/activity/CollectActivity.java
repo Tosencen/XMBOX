@@ -335,6 +335,15 @@ public class CollectActivity extends BaseActivity implements CustomScroller.Call
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mExecutor != null) {
+            mExecutor.shutdownNow();
+            mExecutor = null;
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         if (isVisible(mBinding.result)) {
             showAgent();

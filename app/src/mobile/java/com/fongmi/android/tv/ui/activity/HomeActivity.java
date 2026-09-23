@@ -90,7 +90,8 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
 
     private void checkAction(Intent intent) {
         if (Intent.ACTION_SEND.equals(intent.getAction())) {
-            VideoActivity.push(this, intent.getStringExtra(Intent.EXTRA_TEXT));
+            String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+            if (text != null && !text.isEmpty()) VideoActivity.push(this, text);
         } else if (Intent.ACTION_VIEW.equals(intent.getAction()) && intent.getData() != null) {
             if ("text/plain".equals(intent.getType()) || UrlUtil.path(intent.getData()).endsWith(".m3u")) {
                 loadLive("file:/" + FileChooser.getPathFromUri(this, intent.getData()));

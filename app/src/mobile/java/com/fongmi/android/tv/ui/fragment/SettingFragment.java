@@ -603,8 +603,10 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
             return;
         }
         if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE) return;
-        // Config 读数据库移到后台线程，读完后回主线程设置配置
-        String filePath = "file:/" + FileChooser.getPathFromUri(getContext(), data.getData()).replace(Path.rootPath(), "");
+        if (data == null || data.getData() == null) return;
+        String path = FileChooser.getPathFromUri(getContext(), data.getData());
+        if (path == null) return;
+        String filePath = "file:/" + path.replace(Path.rootPath(), "");
         App.execute(() -> {
             Config config = Config.find(filePath, type);
             App.post(() -> setConfig(config));

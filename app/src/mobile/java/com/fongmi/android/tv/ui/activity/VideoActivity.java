@@ -552,7 +552,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void setScale(int scale) {
-        mHistory.setScale(scale);
+        if (mHistory != null) mHistory.setScale(scale);
         mBinding.exo.setResizeMode(scale);
         mBinding.control.action.scale.setText(ResUtil.getStringArray(R.array.select_scale)[scale]);
     }
@@ -831,6 +831,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void seamless(Flag flag) {
+        if (mHistory == null) return;
         Episode episode = flag.find(mHistory.getVodRemarks(), getMark().isEmpty());
         if (episode == null) episode = flag.find(mHistory.getVodRemarks(), false);
         setQualityVisible(episode != null && episode.isActivated() && mQualityAdapter.getItemCount() > 1);
@@ -857,6 +858,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void onMore() {
+        if (mHistory == null) return;
         Episode episode = getEpisode();
         EpisodeGridDialog dialog = EpisodeGridDialog.create()
                 .reverse(mHistory.isRevSort())
@@ -869,6 +871,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void onReverse() {
+        if (mHistory == null) return;
         mHistory.setRevSort(!mHistory.isRevSort());
         reverseEpisode(false);
     }
@@ -884,6 +887,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void onCast() {
+        if (mHistory == null) return;
         CastDialog.create().history(mHistory).video(CastVideo.get(mBinding.name.getText().toString(), mPlayers.getUrl(), mPlayers.getPosition())).fm(true).show(this);
     }
 
@@ -932,6 +936,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private void checkNext(boolean notify) {
         setR1Callback();
         Episode item = mEpisodeAdapter.getNext();
+        if (item == null) return;
         if (!item.isActivated()) onItemClick(item);
         else if (notify) Notify.show(R.string.error_play_next);
     }
@@ -939,6 +944,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private void checkPrev() {
         setR1Callback();
         Episode item = mEpisodeAdapter.getPrev();
+        if (item == null) return;
         if (!item.isActivated()) onItemClick(item);
         else Notify.show(R.string.error_play_prev);
     }
@@ -1454,9 +1460,11 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void setMetadata() {
+        if (mHistory == null) return;
+        Episode episode = getEpisode();
         String title = mHistory.getVodName();
-        String episode = getEpisode().getName();
-        String artist = title.equals(episode) ? "" : getString(R.string.play_now, episode);
+        String epName = episode != null ? episode.getName() : "";
+        String artist = title.equals(epName) ? "" : getString(R.string.play_now, epName);
         mPlayers.setMetadata(title, artist, mHistory.getVodPic(), mBinding.exo.getDefaultArtwork());
     }
 
@@ -1757,7 +1765,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     @Override
     public void onSpeedEnd() {
-        mBinding.control.action.speed.setText(mPlayers.setSpeed(mHistory.getSpeed()));
+        if (mHistory != null) mBinding.control.action.speed.setText(mPlayers.setSpeed(mHistory.getSpeed()));
         mBinding.widget.speed.setVisibility(View.GONE);
         mBinding.widget.speed.clearAnimation();
     }
@@ -1813,37 +1821,19 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         handleLandscapeSeek(time);
     }
     
-    // 添加新的方法，处理横屏模式下的特殊逻辑
     private void handleLandscapeSeek(long time) {
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            // 横屏模式下的特殊处理
-            mBinding.widget.seek.setVisibility(View.GONE);
-            mPlayers.pause();
-            mPlayers.seek(time);
-            showProgress();
-            App.post(() -> {
-                long actualPosition = mPlayers.getPosition();
-                if (Math.abs(actualPosition - time) > 500) {
-                    mPlayers.seek(time);
-                }
-                onPlay();
-                hideProgress();
-            }, 150); // 横屏模式下延迟更长，确保跳转完成
-        } else {
-            // 竖屏模式使用原有逻辑
-            mBinding.widget.seek.setVisibility(View.GONE);
-            mPlayers.pause();
-            mPlayers.seek(time);
-            showProgress();
-            App.post(() -> {
-                long actualPosition = mPlayers.getPosition();
-                if (Math.abs(actualPosition - time) > 500) {
-                    mPlayers.seek(time);
-                }
-                onPlay();
-                hideProgress();
-            }, 100); // 竖屏模式下延迟较短
-        }
+        mBinding.widget.seek.setVisibility(View.GONE);
+        mPlayers.pause();
+        mPlayers.seek(time);
+        showProgress();
+        App.post(() -> {
+            long actualPosition = mPlayers.getPosition();
+            if (Math.abs(actualPosition - time) > 500) {
+                mPlayers.seek(time);
+            }
+            onPlay();
+            hideProgress();
+        }, getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 150 : 100);
     }
 
     @Override

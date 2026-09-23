@@ -430,7 +430,11 @@ public class VodConfig {
     public void setParse(Parse parse) {
         this.parse = parse;
         this.parse.setActivated(true);
-        config.parse(parse.getName()).save();
+        try {
+            if (config != null) App.execute(() -> config.parse(parse.getName()).save());
+        } catch (Exception e) {
+            Logger.e("Error", e);
+        }
         for (Parse item : getParses()) item.setActivated(parse);
     }
 

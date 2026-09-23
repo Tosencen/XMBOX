@@ -842,6 +842,7 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     }
 
     private void setMetadata() {
+        if (mChannel == null) return;
         String title = mBinding.widget.name.getText().toString();
         String artist = mBinding.widget.play.getText().toString();
         mPlayers.setMetadata(title, artist, mChannel.getLogo(), mBinding.exo.getDefaultArtwork());
@@ -865,10 +866,12 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
 
     private void startFlow() {
         if (!Setting.isChange()) return;
+        if (mChannel == null) return;
         if (!mChannel.isLast()) nextLine(true);
     }
 
     private boolean prevGroup() {
+        if (mGroupAdapter.getItemCount() == 0) return false;
         int position = mGroupAdapter.getPosition() - 1;
         if (position < 0) position = mGroupAdapter.getItemCount() - 1;
         if (mGroup.equals(mGroupAdapter.get(position))) return false;
@@ -881,6 +884,7 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     }
 
     private boolean nextGroup() {
+        if (mGroupAdapter.getItemCount() == 0) return false;
         int position = mGroupAdapter.getPosition() + 1;
         if (position > mGroupAdapter.getItemCount() - 1) position = 0;
         if (mGroup.equals(mGroupAdapter.get(position))) return false;
@@ -911,6 +915,7 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     }
 
     private void checkNext() {
+        if (mChannel == null) return;
         int current = mChannel.getData().getInRange();
         int position = mChannel.getData().getSelected() + 1;
         boolean hasNext = position <= current && position > 0;

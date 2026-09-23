@@ -49,11 +49,13 @@ public class App extends Application {
     private Hook hook;
     private final Runnable cleanTask;
     private final Runnable syncTask;
+    private final Runnable updateTask;
     private boolean appJustLaunched;
 
     /** Activity 栈深度计数器，避免多 Activity 场景下错误置空 */
     private int activityCount;
     private Activity lastResumedActivity;
+    private Activity pendingUpdateActivity;
 
     public App() {
         instance = this;
@@ -71,6 +73,7 @@ public class App extends Application {
                 .create();
         cleanTask = this::checkCacheClean;
         syncTask = this::doAutoSync;
+        updateTask = this::runAutoUpdate;
         appJustLaunched = true;
         activityCount = 0;
     }
@@ -235,23 +238,19 @@ public static Activity activity() {
      * 自动检查更新（如果启用）
      */
     private void checkAutoUpdate(Activity activity) {
-        // 检查是否启用自动更新检查
-        if (!Setting.getAutoUpdateCheck()) {
-            return;
+        if (!Setting.getAutoUpdateCheck()) return;
+        if (!Setting.getUpdate()) return;
+        pendingUpdateActivity = activity;
+        post(updateTask, 2000);
+    }
+
+    private void runAutoUpdate() {
+        Activity activity = pendingUpdateActivity;
+        pendingUpdateActivity = null;
+        if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+            Logger.d("App: 开始自动检查更新");
+            Updater.create().auto().release().start(activity);
         }
-        
-        // 检查是否启用更新功能
-        if (!Setting.getUpdate()) {
-            return;
-        }
-        
-        // 延迟一小段时间，避免影响应用启动速度
-        post(() -> {
-            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
-                Logger.d("App: 开始自动检查更新");
-                Updater.create().auto().release().start(activity);
-            }
-        }, 2000); // 延迟2秒
     }
     
     /**

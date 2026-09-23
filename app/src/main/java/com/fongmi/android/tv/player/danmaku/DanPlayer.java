@@ -81,6 +81,7 @@ public class DanPlayer implements DrawHandler.Callback {
         executor.execute(() -> {
             if (isDanmakuPrepared()) view.release();
         });
+        executor.shutdown();
     }
 
     public void setDanmaku(Danmaku item) {

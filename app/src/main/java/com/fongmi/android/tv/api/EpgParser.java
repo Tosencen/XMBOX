@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
 
 public class EpgParser {
 
-    private static final SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm", Locale.getDefault());
-    private static final SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-    private static final SimpleDateFormat formatFull = new SimpleDateFormat("yyyyMMddHHmmss Z", Locale.getDefault());
+    private static final ThreadLocal<SimpleDateFormat> formatTime = ThreadLocal.withInitial(() -> new SimpleDateFormat("HH:mm", Locale.getDefault()));
+    private static final ThreadLocal<SimpleDateFormat> formatDate = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()));
+    private static final ThreadLocal<SimpleDateFormat> formatFull = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyyMMddHHmmss Z", Locale.getDefault()));
 
     public static boolean start(Live live, String url) throws Exception {
         File file = Path.epg(Uri.parse(url).getLastPathSegment());
@@ -61,7 +61,7 @@ public class EpgParser {
         Map<String, Epg> epgMap = new HashMap<>();
         Map<String, String> srcMap = new HashMap<>();
         Map<String, Tv.Channel> mapping = new HashMap<>();
-        String today = formatDate.format(new Date());
+        String today = formatDate.get().format(new Date());
         Tv tv = new Persister().read(Tv.class, Path.read(file), false);
         for (Group group : live.getGroups()) for (Channel channel : group.getChannel()) exist.add(channel.getTvgId());
         for (Tv.Channel channel : tv.getChannel()) mapping.put(channel.getId(), channel);
@@ -69,8 +69,8 @@ public class EpgParser {
             String key = programme.getChannel();
             Tv.Channel channel = mapping.get(key);
             if (!exist.contains(key)) key = find(exist, channel);
-            Date startDate = parse(formatFull, programme.getStart());
-            Date endDate = parse(formatFull, programme.getStop());
+            Date startDate = parse(formatFull.get(), programme.getStart());
+            Date endDate = parse(formatFull.get(), programme.getStop());
             if (!exist.contains(key) || !isToday(startDate.getTime())) continue;
             if (!epgMap.containsKey(key)) epgMap.put(key, Epg.create(key, today));
             epgMap.get(key).getList().add(getEpgData(startDate, endDate, programme));
@@ -92,14 +92,14 @@ public class EpgParser {
 
     public static Epg getEpg(String xml, String key) throws Exception {
         Tv tv = new Persister().read(Tv.class, xml, false);
-        Epg epg = Epg.create(key, formatDate.format(parse(formatFull, tv.getDate())));
+        Epg epg = Epg.create(key, formatDate.get().format(parse(formatFull.get(), tv.getDate())));
         for (Tv.Programme programme : tv.getProgramme()) epg.getList().add(getEpgData(programme));
         return epg;
     }
 
     private static EpgData getEpgData(Tv.Programme programme) {
-        Date startDate = parse(formatFull, programme.getStart());
-        Date endDate = parse(formatFull, programme.getStop());
+        Date startDate = parse(formatFull.get(), programme.getStart());
+        Date endDate = parse(formatFull.get(), programme.getStop());
         return getEpgData(startDate, endDate, programme);
     }
 
@@ -107,8 +107,8 @@ public class EpgParser {
         try {
             EpgData epgData = new EpgData();
             epgData.setTitle(Trans.s2t(programme.getTitle()));
-            epgData.setStart(formatTime.format(startDate));
-            epgData.setEnd(formatTime.format(endDate));
+            epgData.setStart(formatTime.get().format(startDate));
+            epgData.setEnd(formatTime.get().format(endDate));
             epgData.setStartTime(startDate.getTime());
             epgData.setEndTime(endDate.getTime());
             return epgData;

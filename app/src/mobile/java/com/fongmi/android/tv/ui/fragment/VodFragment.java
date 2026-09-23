@@ -214,8 +214,8 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
 
     private void updateHot() {
         App.post(mRunnable, TimeUnit.SECONDS.toMillis(10));
-        if (mHots.isEmpty() || mHots.size() < 10) return;
-        mBinding.hot.setText(mHots.get(new Random().nextInt(11)));
+        if (mHots == null || mHots.isEmpty()) return;
+        mBinding.hot.setText(mHots.get(new Random().nextInt(mHots.size())));
     }
 
     private Result handle(Result result) {

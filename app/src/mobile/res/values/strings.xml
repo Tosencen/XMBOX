@@ -28,7 +28,7 @@
     <string name="downloading">Downloading...</string>
     <string name="dialog_delete_download">All download records will be removed.</string>
     <string name="detail_quality">Quality</string>
-    <string name="detail_content">Summary</string>
+    <string name="detail_content">Summary: <xliff:g name="name">%s</xliff:g></string>
     <string name="detail_search">Searching <xliff:g name="name">%s</xliff:g></string>
 
     <!-- Device -->
