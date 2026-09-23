@@ -50,14 +50,13 @@ public class HistoryDialog implements ConfigAdapter.OnClickListener {
     private void setRecyclerView() {
         binding.recycler.setHasFixedSize(true);
         binding.recycler.setAdapter(adapter);
-        adapter.addAll(type);
         binding.recycler.addItemDecoration(new SpaceItemDecoration(1, 8));
     }
 
     private void setDialog() {
-        if (adapter.getItemCount() == 0) return;
         dialog.getWindow().setDimAmount(0);
         dialog.show();
+        adapter.addAll(type);
     }
 
     @Override

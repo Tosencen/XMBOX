@@ -32,8 +32,8 @@ android {
         applicationId "com.fongmi.android.tv"
         minSdk 24
         targetSdk 33
-        versionCode 317
-        versionName "3.1.7"
+        versionCode 318
+        versionName "3.1.8"
         // GitHub Token (可选，用于提高API请求限制)
         def githubToken = project.findProperty("GITHUB_TOKEN") ?: ""
         buildConfigField "String", "GITHUB_TOKEN", "\"${githubToken}\""
@@ -149,6 +149,9 @@ dependencies {
     implementation 'com.github.bumptech.glide:annotations:4.16.0'
     implementation('com.github.bumptech.glide:avif-integration:4.16.0') { exclude group: 'org.aomedia.avif.android', module: 'avif' }
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.16.0'
+    implementation 'com.github.ctiao:dfm:0.9.25'
+    implementation 'com.github.devin1014.DLNA-Cast:dmc:v2.0.0'
+    implementation 'com.github.devin1014.DLNA-Cast:dmr:v2.0.0'
     implementation 'com.github.jahirfiquitiva:TextDrawable:1.0.3'
     implementation 'com.github.thegrizzlylabs:sardine-android:0.9'
     implementation 'com.github.teamnewpipe:NewPipeExtractor:v0.24.8'

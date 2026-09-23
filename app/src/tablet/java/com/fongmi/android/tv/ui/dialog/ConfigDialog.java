@@ -7,8 +7,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -22,7 +20,6 @@ import com.fongmi.android.tv.api.config.WallConfig;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.databinding.DialogConfigBinding;
 import com.fongmi.android.tv.impl.ConfigCallback;
-import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.ui.custom.CustomTextListener;
 import com.fongmi.android.tv.utils.FileChooser;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -76,8 +73,9 @@ public class ConfigDialog {
     }
 
     private void initView() {
-        binding.name.setText(getConfig().getName());
-        binding.url.setText(ori = getConfig().getUrl());
+        Config cfg = getConfig();
+        binding.name.setText(cfg != null ? cfg.getName() : "");
+        binding.url.setText(ori = cfg != null ? cfg.getUrl() : "");
         binding.input.setVisibility(edit ? View.VISIBLE : View.GONE);
         binding.url.setSelection(TextUtils.isEmpty(ori) ? 0 : ori.length());
     }
@@ -151,86 +149,16 @@ public class ConfigDialog {
         String url = binding.url.getText().toString().trim();
         String name = binding.name.getText().toString().trim();
         
-        android.util.Log.d("ConfigDialog", "onPositive: type=" + type + ", url=" + url + ", name=" + name);
-        
-        // 如果URL为空，删除配置（数据库写操作移到后台线程）
         if (url.isEmpty()) {
-            android.util.Log.d("ConfigDialog", "URL is empty, deleting config");
             App.execute(() -> Config.delete(ori, type));
             dialog.dismiss();
             return;
         }
         
-        // 只有URL不为空时，才设置配置
-        // 保存原始URL，以便在添加失败时恢复
-        String originalUrl = ori;
-        android.util.Log.d("ConfigDialog", "Calling Config.find with url=" + url + ", type=" + type);
-        
-        // Config 读/写数据库移到后台线程，读完后回主线程设置配置
         App.execute(() -> {
             if (edit) Config.find(ori, type).url(url).name(name).update();
             Config config = Config.find(url, type);
-            App.post(() -> {
-                android.util.Log.d("ConfigDialog", "Config.find returned: " + (config != null ? config.toString() : "null"));
-                android.util.Log.d("ConfigDialog", "Checking callback: " + (callback != null ? callback.getClass().getName() : "null"));
-                android.util.Log.d("ConfigDialog", "Checking fragment: " + (fragment != null ? fragment.getClass().getName() : "null"));
-                android.util.Log.d("ConfigDialog", "Calling callback.setConfig");
-                callback.setConfig(config);
-                android.util.Log.d("ConfigDialog", "setConfig completed");
-                
-                // 添加一个延迟检查，如果配置没有成功加载，则恢复原始URL
-                new android.os.Handler().postDelayed(() -> {
-                    // 检查配置是否成功加载
-                    Config currentConfig = getConfig();
-                    if (currentConfig == null || !currentConfig.getUrl().equals(url)) {
-                        // 配置加载失败，恢复原始URL
-                        if (!TextUtils.isEmpty(originalUrl)) {
-                            // 如果有原始URL，恢复原始URL
-                            // Config 读数据库移到后台线程，读完后回主线程设置
-                            App.execute(() -> {
-                                Config cfg = Config.find(originalUrl, type);
-                                App.post(() -> callback.setConfig(cfg));
-                            });
-                        } else {
-                            // 如果没有原始URL，设置为空
-                            // Config 读数据库移到后台线程，读完后回主线程恢复默认配置
-                            App.execute(() -> {
-                                Config cfg;
-                                switch (type) {
-                                    case 1: cfg = Config.live(); break;
-                                    case 2: cfg = Config.wall(); break;
-                                    default: cfg = Config.vod(); break;
-                                }
-                                App.post(() -> {
-                                    switch (type) {
-                                        case 0:
-                                            VodConfig.get().clear().config(cfg).load(new Callback() {
-                                                @Override public void success() {}
-                                                @Override public void success(String result) {}
-                                                @Override public void error(String msg) {}
-                                            });
-                                            break;
-                                        case 1:
-                                            LiveConfig.get().clear().config(cfg).load(new Callback() {
-                                                @Override public void success() {}
-                                                @Override public void success(String result) {}
-                                                @Override public void error(String msg) {}
-                                            });
-                                            break;
-                                        case 2:
-                                            WallConfig.get().clear().config(cfg).load(new Callback() {
-                                                @Override public void success() {}
-                                                @Override public void success(String result) {}
-                                                @Override public void error(String msg) {}
-                                            });
-                                            break;
-                                    }
-                                });
-                            });
-                        }
-                    }
-                }, 2000); // 2秒后检查
-            });
+            App.post(() -> callback.setConfig(config));
         });
         
         dialog.dismiss();

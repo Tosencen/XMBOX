@@ -121,27 +121,30 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
     
     // 初始化启动状态：区分已有配置和无配置的情况
     private void initStartupState() {
-        // 检查是否已经有保存的配置，添加空值检查
-        boolean hasExistingConfig = false;
-        try {
-            Config config = VodConfig.get().getConfig();
-            hasExistingConfig = config != null && 
-                               config.getUrl() != null && 
-                               !config.getUrl().isEmpty();
-        } catch (Exception e) {
-            // 如果获取配置时出错，认为没有配置
-            hasExistingConfig = false;
-        }
-        
-        if (hasExistingConfig) {
-            // 已有配置：显示加载状态，确保不显示添加源提示
-            showProgress();
-            mBinding.emptySourceHint.setVisibility(View.GONE);
-        } else {
-            // 无配置：立即显示空源提示，不显示加载状态
-            hideProgress();
-            checkEmptySource();
-        }
+        // 在后台线程检查数据库，避免主线程调用VodConfig.get().getConfig()返回null
+        App.execute(() -> {
+            boolean hasExistingConfig;
+            try {
+                Config config = Config.vod();
+                hasExistingConfig = config != null && 
+                                   config.getUrl() != null && 
+                                   !config.getUrl().isEmpty();
+            } catch (Exception e) {
+                hasExistingConfig = false;
+            }
+            final boolean finalHasConfig = hasExistingConfig;
+            App.post(() -> {
+                if (finalHasConfig) {
+                    // 已有配置：显示加载状态，确保不显示添加源提示
+                    showProgress();
+                    mBinding.emptySourceHint.setVisibility(View.GONE);
+                } else {
+                    // 无配置：立即显示空源提示，不显示加载状态
+                    hideProgress();
+                    checkEmptySource();
+                }
+            });
+        });
     }
 
     @Override
@@ -263,22 +266,17 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
         if (mBinding.emptySourceHint != null) {
             mBinding.emptySourceHint.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
             if (isEmpty) {
-                // 设置整个布局的点击事件
                 mBinding.emptySourceHint.setOnClickListener(this::onAddSource);
-                // 设置按钮的点击事件
                 if (mBinding.addSourceBtn != null) {
                     mBinding.addSourceBtn.setOnClickListener(this::onAddSource);
                 }
-                // 空源状态下隐藏所有悬浮按钮
                 hideFabButtons();
-                // 启动Lottie动画
                 try {
                     LottieAnimationView lottieView = mBinding.emptySourceHint.findViewById(R.id.lottieAnimation);
                     if (lottieView != null) {
                         lottieView.playAnimation();
                     }
                 } catch (Exception e) {
-                    // 忽略错误
                 }
             }
         }

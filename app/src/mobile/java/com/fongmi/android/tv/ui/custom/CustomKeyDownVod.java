@@ -20,6 +20,8 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener im
 
     private static final int DISTANCE = 250;
     private static final int VELOCITY = 10;
+    private static final int SCROLL_THRESHOLD_DP = 40;
+    private static final int TAP_SLOP_DP = 24;
 
     private final ScaleGestureDetector scaleDetector;
     private final GestureDetector detector;
@@ -36,6 +38,9 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener im
     private boolean center;
     private boolean touch;
     private boolean lock;
+    private boolean scrollDetected;
+    private float downX;
+    private float downY;
     private float bright;
     private float volume;
     private float scale;
@@ -60,7 +65,22 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener im
         if (changeSpeed && e.getAction() == MotionEvent.ACTION_UP) listener.onSpeedEnd();
         if (changeBright && e.getAction() == MotionEvent.ACTION_UP) listener.onBrightEnd();
         if (changeVolume && e.getAction() == MotionEvent.ACTION_UP) listener.onVolumeEnd();
+        if (e.getAction() == MotionEvent.ACTION_UP && e.getPointerCount() == 1) handleManualTap(e);
         return e.getPointerCount() == 2 ? scaleDetector.onTouchEvent(e) : detector.onTouchEvent(e);
+    }
+
+    private void handleManualTap(MotionEvent e) {
+        if (!scrollDetected || changeTime || changeBright || changeVolume || changeSpeed || changeScale || lock) {
+            scrollDetected = false;
+            return;
+        }
+        float dx = e.getX() - downX;
+        float dy = e.getY() - downY;
+        float dist = (float) Math.sqrt(dx * dx + dy * dy);
+        if (dist < ResUtil.dp2px(TAP_SLOP_DP)) {
+            listener.onSingleTap();
+        }
+        scrollDetected = false;
     }
 
     public void resetScale() {
@@ -81,11 +101,14 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener im
     }
 
     private boolean isEdge(MotionEvent e) {
-        return ResUtil.isEdge(activity, e, ResUtil.dp2px(24));
+        return ResUtil.isEdge(activity, e, ResUtil.dp2px(8));
     }
 
     @Override
     public boolean onDown(@NonNull MotionEvent e) {
+        scrollDetected = false;
+        downX = e.getX();
+        downY = e.getY();
         if (isEdge(e) || changeScale || lock || e.getPointerCount() > 1) return true;
         volume = manager.getStreamVolume(AudioManager.STREAM_MUSIC);
         bright = Util.getBrightness(activity);
@@ -108,9 +131,15 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener im
     @Override
     public boolean onScroll(MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
         if (isEdge(e1) || changeScale || lock || e1.getPointerCount() > 1) return true;
+        scrollDetected = true;
         float deltaX = e2.getX() - e1.getX();
         float deltaY = e1.getY() - e2.getY();
-        
+        float totalDist = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        if (!changeTime && !changeBright && !changeVolume && totalDist < ResUtil.dp2px(SCROLL_THRESHOLD_DP)) {
+            return true;
+        }
+
         // 在横屏模式下，调整触摸事件的处理逻辑
         if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             // 横屏模式下，增加对水平滑动的敏感度
@@ -120,7 +149,7 @@ public class CustomKeyDownVod extends GestureDetector.SimpleOnGestureListener im
                 return true;
             }
         }
-        
+
         if (touch) checkFunc(distanceX, distanceY, e2);
         if (changeTime) listener.onSeek(time = (long) (deltaX * 50));
         if (changeBright) setBright(deltaY);

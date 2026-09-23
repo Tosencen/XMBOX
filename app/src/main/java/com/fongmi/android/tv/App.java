@@ -292,14 +292,4 @@ public static Activity activity() {
         });
     }
     
-
-    @Override
-    public PackageManager getPackageManager() {
-        return hook != null ? hook : getBaseContext().getPackageManager();
-    }
-
-    @Override
-    public String getPackageName() {
-        return hook != null ? hook.getPackageName() : getBaseContext().getPackageName();
-    }
 }

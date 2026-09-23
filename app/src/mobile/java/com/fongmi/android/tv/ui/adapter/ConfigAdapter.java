@@ -22,6 +22,7 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
 
     public ConfigAdapter(OnClickListener listener) {
         this.mListener = listener;
+        this.mItems = new ArrayList<>();
     }
 
     public interface OnClickListener {
