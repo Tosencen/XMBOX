@@ -18,6 +18,8 @@ import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.utils.Notify;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.List;
+
 public class HistoryDialog implements ConfigAdapter.OnClickListener {
 
     private final DialogHistoryBinding binding;
@@ -54,8 +56,13 @@ public class HistoryDialog implements ConfigAdapter.OnClickListener {
     }
 
     private void setDialog() {
-        dialog.show();
-        adapter.addAll(type);
+        App.execute(() -> {
+            List<Config> items = adapter.load(type);
+            App.post(() -> {
+                adapter.setItems(items);
+                dialog.show();
+            });
+        });
     }
 
     @Override

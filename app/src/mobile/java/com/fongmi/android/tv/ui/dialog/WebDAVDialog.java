@@ -54,8 +54,8 @@ public class WebDAVDialog {
     }
 
     public void show() {
-        initDialog();
         initView();
+        initDialog();
         initEvent();
     }
 
@@ -66,7 +66,11 @@ public class WebDAVDialog {
             .setPositiveButton("保存", this::onPositive)
             .setNegativeButton("取消", this::onNegative)
             .create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN | android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+        }
         dialog.show();
+        binding.getRoot().clearFocus();
     }
 
     private void initView() {

@@ -36,17 +36,25 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
 
     public void addAll(int type) {
         App.execute(() -> {
-            List<Config> configs = Config.getAll(type);
-            Config currentConfig = type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig();
-            App.post(() -> {
-                mItems = new ArrayList<>();
-                for (Config config : configs) {
-                    if (config.equals(currentConfig) || config.isEmpty()) continue;
-                    mItems.add(config);
-                }
-                notifyDataSetChanged();
-            });
+            List<Config> items = load(type);
+            App.post(() -> setItems(items));
         });
+    }
+
+    public List<Config> load(int type) {
+        List<Config> configs = Config.getAll(type);
+        Config currentConfig = type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig();
+        List<Config> items = new ArrayList<>();
+        for (Config config : configs) {
+            if (config.equals(currentConfig) || config.isEmpty()) continue;
+            items.add(config);
+        }
+        return items;
+    }
+
+    public void setItems(List<Config> items) {
+        mItems = items;
+        notifyDataSetChanged();
     }
 
     public void addItem(Config item) {
