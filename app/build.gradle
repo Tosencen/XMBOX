@@ -34,9 +34,6 @@ android {
         targetSdk 34
         versionCode 318
         versionName "3.1.8"
-        // GitHub Token (可选，用于提高API请求限制)
-        def githubToken = project.findProperty("GITHUB_TOKEN") ?: ""
-        buildConfigField "String", "GITHUB_TOKEN", "\"${githubToken}\""
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString(), "eventBusIndex": "com.fongmi.android.tv.event.EventIndex"]
@@ -109,7 +106,7 @@ android {
     }
 
     lint {
-        disable 'UnsafeOptInUsageError'
+        disable 'UnsafeOptInUsageError', 'ContentDescription'
     }
 
     compileOptions {
@@ -183,7 +180,6 @@ dependencies {
     annotationProcessor 'androidx.room:room-compiler:2.6.1'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.3.1'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.1.5'
-    implementation 'io.noties.markwon:core:4.6.2'
     implementation 'com.airbnb.android:lottie:5.2.0'
     // MPV 播放器 — 如需启用，请从 https://github.com/mpv-android/mpv-android 获取 AAR
     // 放入 app/libs/ 目录后取消下面注释：

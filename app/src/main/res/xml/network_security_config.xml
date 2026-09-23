@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  XMBOX 网络安全配置
+  说明：本应用为 IPTV/影视聚合播放器，需加载用户自定义的 HTTP 视频源、
+  EPG、直播列表等，因此允许明文流量。应用自身的更新接口等使用 HTTPS。
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -148,7 +148,7 @@ public static Activity activity() {
         }
         OkHttp.get().setProxy(Setting.getProxy());
         OkHttp.get().setDoh(Doh.objectFrom(Setting.getDoh()));
-        EventBus.getDefault();
+        EventBus.builder().addIndex(new com.fongmi.android.tv.event.EventIndex()).installDefaultEventBus();
         CaocConfig.Builder.create().backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT).errorActivity(CrashActivity.class).apply();
         Notify.createChannel();
 
