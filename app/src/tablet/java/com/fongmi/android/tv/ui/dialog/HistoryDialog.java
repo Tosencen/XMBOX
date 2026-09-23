@@ -54,7 +54,6 @@ public class HistoryDialog implements ConfigAdapter.OnClickListener {
     }
 
     private void setDialog() {
-        dialog.getWindow().setDimAmount(0);
         dialog.show();
         adapter.addAll(type);
     }

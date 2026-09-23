@@ -56,7 +56,6 @@ public class InfoDialog {
 
     private void initDialog() {
         dialog = new MaterialAlertDialogBuilder(binding.getRoot().getContext()).setView(binding.getRoot()).create();
-        dialog.getWindow().setDimAmount(0);
         dialog.show();
     }
 

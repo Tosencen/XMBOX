@@ -77,7 +77,6 @@ public class SiteDialog implements SiteAdapter.OnClickListener {
 
     private void setDialog() {
         if (adapter.getItemCount() == 0) return;
-        dialog.getWindow().setDimAmount(0);
         dialog.show();
     }
 

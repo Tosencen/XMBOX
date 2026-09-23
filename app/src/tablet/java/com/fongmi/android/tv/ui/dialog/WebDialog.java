@@ -32,7 +32,6 @@ public class WebDialog {
     }
 
     private void initDialog() {
-        dialog.getWindow().setDimAmount(0);
         dialog.show();
     }
 }
