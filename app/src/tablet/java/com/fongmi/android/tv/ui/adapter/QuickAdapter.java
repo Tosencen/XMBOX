@@ -33,7 +33,7 @@ public class QuickAdapter extends RecyclerView.Adapter<QuickAdapter.ViewHolder> 
     }
 
     public void addAll(List<Vod> items) {
-        int position = mItems.size() + 1;
+        int position = mItems.size();
         mItems.addAll(items);
         notifyItemRangeInserted(position, items.size());
     }

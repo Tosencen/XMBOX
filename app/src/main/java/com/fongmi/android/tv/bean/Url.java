@@ -41,11 +41,13 @@ public class Url {
     }
 
     public String v(int position) {
-        return position >= getValues().size() ? "" : getValues().get(position).getV();
+        if (position < 0 || position >= getValues().size()) return "";
+        return getValues().get(position).getV();
     }
 
     public String n(int position) {
-        return position >= getValues().size() ? "" : getValues().get(position).getN();
+        if (position < 0 || position >= getValues().size()) return "";
+        return getValues().get(position).getN();
     }
 
     public Url add(String v) {
@@ -59,12 +61,12 @@ public class Url {
     }
 
     public Url replace(String url) {
-        getValues().get(getPosition()).setV(url);
+        if (position >= 0 && position < getValues().size()) getValues().get(position).setV(url);
         return this;
     }
 
     public Url set(int position) {
-        this.position = Math.min(position, getValues().size() - 1);
+        this.position = getValues().isEmpty() ? -1 : Math.min(Math.max(position, 0), getValues().size() - 1);
         return this;
     }
 

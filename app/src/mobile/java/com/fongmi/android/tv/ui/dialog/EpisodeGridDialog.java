@@ -96,6 +96,7 @@ public class EpisodeGridDialog extends BaseDialog {
     }
 
     private void setCurrentPage() {
+        if (episodes == null || episodes.isEmpty()) return;
         for (int i = 0; i < episodes.size(); i++) {
             if (episodes.get(i).isActivated()) {
                 binding.pager.setCurrentItem(i / itemCount);

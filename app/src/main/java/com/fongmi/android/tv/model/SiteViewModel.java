@@ -270,23 +270,24 @@ public class SiteViewModel extends ViewModel {
     }
 
     private void execute(MutableLiveData<Result> result, Callable<Result> callable) {
-        if (executor != null) executor.shutdownNow();
-        executor = Executors.newFixedThreadPool(2);
-        executor.execute(() -> {
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        ExecutorService previous = executor;
+        executor = pool;
+        if (previous != null) previous.shutdownNow();
+        pool.execute(() -> {
             try {
                 if (Thread.interrupted()) return;
-                result.postValue(executor.submit(callable).get(Constant.TIMEOUT_VOD, TimeUnit.MILLISECONDS));
+                result.postValue(pool.submit(callable).get(Constant.TIMEOUT_VOD, TimeUnit.MILLISECONDS));
             } catch (Throwable e) {
                 if (e instanceof InterruptedException || Thread.interrupted()) return;
-                // 确保在发生任何异常时都返回结果，避免界面一直显示加载中
                 if (e.getCause() instanceof ExtractException) {
                     result.postValue(Result.error(e.getCause().getMessage()));
                 } else if (e instanceof java.util.concurrent.TimeoutException) {
                     result.postValue(Result.error("加载超时，请重试"));
                 } else {
-                    result.postValue(Result.empty());
+                    Logger.e("Error", e);
+                    result.postValue(Result.error(e.getMessage() == null ? "加载失败，请重试" : e.getMessage()));
                 }
-                Logger.e("Error", e);
             }
         });
     }

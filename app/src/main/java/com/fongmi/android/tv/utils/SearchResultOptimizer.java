@@ -59,6 +59,10 @@ public class SearchResultOptimizer {
             if (name.trim().length() < 2) {
                 continue;
             }
+            // 过滤无 id 的结果（点开后无法拉详情）
+            if (TextUtils.isEmpty(vod.getVodId())) {
+                continue;
+            }
             result.add(vod);
         }
         return result;

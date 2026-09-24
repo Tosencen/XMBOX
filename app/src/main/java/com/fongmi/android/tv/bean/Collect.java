@@ -23,7 +23,7 @@ public class Collect implements Parcelable {
     }
 
     public static Collect create(List<Vod> list) {
-        return new Collect(list.get(0).getSite(), list);
+        return new Collect(list.isEmpty() ? new Site() : list.get(0).getSite(), list);
     }
 
     public Collect() {

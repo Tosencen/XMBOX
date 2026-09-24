@@ -602,7 +602,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void setEmpty(boolean finish) {
-        if (isFromCollect() || finish) {
+        if (finish && !isFromCollect()) {
             finish();
         } else if (getName().isEmpty()) {
             showEmpty();
@@ -750,6 +750,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void getPlayer(Flag flag, Episode episode, boolean replay) {
+        if (flag == null || episode == null) return;
         mBinding.control.title.setText(getString(R.string.detail_title, mBinding.name.getText(), episode.getName()));
         mViewModel.playerContent(getKey(), flag.getFlag(), episode.getUrl());
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -765,9 +766,15 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         setUseParse(VodConfig.hasParse() && ((result.getPlayUrl().isEmpty() && VodConfig.get().getFlags().contains(result.getFlag())) || result.getJx() == 1));
         if (mControlDialog != null && mControlDialog.isVisible()) mControlDialog.setParseVisible(isUseParse());
         mBinding.control.parse.setVisibility(isFullscreen() && isUseParse() ? View.VISIBLE : View.GONE);
+        mBinding.swipeLayout.setRefreshing(false);
+        if (result.getUrl().isEmpty() && !result.hasMsg() && result.getParse() != 1 && result.getJx() != 1) {
+            mBinding.progressLayout.showContent();
+            hideProgress();
+            showError(getString(R.string.error_play_url));
+            return;
+        }
         mPlayers.start(result, isUseParse(), getSite().isChangeable() ? getSite().getTimeout() : -1);
         setQualityVisible(result.getUrl().isMulti());
-        mBinding.swipeLayout.setRefreshing(false);
         mPlayers.setKey(getHistoryKey());
         mQualityAdapter.addAll(result);
     }
@@ -847,7 +854,9 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     private void reverseEpisode(boolean scroll) {
         mFlagAdapter.reverse();
-        setEpisodeAdapter(getFlag().getEpisodes());
+        Flag flag = getFlag();
+        if (flag == null) return;
+        setEpisodeAdapter(flag.getEpisodes());
         if (scroll) mBinding.episode.scrollToPosition(mEpisodeAdapter.getPosition());
     }
 
@@ -997,13 +1006,13 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     private void onSpeed() {
         mBinding.control.action.speed.setText(mPlayers.addSpeed());
-        mHistory.setSpeed(mPlayers.getSpeed());
+        if (mHistory != null) mHistory.setSpeed(mPlayers.getSpeed());
         setR1Callback();
     }
 
     private boolean onSpeedLong() {
         mBinding.control.action.speed.setText(mPlayers.toggleSpeed());
-        mHistory.setSpeed(mPlayers.getSpeed());
+        if (mHistory != null) mHistory.setSpeed(mPlayers.getSpeed());
         setR1Callback();
         return true;
     }
@@ -1053,6 +1062,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void setEnding(long ending) {
+        if (mHistory == null) return;
         mHistory.setEnding(ending);
         mBinding.control.action.ending.setText(ending <= 0 ? getString(R.string.play_ed) : mPlayers.stringToTime(mHistory.getEnding()));
     }
@@ -1073,6 +1083,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void setOpening(long opening) {
+        if (mHistory == null) return;
         mHistory.setOpening(opening);
         mBinding.control.action.opening.setText(opening <= 0 ? getString(R.string.play_op) : mPlayers.stringToTime(mHistory.getOpening()));
     }
@@ -1269,9 +1280,11 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         mBinding.flag.setVisibility(empty ? View.GONE : View.VISIBLE);
         if (empty) {
             ErrorEvent.flag(tag);
-        } else {
+        } else if (mHistory != null) {
             onItemClick(mHistory.getFlag());
             if (mHistory.isRevSort()) reverseEpisode(true);
+        } else {
+            onItemClick(item.getVodFlags().get(0));
         }
     }
 
@@ -1305,10 +1318,12 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     }
 
     private void updateHistory(Episode item, boolean replay) {
+        if (mHistory == null) return;
         replay = replay || !item.getName().equals(mHistory.getVodRemarks());
         mHistory.setEpisodeUrl(item.getUrl());
         mHistory.setVodRemarks(item.getName());
-        mHistory.setVodFlag(getFlag().getFlag());
+        Flag flag = getFlag();
+        if (flag != null) mHistory.setVodFlag(flag.getFlag());
         mHistory.setCreateTime(System.currentTimeMillis());
         mHistory.setPosition(replay ? C.TIME_UNSET : mHistory.getPosition());
     }

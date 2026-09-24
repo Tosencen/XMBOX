@@ -49,7 +49,7 @@ public class CollectAdapter extends RecyclerView.Adapter<CollectAdapter.ViewHold
     }
 
     public Collect getActivated() {
-        return mItems.get(getPosition());
+        return mItems.isEmpty() ? null : mItems.get(getPosition());
     }
 
     public void setActivated(int position) {

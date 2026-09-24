@@ -153,15 +153,22 @@ public class CollectActivity extends BaseActivity implements CustomScroller.Call
             // 使用搜索结果优化器处理结果
             String keyword = mBinding.keyword.getText().toString().trim();
             List<Vod> optimizedList = SearchResultOptimizer.optimize(result.getList(), keyword);
+            if (optimizedList.isEmpty()) {
+                updateEmptyState();
+                return;
+            }
             if (mCollectAdapter.getPosition() == 0) mSearchAdapter.addAll(optimizedList);
             mCollectAdapter.add(Collect.create(optimizedList));
             mCollectAdapter.add(optimizedList);
             updateEmptyState();
         });
         mViewModel.result.observe(this, result -> {
-            boolean same = !result.getList().isEmpty() && mCollectAdapter.getActivated().getSite().equals(result.getList().get(0).getSite());
-            if (same) mCollectAdapter.getActivated().getList().addAll(result.getList());
-            if (same) mSearchAdapter.addAll(result.getList());
+            Collect activated = mCollectAdapter.getActivated();
+            boolean same = !result.getList().isEmpty() && activated != null && activated.getSite().equals(result.getList().get(0).getSite());
+            if (same) {
+                activated.getList().addAll(result.getList());
+                mSearchAdapter.addAll(result.getList());
+            }
             mScroller.endLoading(result);
             updateEmptyState();
         });
@@ -316,7 +323,7 @@ public class CollectActivity extends BaseActivity implements CustomScroller.Call
     @Override
     public void onLoadMore(String page) {
         Collect activated = mCollectAdapter.getActivated();
-        if ("all".equals(activated.getSite().getKey())) return;
+        if (activated == null || "all".equals(activated.getSite().getKey())) return;
         mViewModel.searchContent(activated.getSite(), mBinding.keyword.getText().toString(), page);
         activated.setPage(Integer.parseInt(page));
         mScroller.setLoading(true);
