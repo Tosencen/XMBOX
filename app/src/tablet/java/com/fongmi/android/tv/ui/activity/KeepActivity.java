@@ -119,7 +119,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
         VodConfig.load(config, new Callback() {
             @Override
             public void success() {
-                VideoActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+                play(item);
                 RefreshEvent.config();
                 RefreshEvent.video();
             }
@@ -129,6 +129,14 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
                 Notify.show(msg);
             }
         });
+    }
+
+    private void play(Keep item) {
+        if (!VodConfig.get().hasSite(item.getSiteKey())) {
+            Notify.show(R.string.history_site_missing);
+            return;
+        }
+        VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -144,7 +152,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
             App.post(() -> {
                 if (config == null) CollectActivity.start(this, item.getVodName());
                 else if (item.getCid() != VodConfig.getCid()) loadConfig(config, item);
-                else VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
+                else play(item);
             });
         });
     }
