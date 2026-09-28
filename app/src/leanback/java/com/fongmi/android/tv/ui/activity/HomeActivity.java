@@ -452,6 +452,10 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void onItemClick(History item) {
+        if (!VodConfig.get().hasSite(item.getSiteKey())) {
+            Notify.show(R.string.history_site_missing);
+            return;
+        }
         VideoActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
     }
 

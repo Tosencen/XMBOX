@@ -1,3 +1,7 @@
+# Kotlin
+# 运行时动态加载的蜘蛛 jar 按原名引用 kotlin 类，禁止混淆/裁剪
+-keep class kotlin.** { *; }
+
 # TV
 -keep class com.fongmi.android.tv.bean.** { *; }
 

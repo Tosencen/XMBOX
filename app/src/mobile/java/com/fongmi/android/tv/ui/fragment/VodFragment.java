@@ -474,6 +474,10 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
             )
         );
         mHistoryAdapter = new HistoryCardAdapter(item -> {
+            if (!VodConfig.get().hasSite(item.getSiteKey())) {
+                Notify.show(R.string.history_site_missing);
+                return;
+            }
             VideoActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName(), item.getVodPic());
         });
         mBinding.historyRecycler.setAdapter(mHistoryAdapter);

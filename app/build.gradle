@@ -119,6 +119,9 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.aar"])
     implementation project(':catvod')
+    // 运行时蜘蛛 jar（如 CatVodSpider-GM 的 GM.jar）依赖 kotlin-stdlib，
+    // 父 ClassLoader 必须能提供 kotlin.jvm.functions.* 等类，否则加载 f1/a 时抛 NoClassDefFoundError
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.21'
     // implementation project(':chaquo') // 移除Python支持减少8-10MB体积
     implementation project(':quickjs')
     implementation 'androidx.appcompat:appcompat:1.7.0'

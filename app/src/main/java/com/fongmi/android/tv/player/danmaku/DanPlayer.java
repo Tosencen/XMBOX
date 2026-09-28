@@ -11,6 +11,7 @@ import com.github.catvod.utils.Logger;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 import master.flame.danmaku.controller.DrawHandler;
 import master.flame.danmaku.danmaku.model.BaseDanmaku;
@@ -52,40 +53,48 @@ public class DanPlayer implements DrawHandler.Callback {
         return view != null && view.isPrepared();
     }
 
+    private void execute(Runnable runnable) {
+        try {
+            executor.execute(runnable);
+        } catch (RejectedExecutionException e) {
+            Logger.d(TAG + " executor released, drop task");
+        }
+    }
+
     public void seekTo(long time) {
-        executor.execute(() -> {
+        execute(() -> {
             if (isDanmakuPrepared()) view.seekTo(time);
             if (isDanmakuPrepared()) view.hide();
         });
     }
 
     public void play() {
-        executor.execute(() -> {
+        execute(() -> {
             if (isDanmakuPrepared()) view.resume();
         });
     }
 
     public void pause() {
-        executor.execute(() -> {
+        execute(() -> {
             if (isDanmakuPrepared()) view.pause();
         });
     }
 
     public void stop() {
-        executor.execute(() -> {
+        execute(() -> {
             if (isDanmakuPrepared()) view.stop();
         });
     }
 
     public void release() {
-        executor.execute(() -> {
+        execute(() -> {
             if (isDanmakuPrepared()) view.release();
         });
         executor.shutdown();
     }
 
     public void setDanmaku(Danmaku item) {
-        executor.execute(() -> {
+        execute(() -> {
             view.release();
             if (item.isEmpty()) return;
             Logger.d(item.getUrl());
@@ -105,9 +114,10 @@ public class DanPlayer implements DrawHandler.Callback {
     @Override
     public void prepared() {
         App.post(() -> {
+            if (player == null) return;
             boolean playing = player.isPlaying();
             long position = player.getPosition();
-            executor.execute(() -> {
+            execute(() -> {
                 if (!isDanmakuPrepared()) return;
                 if (playing) view.start(position);
                 else view.pause();

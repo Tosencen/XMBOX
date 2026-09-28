@@ -427,6 +427,11 @@ public class VodConfig {
         return index == -1 ? new Site() : getSites().get(index);
     }
 
+    public boolean hasSite(String key) {
+        if (TextUtils.isEmpty(key)) return false;
+        return !getSite(key).getKey().isEmpty();
+    }
+
     public void setParse(Parse parse) {
         this.parse = parse;
         this.parse.setActivated(true);

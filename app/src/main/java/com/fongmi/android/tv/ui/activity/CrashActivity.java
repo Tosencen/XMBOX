@@ -5,15 +5,17 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.ActivityCrashBinding;
+import com.fongmi.android.tv.databinding.DialogCrashDetailsBinding;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.github.catvod.utils.Prefers;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Objects;
 
@@ -60,11 +62,13 @@ public class CrashActivity extends BaseActivity {
 
     private void showError() {
         String errorDetails = CustomActivityOnCrash.getAllErrorDetailsFromIntent(this, getIntent());
-        new AlertDialog.Builder(this)
+        DialogCrashDetailsBinding binding = DialogCrashDetailsBinding.inflate(LayoutInflater.from(this));
+        binding.text.setText(errorDetails);
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.crash_details_title)
-                .setMessage(errorDetails)
+                .setView(binding.getRoot())
                 .setPositiveButton(R.string.crash_details_close, null)
-                .setNeutralButton("复制错误信息", (dialog, which) -> {
+                .setNeutralButton(R.string.crash_copy, (dialog, which) -> {
                     copyErrorToClipboard(errorDetails);
                 })
                 .show();
@@ -73,11 +77,11 @@ public class CrashActivity extends BaseActivity {
     private void copyErrorToClipboard(String errorDetails) {
         try {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("错误信息", errorDetails);
+            ClipData clip = ClipData.newPlainText(getString(R.string.crash_details_title), errorDetails);
             clipboard.setPrimaryClip(clip);
-            Toast.makeText(this, "错误信息已复制到剪贴板", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.crash_copy_success, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, "复制失败：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.crash_copy_fail, Toast.LENGTH_SHORT).show();
         }
     }
 }

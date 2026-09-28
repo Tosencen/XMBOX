@@ -16,8 +16,10 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.ui.activity.VideoActivity;
+import com.fongmi.android.tv.utils.Notify;
 
 public class LastWatchToast {
 
@@ -55,6 +57,10 @@ public class LastWatchToast {
         // 设置点击事件
         contentView.setOnClickListener(v -> {
             dismiss();
+            if (!VodConfig.get().hasSite(history.getSiteKey())) {
+                Notify.show(R.string.history_site_missing);
+                return;
+            }
             VideoActivity.start(activity, history.getSiteKey(), history.getVodId(), history.getVodName(), history.getVodPic());
         });
         

@@ -179,6 +179,7 @@
     <string name="times">times</string>
     <string name="lines">lines</string>
     <string name="last_watch">上次播放</string>
+    <string name="history_site_missing">该记录的视频源不在当前配置</string>
 
     <string-array name="select_decode">
         <item>Soft</item>
@@ -255,6 +256,8 @@
     <string name="crash_details_close">关闭</string>
     <string name="crash_log">错误日志：</string>
     <string name="crash_copy">复制日志</string>
+    <string name="crash_copy_success">错误信息已复制到剪贴板</string>
+    <string name="crash_copy_fail">复制失败</string>
 
     <!-- History Visible -->
     <string name="setting_history_visible">显示首页历史</string>
