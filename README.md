@@ -240,8 +240,6 @@ Made with ❤️ by XMBOX Team
 
 <div align="center">
 
-### 随喜
 
-<img src="docs/wechat_donate_qr.jpg" width="150" />
 
 </div>
