@@ -2,8 +2,6 @@ package com.fongmi.android.tv;
 
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,12 +10,10 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.fongmi.android.tv.databinding.DialogUpdateBinding;
 import com.fongmi.android.tv.utils.Download;
-import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.UpdateInstaller;
 import com.github.catvod.net.OkHttp;
-import com.github.catvod.utils.Github;
 import com.github.catvod.utils.Logger;
 import com.github.catvod.utils.Path;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -89,35 +85,32 @@ public class Updater implements Download.Callback {
         App.execute(() -> checkUpdate(activity));
     }
 
-    private boolean need(int code, String name) {
-        return Setting.getUpdate() && (dev ? !name.equals(BuildConfig.VERSION_NAME) && code >= BuildConfig.VERSION_CODE : code > BuildConfig.VERSION_CODE);
-    }
-
     private void checkUpdate(Activity activity) {
         try {
             String releasesUrl = "https://api.github.com/repos/Tosencen/XMBOX/releases/latest";
-            
+
             // 后台线程执行网络请求
             String response = OkHttp.string(releasesUrl);
-            
+
             if (response == null || response.isEmpty()) {
                 App.post(() -> Notify.show("检查更新失败：网络连接异常"));
                 return;
             }
 
-            // 检查是否是错误响应
-            if (response.contains("Not Found") || response.contains("404")) {
-                App.post(() -> Notify.show("检查更新失败：未找到发布版本"));
-                return;
-            }
-
-            if (response.contains("rate limit") || response.contains("API rate limit")) {
-                App.post(() -> Notify.show("检查更新失败：API请求次数已达上限"));
-                return;
-            }
-
             JSONObject release = new JSONObject(response);
             String tagName = release.optString("tag_name");
+
+            // 非Release响应（404/限流等）：解析message，避免用子串匹配误伤更新日志内容
+            if (tagName.isEmpty()) {
+                String message = release.optString("message");
+                if (message.contains("rate limit")) {
+                    App.post(() -> Notify.show("检查更新失败：API请求次数已达上限"));
+                } else {
+                    App.post(() -> Notify.show("检查更新失败：未找到发布版本"));
+                }
+                return;
+            }
+
             String body = release.optString("body");
             String version = tagName.startsWith("v") ? tagName.substring(1) : tagName;
 
@@ -137,25 +130,23 @@ public class Updater implements Download.Callback {
 
             String mode = BuildConfig.FLAVOR_mode;
             String abi = BuildConfig.FLAVOR_abi;
-            
-            // 兼容多种ABI格式：arm64_v8a -> arm64, armeabi_v7a -> armv7
+
+            // 兼容多种ABI命名：arm64_v8a/arm64/arm64-v8a、armeabi_v7a/armv7/armeabi-v7a
             String abiShort = abi.replace("arm64_v8a", "arm64").replace("armeabi_v7a", "armv7");
+            String abiDash = abi.replace("_", "-");
 
             boolean found = false;
-            // 尝试多种匹配方式
             for (int i = 0; i < assets.length(); i++) {
                 JSONObject asset = assets.getJSONObject(i);
                 String assetName = asset.optString("name");
-                
-                // 匹配逻辑：支持 arm64、arm64-v8a、armv7、armeabi-v7a 等格式
-                if (assetName.endsWith(".apk") && 
-                    assetName.toLowerCase().contains(mode.toLowerCase()) && 
-                    (assetName.contains(abiShort) || assetName.contains(abi.replace("_", "-")))) {
-                    releaseApkUrl = asset.optString("browser_download_url");
-                    fallbackApkUrl = releaseApkUrl;
-                    found = true;
-                    break;
-                }
+                if (!assetName.endsWith(".apk") || !assetName.toLowerCase().contains(mode)) continue;
+                if (!assetName.contains(abi) && !assetName.contains(abiShort) && !assetName.contains(abiDash)) continue;
+                String url = asset.optString("browser_download_url");
+                if (url.isEmpty()) continue;
+                releaseApkUrl = url;
+                fallbackApkUrl = url;
+                found = true;
+                break;
             }
 
             if (!found) {
@@ -168,8 +159,8 @@ public class Updater implements Download.Callback {
             App.post(() -> show(activity, version, body));
 
         } catch (Exception e) {
-            Logger.e("Updater: " + e.getMessage());
-            App.post(() -> Notify.show("检查更新失败：" + e.getMessage()));
+            Logger.e("Updater", e);
+            App.post(() -> Notify.show("检查更新失败：" + e.toString()));
         }
     }
 
@@ -242,11 +233,11 @@ public class Updater implements Download.Callback {
     }
 
     private void cancel(View view) {
-        Setting.putUpdate(false);
         if (download != null) {
             download.cancel();
+            download = null;
         }
-        dialog.dismiss();
+        dismiss();
     }
 
     private void confirm(View view) {
@@ -268,13 +259,18 @@ public class Updater implements Download.Callback {
         try {
             if (dialog != null) dialog.dismiss();
         } catch (Exception ignored) {
+        } finally {
+            dialog = null;
         }
     }
 
     @Override
     public void progress(int progress) {
         App.post(() -> {
-            if (binding != null) {
+            if (binding == null) return;
+            if (progress < 0) {
+                binding.desc.setText(R.string.update_downloading);
+            } else {
                 binding.desc.setText(String.format(Locale.getDefault(), "%d%%", progress));
             }
         });
@@ -283,14 +279,26 @@ public class Updater implements Download.Callback {
     @Override
     public void success(File file) {
         App.post(() -> {
-            if (dialog != null) dialog.dismiss();
-            UpdateInstaller.get().install(file);
+            // 用户已取消（弹窗已关）时不再拉起安装
+            if (dialog == null || !dialog.isShowing()) return;
+            dismiss();
+            // checkPermission=true：无安装权限时先保存待安装文件，授权返回后由 App 自动续装
+            UpdateInstaller installer = UpdateInstaller.get();
+            if (installer.install(file, true)) return;
+            if (!installer.hasInstallPermission()) {
+                installer.requestInstallPermission();
+                Notify.show("请允许安装未知应用，授权返回后将自动安装");
+            } else {
+                Notify.show("安装失败：更新文件不可用");
+            }
         });
     }
 
     @Override
     public void error(String msg) {
         App.post(() -> {
+            // 已取消的下载不再提示
+            if (dialog == null || !dialog.isShowing()) return;
             Notify.show("下载失败: " + msg);
             dismiss();
         });

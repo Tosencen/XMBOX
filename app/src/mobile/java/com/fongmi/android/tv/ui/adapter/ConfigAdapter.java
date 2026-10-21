@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.ui.adapter;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
 
     private final OnClickListener mListener;
     private List<Config> mItems;
+    private Config mCurrent;
 
     public ConfigAdapter(OnClickListener listener) {
         this.mListener = listener;
@@ -43,10 +45,10 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
 
     public List<Config> load(int type) {
         List<Config> configs = Config.getAll(type);
-        Config currentConfig = type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig();
+        mCurrent = type == 0 ? VodConfig.get().getConfig() : LiveConfig.get().getConfig();
         List<Config> items = new ArrayList<>();
         for (Config config : configs) {
-            if (config.equals(currentConfig) || config.isEmpty()) continue;
+            if (config.isEmpty()) continue;
             items.add(config);
         }
         return items;
@@ -66,8 +68,9 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
 
     public int remove(Config item) {
         int position = mItems.indexOf(item);
+        if (position == -1) return getItemCount();
         App.execute(item::delete);
-        mItems.remove(item);
+        mItems.remove(position);
         notifyItemRemoved(position);
         return getItemCount();
     }
@@ -89,6 +92,7 @@ public class ConfigAdapter extends RecyclerView.Adapter<ConfigAdapter.ViewHolder
         holder.binding.text.setText(item.getDesc());
         holder.binding.text.setOnClickListener(v -> mListener.onTextClick(item));
         holder.binding.copy.setOnClickListener(v -> mListener.onCopyClick(item));
+        holder.binding.delete.setVisibility(item.equals(mCurrent) ? View.GONE : View.VISIBLE);
         holder.binding.delete.setOnClickListener(v -> mListener.onDeleteClick(item));
     }
 

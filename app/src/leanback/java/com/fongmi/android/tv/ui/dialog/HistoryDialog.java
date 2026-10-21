@@ -6,6 +6,7 @@ import android.view.WindowManager;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.databinding.DialogHistoryBinding;
 import com.fongmi.android.tv.impl.ConfigCallback;
@@ -13,6 +14,8 @@ import com.fongmi.android.tv.ui.adapter.ConfigAdapter;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.util.List;
 
 public class HistoryDialog implements ConfigAdapter.OnClickListener {
 
@@ -45,21 +48,25 @@ public class HistoryDialog implements ConfigAdapter.OnClickListener {
 
     private void setRecyclerView() {
         binding.recycler.setItemAnimator(null);
-        binding.recycler.setHasFixedSize(false);
+        binding.recycler.setHasFixedSize(true);
         binding.recycler.setAdapter(adapter);
-        adapter.addAll(type);
         binding.recycler.addItemDecoration(new SpaceItemDecoration(1, 16));
     }
 
     private void setDialog() {
-        if (adapter.getItemCount() == 0) return;
-        WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
-        params.width = (int) (ResUtil.getScreenWidth() * 0.4f);
-        dialog.getWindow().setAttributes(params);
-        dialog.getWindow().setDimAmount(0);
-        // 设置对话框背景为透明，让布局的深色背景显示
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        dialog.show();
+        App.execute(() -> {
+            List<Config> items = adapter.load(type);
+            App.post(() -> {
+                adapter.setItems(items);
+                WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+                params.width = (int) (ResUtil.getScreenWidth() * 0.4f);
+                dialog.getWindow().setAttributes(params);
+                dialog.getWindow().setDimAmount(0);
+                // 设置对话框背景为透明，让布局的深色背景显示
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+                dialog.show();
+            });
+        });
     }
 
     @Override

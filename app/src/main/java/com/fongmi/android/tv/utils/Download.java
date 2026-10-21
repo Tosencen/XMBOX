@@ -20,6 +20,7 @@ public class Download {
     private final String url;
     private final String fallbackUrl;
     private Callback callback;
+    private volatile boolean cancelled;
     private static final int MAX_RETRY_COUNT = 3; // 最大重试次数
 
     public static Download create(String url, File file) {
@@ -73,9 +74,10 @@ public class Download {
      * 先尝试主URL（通常是jsDelivr CDN），失败后回退到备用URL
      */
     private void doInBackgroundWithFallback() {
+        if (cancelled) return;
         // 先尝试主URL
         boolean mainSuccess = doInBackground(url, "主URL");
-        if (mainSuccess) {
+        if (mainSuccess || cancelled) {
             return;
         }
         
@@ -93,9 +95,11 @@ public class Download {
         Exception lastException = null;
         
         for (int attempt = 1; attempt <= MAX_RETRY_COUNT; attempt++) {
+            if (cancelled) return false;
             try {
-                if (callback != null) {
-                    App.post(() -> callback.progress(0));
+                Callback cb = callback;
+                if (cb != null) {
+                    App.post(() -> cb.progress(0));
                 }
                 
                 boolean success = downloadWithUrl(downloadUrl, source, attempt);
@@ -103,6 +107,7 @@ public class Download {
                     return true;
                 }
             } catch (Exception e) {
+                if (cancelled) return false;
                 lastException = e;
                 Logger.w("Download: 下载失败 (来源: " + source + ", 尝试 " + attempt + "/" + MAX_RETRY_COUNT + "): " + e.getMessage());
                 
@@ -121,9 +126,10 @@ public class Download {
         }
         
         // 所有尝试都失败
-        if (callback != null && lastException != null) {
+        Callback cb = callback;
+        if (cb != null && lastException != null && !cancelled) {
             String errorMsg = lastException.getMessage();
-            App.post(() -> callback.error(errorMsg != null ? errorMsg : "下载失败"));
+            App.post(() -> cb.error(errorMsg != null ? errorMsg : "下载失败"));
         }
         return false;
     }
@@ -186,8 +192,9 @@ public class Download {
             }
             
             Logger.d("Download: 下载成功 (来源: " + source + ", 尝试 " + attempt + "/" + MAX_RETRY_COUNT + ")");
-            if (callback != null) {
-                App.post(() -> callback.success(file));
+            Callback cb = callback;
+            if (cb != null && !cancelled) {
+                App.post(() -> cb.success(file));
             }
             return true;
         } catch (Exception e) {
@@ -218,12 +225,12 @@ public class Download {
     }
     
     public void cancel() {
+        cancelled = true;
         OkHttp.cancel(url);
         if (fallbackUrl != null) {
             OkHttp.cancel(fallbackUrl);
         }
         Path.clear(file);
-        callback = null;
     }
 
     private void download(InputStream is, long length) throws Exception {
@@ -235,24 +242,42 @@ public class Download {
             byte[] buffer = new byte[4096];
             int readBytes;
             long totalBytes = 0;
-            while ((readBytes = input.read(buffer)) != -1) {
+            int lastProgress = -2;
+            while (!cancelled && (readBytes = input.read(buffer)) != -1) {
                 totalBytes += readBytes;
                 os.write(buffer, 0, readBytes);
                 
-                // 只有当知道文件大小时才计算进度
-                if (length > 0 && callback != null) {
-                    int progress = (int) (totalBytes * 100.0 / length);
-                    final int finalProgress = Math.min(progress, 100); // 确保不超过100%，并设为final
-                    App.post(() -> callback.progress(finalProgress));
-                } else if (callback != null) {
-                    // 不知道文件大小时，显示不确定进度
-                    App.post(() -> callback.progress(-1));
+                if (length > 0) {
+                    // 节流：仅当百分比变化时才回调，避免36MB文件产生数千次主线程刷新
+                    int progress = Math.min((int) (totalBytes * 100.0 / length), 100);
+                    if (progress != lastProgress) {
+                        lastProgress = progress;
+                        Callback cb = callback;
+                        if (cb != null && !cancelled) {
+                            final int value = progress;
+                            App.post(() -> cb.progress(value));
+                        }
+                    }
+                } else if (lastProgress == -2) {
+                    // 不知道文件大小时，仅回调一次不确定进度
+                    lastProgress = -1;
+                    Callback cb = callback;
+                    if (cb != null && !cancelled) {
+                        App.post(() -> cb.progress(-1));
+                    }
                 }
             }
             
+            if (cancelled) {
+                throw new Exception("下载已取消");
+            }
+            
             // 下载完成后，如果不知道文件大小，显示100%
-            if (length <= 0 && callback != null) {
-                App.post(() -> callback.progress(100));
+            if (length <= 0) {
+                Callback cb = callback;
+                if (cb != null && !cancelled) {
+                    App.post(() -> cb.progress(100));
+                }
             }
         }
     }

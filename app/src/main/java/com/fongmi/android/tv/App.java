@@ -19,6 +19,7 @@ import com.fongmi.android.tv.utils.CacheCleaner;
 import com.fongmi.android.tv.utils.UpdateInstaller;
 import com.fongmi.android.tv.utils.AutoSyncManager;
 import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.utils.WebDAVSyncManager;
 import com.fongmi.hook.Hook;
 import com.github.catvod.Init;
 import com.github.catvod.bean.Doh;
@@ -50,6 +51,8 @@ public class App extends Application {
     private final Runnable cleanTask;
     private final Runnable syncTask;
     private final Runnable updateTask;
+    private final Runnable webDavSyncTask;
+    private boolean webDavScheduled;
     private boolean appJustLaunched;
 
     /** Activity 栈深度计数器，避免多 Activity 场景下错误置空 */
@@ -74,6 +77,7 @@ public class App extends Application {
         cleanTask = this::checkCacheClean;
         syncTask = this::doAutoSync;
         updateTask = this::runAutoUpdate;
+        webDavSyncTask = this::doWebDAVAutoSync;
         appJustLaunched = true;
         activityCount = 0;
     }
@@ -171,6 +175,7 @@ public static Activity activity() {
                 checkCacheClean();
                 checkPendingInstall();
                 checkAutoSync();
+                checkWebDAVAutoSync();
                 checkAutoUpdate(activity);
             }
 
@@ -289,6 +294,54 @@ public static Activity activity() {
                 post(syncTask, interval * 60 * 1000L);
             }
         });
+    }
+
+    /**
+     * 检查并调度 WebDAV 自动同步（开关与间隔由 WebDAV 配置页设置）
+     */
+    private void checkWebDAVAutoSync() {
+        if (!Setting.isWebDAVAutoSync()) {
+            if (webDavScheduled) {
+                removeCallbacks(webDavSyncTask);
+                webDavScheduled = false;
+            }
+            return;
+        }
+        // 已有等待中的任务则不重复排期，避免每次回前台都推迟同步
+        if (webDavScheduled) return;
+        webDavScheduled = true;
+        int interval = Math.max(Setting.getWebDAVSyncInterval(), 15);
+        post(webDavSyncTask, interval * 60 * 1000L);
+        Logger.d("App: WebDAV 自动同步已排期，间隔 " + interval + " 分钟");
+    }
+
+    private void doWebDAVAutoSync() {
+        webDavScheduled = false;
+        execute(() -> {
+            try {
+                if (Setting.isWebDAVAutoSync()) {
+                    WebDAVSyncManager manager = WebDAVSyncManager.get();
+                    if (manager.isConfigured()) {
+                        Logger.d("App: 执行 WebDAV 自动同步");
+                        manager.syncHistory(false);
+                    } else {
+                        Logger.d("App: WebDAV 未配置，跳过自动同步");
+                    }
+                }
+            } catch (Exception e) {
+                Logger.e("Error", e);
+            }
+            // 回主线程按当前设置排下一次
+            post(this::checkWebDAVAutoSync);
+        });
+    }
+
+    /** WebDAV 配置（开关/间隔）变化后重新排期 */
+    public static void rescheduleWebDAVAutoSync() {
+        App app = get();
+        app.webDavScheduled = false;
+        removeCallbacks(app.webDavSyncTask);
+        app.checkWebDAVAutoSync();
     }
     
 }

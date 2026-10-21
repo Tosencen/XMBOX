@@ -42,6 +42,10 @@ public class WebDAVDialog {
     private WebDAVSyncManager syncManager;
     private int selectedProvider = 0;  // 默认选择坚果云
     private boolean isInitializing = false;  // 标记是否正在初始化，防止初始化时触发监听器
+    private String oriUrl;              // 打开弹窗时已保存的配置（取消时回滚用）
+    private String oriUsername;
+    private String oriPassword;
+    private boolean tempConfig;         // 测试/同步是否临时改写了已保存配置
 
     public static WebDAVDialog create(Fragment fragment) {
         return new WebDAVDialog(fragment);
@@ -82,6 +86,9 @@ public class WebDAVDialog {
         String password = Setting.getWebDAVPassword();
         boolean autoSync = Setting.isWebDAVAutoSync();
         int interval = Setting.getWebDAVSyncInterval();
+        oriUrl = url;
+        oriUsername = username;
+        oriPassword = password;
 
         // 根据保存的URL判断是哪个服务提供商
         selectedProvider = getProviderIndexByUrl(url);
@@ -162,9 +169,7 @@ public class WebDAVDialog {
             // 使用post()确保在状态切换后获取新状态
             binding.autoSyncSwitch.post(() -> {
                 boolean newState = binding.autoSyncSwitch.isChecked();
-                // 立即保存自动同步状态
-                Setting.putWebDAVAutoSync(newState);
-                // 更新同步间隔的可见性
+                // 只暂存到界面，点"保存"才写入设置（取消则不生效）
                 updateSyncIntervalVisibility(newState);
             });
         });
@@ -246,6 +251,7 @@ public class WebDAVDialog {
         Setting.putWebDAVUrl(url);
         Setting.putWebDAVUsername(username);
         Setting.putWebDAVPassword(password);
+        tempConfig = true;
         
         // 重新加载配置
         syncManager.reloadConfig();
@@ -295,6 +301,7 @@ public class WebDAVDialog {
         Setting.putWebDAVUrl(url);
         Setting.putWebDAVUsername(username);
         Setting.putWebDAVPassword(password);
+        tempConfig = true;
         syncManager.reloadConfig();
         
         if (!syncManager.isConfigured()) {
@@ -358,8 +365,7 @@ public class WebDAVDialog {
             .setSingleChoiceItems(intervals, selectedIndex, (dialog, which) -> {
                 int interval = Integer.parseInt(intervals[which]);
                 binding.syncIntervalText.setText(String.valueOf(interval));
-                // 立即保存同步间隔
-                Setting.putWebDAVSyncInterval(interval);
+                // 只暂存到界面，点"保存"才写入设置
                 dialog.dismiss();
             })
             .setNegativeButton("取消", null)
@@ -425,9 +431,12 @@ public class WebDAVDialog {
         Setting.putWebDAVPassword(password);
         Setting.putWebDAVAutoSync(autoSync);
         Setting.putWebDAVSyncInterval(interval);
+        tempConfig = false;
 
         // 重新加载配置
         syncManager.reloadConfig();
+        // 开关/间隔已变化，按新设置重新排期自动同步
+        App.rescheduleWebDAVAutoSync();
 
         // 配置保存后，立即执行一次同步（下载远程数据）
         // 这样新设备配置后就能立即看到其他设备的历史记录
@@ -464,7 +473,19 @@ public class WebDAVDialog {
     }
 
     private void onNegative(DialogInterface dialog, int which) {
+        restoreConfig();
         dialog.dismiss();
+    }
+
+    /** 测试/同步会临时写入凭据，取消时回滚为打开弹窗时的配置 */
+    private void restoreConfig() {
+        if (!tempConfig) return;
+        if (oriUrl == null || oriUsername == null || oriPassword == null) return;
+        tempConfig = false;
+        Setting.putWebDAVUrl(oriUrl);
+        Setting.putWebDAVUsername(oriUsername);
+        Setting.putWebDAVPassword(oriPassword);
+        syncManager.reloadConfig();
     }
 
     /**

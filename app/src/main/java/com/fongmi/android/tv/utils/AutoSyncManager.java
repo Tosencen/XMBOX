@@ -167,8 +167,8 @@ public class AutoSyncManager implements ScanTask.Listener {
         }
 
         if (!devices.isEmpty()) {
-            // 使用第一个找到的设备进行同步
-            syncToDevice(devices.get(0));
+            // 使用第一个找到的设备进行同步（同步内含数据库读取，必须在后台线程）
+            App.execute(() -> syncToDevice(devices.get(0)));
         } else {
             Logger.d("AutoSync: 未找到可用设备");
             isSyncing = false;

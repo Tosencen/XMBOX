@@ -954,6 +954,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private void checkNext(boolean notify) {
         setR1Callback();
         Episode item = mEpisodeAdapter.getNext();
+        if (item == null) return;
         if (!item.isActivated()) onItemClick(item);
         else if (notify) Notify.show(R.string.error_play_next);
     }
@@ -961,6 +962,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private void checkPrev() {
         setR1Callback();
         Episode item = mEpisodeAdapter.getPrev();
+        if (item == null) return;
         if (!item.isActivated()) onItemClick(item);
         else Notify.show(R.string.error_play_prev);
     }
@@ -1268,12 +1270,12 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         ImgUtil.load(url, R.drawable.radio, new CustomTarget<>(100 * 3, 140 * 3) {
             @Override
             public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                mBinding.poster.setImageDrawable(resource);
+                if (mBinding.poster != null) mBinding.poster.setImageDrawable(resource);
             }
 
             @Override
             public void onLoadFailed(@Nullable Drawable error) {
-                mBinding.poster.setImageResource(R.drawable.radio);
+                if (mBinding.poster != null) mBinding.poster.setImageResource(R.drawable.radio);
             }
 
             @Override
@@ -1411,6 +1413,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRefreshEvent(RefreshEvent event) {
+        super.onRefreshEvent(event);
         if (isRedirect()) return;
         if (event.getType() == RefreshEvent.Type.DETAIL) getDetail();
         else if (event.getType() == RefreshEvent.Type.PLAYER) onRefresh();

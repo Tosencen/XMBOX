@@ -113,6 +113,15 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_control_setting" />
 
+            <ImageView
+                android:id="@+id/pip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"
+                android:src="@drawable/ic_control_pip"
+                android:visibility="gone" />
+
         </LinearLayout>
     </LinearLayout>
 

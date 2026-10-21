@@ -57,11 +57,11 @@ public class Config {
     }
 
     public static Config create(int type, String url) {
-        return new Config().type(type).url(url).insert();
+        return new Config().type(type).url(url).time(System.currentTimeMillis()).insert();
     }
 
     public static Config create(int type, String url, String name) {
-        return new Config().type(type).url(url).name(name).insert();
+        return new Config().type(type).url(url).name(name).time(System.currentTimeMillis()).insert();
     }
 
     public int getId() {
@@ -138,6 +138,11 @@ public class Config {
 
     public Config type(int type) {
         setType(type);
+        return this;
+    }
+
+    public Config time(long time) {
+        setTime(time);
         return this;
     }
 

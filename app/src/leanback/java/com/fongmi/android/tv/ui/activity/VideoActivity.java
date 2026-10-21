@@ -727,16 +727,19 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
     }
 
     private void checkNext(boolean notify) {
+        if (mHistory == null) return;
         if (mHistory.isRevPlay()) onPrev(notify);
         else onNext(notify);
     }
 
     private void checkPrev() {
+        if (mHistory == null) return;
         if (mHistory.isRevPlay()) onNext(true);
         else onPrev(true);
     }
 
     private void onNext(boolean notify) {
+        if (mEpisodeAdapter.size() == 0) return;
         int current = getEpisodePosition();
         int max = mEpisodeAdapter.size() - 1;
         current = ++current > max ? max : current;
@@ -746,6 +749,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
     }
 
     private void onPrev(boolean notify) {
+        if (mEpisodeAdapter.size() == 0) return;
         int current = getEpisodePosition();
         current = --current < 0 ? 0 : current;
         Episode item = (Episode) mEpisodeAdapter.get(current);
@@ -1104,6 +1108,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRefreshEvent(RefreshEvent event) {
+        super.onRefreshEvent(event);
         if (isRedirect()) return;
         if (event.getType() == RefreshEvent.Type.DETAIL) getDetail();
         else if (event.getType() == RefreshEvent.Type.PLAYER) onRefresh();

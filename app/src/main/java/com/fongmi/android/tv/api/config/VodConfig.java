@@ -451,11 +451,10 @@ public class VodConfig {
         this.home = home;
         this.home.setActivated(true);
         
-        // 安全地保存配置，防止空指针异常
+        // 安全地保存配置，防止空指针异常（Room 不能在主线程访问，移到后台线程）
         try {
-            if (home.getKey() != null && config != null) {
-                config.home(home.getKey()).save();
-            }
+            final Site target = home;
+            if (target.getKey() != null && config != null) App.execute(() -> config.home(target.getKey()).save());
         } catch (Exception e) {
             Logger.e("Error", e);
         }
