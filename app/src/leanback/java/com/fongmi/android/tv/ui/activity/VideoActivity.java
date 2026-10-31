@@ -835,6 +835,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
     private void setOpening(long opening) {
         if (mHistory == null) return;
         mHistory.setOpening(opening);
+        App.execute(mHistory::update);
         mBinding.control.opening.setText(opening <= 0 ? getString(R.string.play_op) : mPlayers.stringToTime(mHistory.getOpening()));
     }
 
@@ -864,6 +865,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
     private void setEnding(long ending) {
         if (mHistory == null) return;
         mHistory.setEnding(ending);
+        App.execute(mHistory::update);
         mBinding.control.ending.setText(ending <= 0 ? getString(R.string.play_ed) : mPlayers.stringToTime(mHistory.getEnding()));
     }
 

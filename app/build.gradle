@@ -31,7 +31,8 @@ android {
     defaultConfig {
         applicationId "com.fongmi.android.tv"
         minSdk 24
-        targetSdk 34
+        //noinspection ExpiredTargetSdkVersion
+        targetSdk 28
         versionCode 318
         versionName "3.1.8"
         javaCompileOptions {

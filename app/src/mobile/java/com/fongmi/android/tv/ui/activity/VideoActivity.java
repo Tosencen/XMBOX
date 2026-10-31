@@ -1064,6 +1064,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private void setEnding(long ending) {
         if (mHistory == null) return;
         mHistory.setEnding(ending);
+        App.execute(mHistory::update);
         mBinding.control.action.ending.setText(ending <= 0 ? getString(R.string.play_ed) : mPlayers.stringToTime(mHistory.getEnding()));
     }
 
@@ -1085,6 +1086,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private void setOpening(long opening) {
         if (mHistory == null) return;
         mHistory.setOpening(opening);
+        App.execute(mHistory::update);
         mBinding.control.action.opening.setText(opening <= 0 ? getString(R.string.play_op) : mPlayers.stringToTime(mHistory.getOpening()));
     }
 

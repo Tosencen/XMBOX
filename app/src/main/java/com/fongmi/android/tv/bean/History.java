@@ -266,8 +266,9 @@ public class History {
     }
 
     private void checkParam(History item) {
-        if (getOpening() <= 0) setOpening(item.getOpening());
-        if (getEnding() <= 0) setEnding(item.getEnding());
+        // 只在"从未设置"(TIME_UNSET，负数)时继承旧值；0 表示用户已明确取消片头/片尾，不能被旧记录覆盖
+        if (getOpening() < 0) setOpening(item.getOpening());
+        if (getEnding() < 0) setEnding(item.getEnding());
         if (getSpeed() == 1) setSpeed(item.getSpeed());
     }
 
