@@ -154,6 +154,23 @@
     <string name="update_confirm">更新</string>
     <string name="update_downloading">正在下載更新…</string>
     <string name="update_cancel">取消</string>
+    <string name="setting_update_source">更新來源</string>
+    <string name="update_source_auto">自動（推薦）</string>
+    <string name="update_source_official">官方直連</string>
+    <string name="update_source_custom">自定義鏡像</string>
+    <string name="update_source_hint">輸入鏡像前綴，如 https://gh-proxy.com/</string>
+    <string name="update_latest">已是最新版本</string>
+    <string name="update_no_notes">更新內容請查看項目發布頁</string>
+    <string name="update_check_failed">檢查更新失敗：%s</string>
+    <string name="update_download_failed">下載失敗：%s</string>
+    <string name="update_paused">已暫停</string>
+    <string name="update_pause">暫停</string>
+    <string name="update_resume">繼續</string>
+    <string name="update_verify_failed">簽名校驗失敗，已刪除安裝包</string>
+    <string name="update_no_space">儲存空間不足</string>
+    <string name="update_interrupted">更新下載已中斷</string>
+    <string name="update_remaining">剩 %1$s</string>
+    <string name="update_version_short">v%1$s</string>
 
     <!-- Crash -->
     <string name="crash_info">應用程式發生意外錯誤\n給您帶來不便，敬請諒解</string>

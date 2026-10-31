@@ -168,6 +168,23 @@
     <string name="update_confirm">Update</string>
     <string name="update_downloading">Downloading update…</string>
     <string name="update_cancel">Cancel</string>
+    <string name="setting_update_source">Update source</string>
+    <string name="update_source_auto">Auto (recommended)</string>
+    <string name="update_source_official">Official</string>
+    <string name="update_source_custom">Custom mirror</string>
+    <string name="update_source_hint">Mirror prefix, e.g. https://gh-proxy.com/</string>
+    <string name="update_latest">Already up to date</string>
+    <string name="update_no_notes">See the release page for update details</string>
+    <string name="update_check_failed">Update check failed: %s</string>
+    <string name="update_download_failed">Download failed: %s</string>
+    <string name="update_paused">Paused</string>
+    <string name="update_pause">Pause</string>
+    <string name="update_resume">Resume</string>
+    <string name="update_verify_failed">Signature verification failed, file deleted</string>
+    <string name="update_no_space">Insufficient storage space</string>
+    <string name="update_interrupted">Update download interrupted</string>
+    <string name="update_remaining">%1$s left</string>
+    <string name="update_version_short">v%1$s</string>
 
     <!-- Hint -->
     <string name="copied">Copied</string>

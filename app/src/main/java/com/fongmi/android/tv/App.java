@@ -54,6 +54,7 @@ public class App extends Application {
     private final Runnable webDavSyncTask;
     private boolean webDavScheduled;
     private boolean appJustLaunched;
+    private boolean updateChecked;
 
     /** Activity 栈深度计数器，避免多 Activity 场景下错误置空 */
     private int activityCount;
@@ -200,6 +201,7 @@ public static Activity activity() {
                 if (activity == lastResumedActivity) {
                     lastResumedActivity = null;
                 }
+                Updater.get().onActivityDestroyed(activity);
             }
 
             @Override
@@ -240,11 +242,13 @@ public static Activity activity() {
     }
     
     /**
-     * 自动检查更新（如果启用）
+     * 自动检查更新（仅在本次启动内触发一次，避免每次回前台都重复检查）
      */
     private void checkAutoUpdate(Activity activity) {
+        if (updateChecked) return;
         if (!Setting.getAutoUpdateCheck()) return;
         if (!Setting.getUpdate()) return;
+        updateChecked = true;
         pendingUpdateActivity = activity;
         post(updateTask, 2000);
     }
@@ -254,7 +258,7 @@ public static Activity activity() {
         pendingUpdateActivity = null;
         if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
             Logger.d("App: 开始自动检查更新");
-            Updater.create().auto().release().start(activity);
+            Updater.get().start(activity, false);
         }
     }
     

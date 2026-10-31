@@ -44,6 +44,8 @@ public class Setting {
     private static final String KEY_CHANGE = "change";
     private static final String KEY_UPDATE = "update";
     private static final String KEY_AUTO_UPDATE_CHECK = "auto_update_check";
+    private static final String KEY_UPDATE_SOURCE = "update_source";
+    private static final String KEY_UPDATE_MIRROR = "update_mirror";
     private static final String KEY_USE_CN_MIRROR = "use_cn_mirror";
     private static final String KEY_CAPTION = "caption";
     private static final String KEY_TUNNEL = "tunnel";
@@ -225,6 +227,14 @@ public class Setting {
 
     public static boolean getAutoUpdateCheck() { return getBool(KEY_AUTO_UPDATE_CHECK, false); }
     public static void putAutoUpdateCheck(boolean autoUpdateCheck) { putBool(KEY_AUTO_UPDATE_CHECK, autoUpdateCheck); }
+
+    // ==================== 更新源 ====================
+
+    public static int getUpdateSource() { return getInt(KEY_UPDATE_SOURCE, 0); }
+    public static void putUpdateSource(int source) { putInt(KEY_UPDATE_SOURCE, source); }
+
+    public static String getUpdateMirror() { return getStr(KEY_UPDATE_MIRROR, ""); }
+    public static void putUpdateMirror(String mirror) { putStr(KEY_UPDATE_MIRROR, mirror); }
 
     public static boolean isZhuyin() { return getBool(KEY_ZHUYIN); }
     public static void putZhuyin(boolean zhuyin) { putBool(KEY_ZHUYIN, zhuyin); }

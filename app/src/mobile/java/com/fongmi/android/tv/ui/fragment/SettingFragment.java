@@ -13,6 +13,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -55,6 +56,7 @@ import com.fongmi.android.tv.ui.dialog.SyncSettingsDialog;
 import com.fongmi.android.tv.ui.dialog.WallDialog;
 import com.fongmi.android.tv.utils.FileChooser;
 import com.fongmi.android.tv.utils.FileUtil;
+import com.fongmi.android.tv.utils.Github;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.UrlUtil;
@@ -114,6 +116,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         setSourceHintText(mBinding.liveUrl, LiveConfig.getDesc(), R.string.source_hint_live);
         // setSourceHintText(mBinding.wallUrl, WallConfig.getDesc(), R.string.source_hint_wall); // 壁纸功能已移除
         mBinding.versionText.setText(getString(R.string.setting_version) + " " + BuildConfig.VERSION_NAME);
+        setUpdateSourceText();
         
         setOtherText();
         setCacheText();
@@ -182,6 +185,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         mBinding.player.setOnClickListener(this::onPlayer);
         mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
+        mBinding.updateSource.setOnClickListener(this::onUpdateSource);
         mBinding.about.setOnClickListener(this::onAbout);
         mBinding.vod.setOnLongClickListener(this::onVodEdit);
         mBinding.vodHome.setOnClickListener(this::onVodHome);
@@ -404,7 +408,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     }
 
     private void onVersion(View view) {
-        Updater.create().force().release().start(getActivity());
+        Updater.get().start(getActivity(), true);
     }
     
     private void onAbout(View view) {
@@ -412,8 +416,57 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     }
 
     private boolean onVersionDev(View view) {
-        Updater.create().force().dev().start(getActivity());
+        Updater.get().start(getActivity(), true);
         return true;
+    }
+
+    private void onUpdateSource(View view) {
+        String[] names = Github.sourceNames();
+        int[] values = Github.SOURCE_VALUES;
+        int index = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == Setting.getUpdateSource()) index = i;
+        }
+        new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.setting_update_source)
+                .setSingleChoiceItems(names, index, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (values[which] == Github.SOURCE_CUSTOM) {
+                        showMirrorInput();
+                    } else {
+                        Setting.putUpdateSource(values[which]);
+                        setUpdateSourceText();
+                    }
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
+    private void showMirrorInput() {
+        EditText input = new EditText(requireActivity());
+        input.setHint(R.string.update_source_hint);
+        input.setText(Setting.getUpdateMirror());
+        input.setSelection(input.getText().length());
+        new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(R.string.update_source_custom)
+                .setView(input)
+                .setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+                    String prefix = input.getText().toString().trim();
+                    if (prefix.isEmpty() || !prefix.startsWith("http")) {
+                        Notify.show(R.string.update_source_hint);
+                        return;
+                    }
+                    if (!prefix.endsWith("/")) prefix += "/";
+                    Setting.putUpdateMirror(prefix);
+                    Setting.putUpdateSource(Github.SOURCE_CUSTOM);
+                    setUpdateSourceText();
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
+    private void setUpdateSourceText() {
+        mBinding.updateSourceText.setText(getString(R.string.setting_update_source) + " · " + Github.sourceSummary());
     }
 
     private void setWallDefault(View view) {

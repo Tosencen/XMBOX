@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 
 import androidx.viewbinding.ViewBinding;
 
@@ -41,9 +42,11 @@ import com.fongmi.android.tv.ui.dialog.SiteDialog;
 import com.fongmi.android.tv.ui.dialog.SyncSettingsDialog;
 import com.fongmi.android.tv.utils.FileChooser;
 import com.fongmi.android.tv.utils.FileUtil;
+import com.fongmi.android.tv.utils.Github;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.UrlUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
 import com.github.catvod.utils.Path;
@@ -98,6 +101,7 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
         mBinding.liveUrl.setText(LiveConfig.getDesc());
         mBinding.wallUrl.setText(WallConfig.getDesc());
         mBinding.versionText.setText(BuildConfig.VERSION_NAME);
+        setUpdateSourceText();
         setCacheText();
         setOtherText();
     }
@@ -139,6 +143,7 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
         mBinding.player.setOnClickListener(this::onPlayer);
         mBinding.restore.setOnClickListener(this::onRestore);
         mBinding.version.setOnClickListener(this::onVersion);
+        mBinding.updateSource.setOnClickListener(this::onUpdateSource);
         mBinding.vod.setOnLongClickListener(this::onVodEdit);
         mBinding.vodHome.setOnClickListener(this::onVodHome);
         mBinding.live.setOnLongClickListener(this::onLiveEdit);
@@ -293,12 +298,61 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
     }
 
     private void onVersion(View view) {
-        Updater.create().force().release().start(this);
+        Updater.get().start(this, true);
     }
 
     private boolean onVersionDev(View view) {
-        Updater.create().force().dev().start(this);
+        Updater.get().start(this, true);
         return true;
+    }
+
+    private void onUpdateSource(View view) {
+        String[] names = Github.sourceNames();
+        int[] values = Github.SOURCE_VALUES;
+        int index = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == Setting.getUpdateSource()) index = i;
+        }
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.setting_update_source)
+                .setSingleChoiceItems(names, index, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (values[which] == Github.SOURCE_CUSTOM) {
+                        showMirrorInput();
+                    } else {
+                        Setting.putUpdateSource(values[which]);
+                        setUpdateSourceText();
+                    }
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
+    private void showMirrorInput() {
+        EditText input = new EditText(this);
+        input.setHint(R.string.update_source_hint);
+        input.setText(Setting.getUpdateMirror());
+        input.setSelection(input.getText().length());
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.update_source_custom)
+                .setView(input)
+                .setPositiveButton(R.string.dialog_positive, (dialog, which) -> {
+                    String prefix = input.getText().toString().trim();
+                    if (prefix.isEmpty() || !prefix.startsWith("http")) {
+                        Notify.show(R.string.update_source_hint);
+                        return;
+                    }
+                    if (!prefix.endsWith("/")) prefix += "/";
+                    Setting.putUpdateMirror(prefix);
+                    Setting.putUpdateSource(Github.SOURCE_CUSTOM);
+                    setUpdateSourceText();
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
+    }
+
+    private void setUpdateSourceText() {
+        mBinding.updateSourceText.setText(Github.sourceSummary());
     }
 
     private void setWallDefault(View view) {
