@@ -63,6 +63,7 @@ import com.fongmi.android.tv.ui.dialog.SubtitleDialog;
 import com.fongmi.android.tv.ui.dialog.TrackDialog;
 import com.fongmi.android.tv.utils.Biometric;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.github.catvod.utils.Logger;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PiP;
 import com.fongmi.android.tv.utils.ResUtil;
@@ -113,6 +114,7 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     }
 
     private Group getKeep() {
+        if (mGroupAdapter == null || mGroupAdapter.getItemCount() == 0) return null;
         return mGroupAdapter.get(0);
     }
 
@@ -624,12 +626,33 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
 
     @Override
     public boolean onLongClick(Channel item) {
-        if (mGroup.isHidden()) return false;
-        boolean exist = Keep.exist(item.getName());
-        Notify.show(exist ? R.string.keep_del : R.string.keep_add);
-        if (exist) delKeep(item);
-        else addKeep(item);
+        // 长按收藏：数据库异常（迁移失败、磁盘/SQLite 故障）时只提示不崩溃
+        try {
+            if (mGroup == null || item == null || mGroup.isHidden()) return false;
+            boolean exist = isKept(item);
+            Notify.show(exist ? R.string.keep_del : R.string.keep_add);
+            if (exist) delKeep(item);
+            else addKeep(item);
+        } catch (Throwable e) {
+            Logger.e("LiveActivity: 收藏失败", e);
+        }
         return true;
+    }
+
+    private boolean isKept(Channel item) {
+        try {
+            return Keep.exist(item.getName());
+        } catch (Throwable e) {
+            Logger.e("LiveActivity: 读取收藏失败，改用内存判断", e);
+            return isKeptInMemory(item);
+        }
+    }
+
+    private boolean isKeptInMemory(Channel item) {
+        Group keep = getKeep();
+        if (keep == null) return false;
+        for (Channel channel : keep.getChannel()) if (channel != null && item.getName().equals(channel.getName())) return true;
+        return false;
     }
 
     @Override
@@ -645,17 +668,31 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     }
 
     private void addKeep(Channel item) {
-        getKeep().add(item);
-        Keep keep = new Keep();
-        keep.setKey(item.getName());
-        keep.setType(1);
-        App.execute(keep::save);
+        Group group = getKeep();
+        if (group != null) group.add(item);
+        Keep entity = new Keep();
+        entity.setKey(item.getName());
+        entity.setType(1);
+        App.execute(() -> {
+            try {
+                entity.save();
+            } catch (Throwable e) {
+                Logger.e("LiveActivity: 保存收藏失败", e);
+            }
+        });
     }
 
     private void delKeep(Channel item) {
         if (mGroup.isKeep()) mChannelAdapter.remove(item);
-        getKeep().getChannel().remove(item);
-        App.execute(() -> Keep.delete(item.getName()));
+        Group group = getKeep();
+        if (group != null) group.getChannel().remove(item);
+        App.execute(() -> {
+            try {
+                Keep.delete(item.getName());
+            } catch (Throwable e) {
+                Logger.e("LiveActivity: 删除收藏失败", e);
+            }
+        });
     }
 
     private void setInfo() {

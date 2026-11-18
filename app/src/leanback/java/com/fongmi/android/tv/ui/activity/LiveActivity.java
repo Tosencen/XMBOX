@@ -58,8 +58,10 @@ import com.fongmi.android.tv.ui.dialog.TrackDialog;
 import com.fongmi.android.tv.ui.presenter.ChannelPresenter;
 import com.fongmi.android.tv.ui.presenter.EpgDataPresenter;
 import com.fongmi.android.tv.ui.presenter.GroupPresenter;
+import com.github.catvod.utils.Logger;
 import com.fongmi.android.tv.utils.Clock;
 import com.fongmi.android.tv.utils.ImgUtil;
+import com.fongmi.android.tv.utils.KeyUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Traffic;
@@ -106,7 +108,9 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
     }
 
     private Group getKeep() {
-        return (Group) mGroupAdapter.get(0);
+        if (mGroupAdapter == null || mGroupAdapter.size() == 0) return null;
+        Object item = mGroupAdapter.get(0);
+        return item instanceof Group ? (Group) item : null;
     }
 
     private Live getHome() {
@@ -570,12 +574,33 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
 
     @Override
     public boolean onLongClick(Channel item) {
-        if (mGroup.isHidden()) return false;
-        boolean exist = Keep.exist(item.getName());
-        Notify.show(exist ? R.string.keep_del : R.string.keep_add);
-        if (exist) delKeep(item);
-        else addKeep(item);
+        // 长按收藏：数据库异常（迁移失败、磁盘/SQLite 故障）时只提示不崩溃
+        try {
+            if (mGroup == null || item == null || mGroup.isHidden()) return false;
+            boolean exist = isKept(item);
+            Notify.show(exist ? R.string.keep_del : R.string.keep_add);
+            if (exist) delKeep(item);
+            else addKeep(item);
+        } catch (Throwable e) {
+            Logger.e("LiveActivity: 收藏失败", e);
+        }
         return true;
+    }
+
+    private boolean isKept(Channel item) {
+        try {
+            return Keep.exist(item.getName());
+        } catch (Throwable e) {
+            Logger.e("LiveActivity: 读取收藏失败，改用内存判断", e);
+            return isKeptInMemory(item);
+        }
+    }
+
+    private boolean isKeptInMemory(Channel item) {
+        Group keep = getKeep();
+        if (keep == null) return false;
+        for (Channel channel : keep.getChannel()) if (channel != null && item.getName().equals(channel.getName())) return true;
+        return false;
     }
 
     @Override
@@ -591,18 +616,32 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
     }
 
     private void addKeep(Channel item) {
-        getKeep().add(item);
-        Keep keep = new Keep();
-        keep.setKey(item.getName());
-        keep.setType(1);
-        App.execute(keep::save);
+        Group keep = getKeep();
+        if (keep != null) keep.add(item);
+        Keep entity = new Keep();
+        entity.setKey(item.getName());
+        entity.setType(1);
+        App.execute(() -> {
+            try {
+                entity.save();
+            } catch (Throwable e) {
+                Logger.e("LiveActivity: 保存收藏失败", e);
+            }
+        });
     }
 
     private void delKeep(Channel item) {
         if (mGroup.isKeep()) mChannelAdapter.remove(item);
         if (mChannelAdapter.size() == 0) mBinding.group.requestFocus();
-        getKeep().getChannel().remove(item);
-        App.execute(() -> Keep.delete(item.getName()));
+        Group keep = getKeep();
+        if (keep != null) keep.getChannel().remove(item);
+        App.execute(() -> {
+            try {
+                Keep.delete(item.getName());
+            } catch (Throwable e) {
+                Logger.e("LiveActivity: 删除收藏失败", e);
+            }
+        });
     }
 
     private void setChannel(Channel item) {
@@ -879,8 +918,13 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (isVisible(mBinding.control.getRoot())) setR1Callback();
-        if (mKeyDown.hasEvent(event)) mKeyDown.onKeyDown(event);
+        // 频道列表获得焦点时长按 OK 是"收藏"，交给列表项自己处理，不要再弹控制栏
+        if (mKeyDown.hasEvent(event) && !isChannelLongPress(event)) mKeyDown.onKeyDown(event);
         return super.dispatchKeyEvent(event);
+    }
+
+    private boolean isChannelLongPress(KeyEvent event) {
+        return event.isLongPress() && KeyUtil.isEnterKey(event) && isVisible(mBinding.recycler) && mBinding.channel.hasFocus();
     }
 
     @Override
