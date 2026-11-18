@@ -96,7 +96,8 @@ android {
 
     android.applicationVariants.configureEach { variant ->
         variant.outputs.configureEach { output ->
-            outputFileName = "${variant.productFlavors[0].name}-${variant.productFlavors[1].name}.apk"
+            // 产物命名与 GitHub Release 保持一致：3.2.0-leanback-arm64_v8a.apk
+            outputFileName = "${variant.versionName}-${variant.productFlavors[0].name}-${variant.productFlavors[1].name}.apk"
         }
     }
 

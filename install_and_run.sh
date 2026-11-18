@@ -5,7 +5,7 @@ adb devices
 
 echo ""
 echo "=== 安装APK到模拟器 ==="
-adb install -r /Users/chen/Desktop/XMBOX/app/build/outputs/apk/mobileArm64_v8a/debug/mobile-arm64_v8a.apk
+adb install -r /Users/chen/Desktop/XMBOX/app/build/outputs/apk/mobileArm64_v8a/debug/3.2.0-mobile-arm64_v8a.apk
 
 echo ""
 echo "=== 启动应用 ==="

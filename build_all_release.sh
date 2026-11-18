@@ -26,10 +26,10 @@ echo "=== 3. 复制 APK 到桌面 ==="
 
 # 定义APK路径和输出文件名
 declare -a APKS=(
-    "app/build/outputs/apk/mobileArm64_v8a/release/mobile-arm64_v8a.apk|mobile-arm64_v8a-v${VERSION}.apk"
-    "app/build/outputs/apk/mobileArmeabi_v7a/release/mobile-armeabi_v7a.apk|mobile-armeabi_v7a-v${VERSION}.apk"
-    "app/build/outputs/apk/leanbackArm64_v8a/release/leanback-arm64_v8a.apk|leanback-arm64_v8a-v${VERSION}.apk"
-    "app/build/outputs/apk/leanbackArmeabi_v7a/release/leanback-armeabi_v7a.apk|leanback-armeabi_v7a-v${VERSION}.apk"
+    "app/build/outputs/apk/mobileArm64_v8a/release/${VERSION}-mobile-arm64_v8a.apk|${VERSION}-mobile-arm64_v8a.apk"
+    "app/build/outputs/apk/mobileArmeabi_v7a/release/${VERSION}-mobile-armeabi_v7a.apk|${VERSION}-mobile-armeabi_v7a.apk"
+    "app/build/outputs/apk/leanbackArm64_v8a/release/${VERSION}-leanback-arm64_v8a.apk|${VERSION}-leanback-arm64_v8a.apk"
+    "app/build/outputs/apk/leanbackArmeabi_v7a/release/${VERSION}-leanback-armeabi_v7a.apk|${VERSION}-leanback-armeabi_v7a.apk"
 )
 
 SUCCESS_COUNT=0
